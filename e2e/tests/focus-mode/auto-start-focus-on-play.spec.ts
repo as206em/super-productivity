@@ -4,8 +4,7 @@
  * Behavior under test (from
  * docs/plans/2026-04-29-focus-mode-time-tracking-sync.md): when the user
  * enables this setting and starts tracking a task, a focus session must
- * spawn automatically *without* opening the focus-mode overlay — the
- * header focus-button countdown is the only surface.
+ * spawn automatically and open the focus-mode overlay.
  *
  * If this regresses, the headline feature of the rework is broken with
  * no other automated test catching it.
@@ -50,12 +49,11 @@ const enableAutoStartOnPlay = async (page: Page): Promise<void> => {
 };
 
 test.describe('autoStartFocusOnPlay', () => {
-  test('pressing play with the opt-in on starts a focus session indicator-only (no overlay)', async ({
+  test('pressing play with the opt-in on starts a focus session in the overlay', async ({
     page,
     workViewPage,
   }) => {
     const focusOverlay = page.locator('focus-mode-overlay');
-    const focusRunningLabel = page.locator('focus-button .focus-running-label');
 
     // Step 1: enable the new setting via Settings UI.
     await enableAutoStartOnPlay(page);
@@ -76,12 +74,15 @@ test.describe('autoStartFocusOnPlay', () => {
     const trackingPlayBtn = firstTask.locator('.start-task-btn').first();
     await trackingPlayBtn.waitFor({ state: 'visible' });
     await trackingPlayBtn.click();
-    await expect(firstTask).toHaveClass(/isCurrent/, { timeout: 5000 });
 
-    // Expected: focus session spawns and the header countdown becomes the
-    // surface (per the rework, the overlay must NOT auto-open here).
-    await expect(focusRunningLabel).toBeVisible({ timeout: 5000 });
-    await expect(focusOverlay).not.toBeVisible();
+    // Expected: focus session spawns and opens the full focus-mode overlay.
+    await expect(focusOverlay).toBeVisible({ timeout: 5000 });
+    await expect(focusOverlay.locator('focus-mode-main')).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(focusOverlay.locator('.clock-time')).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('with the opt-in OFF (default), pressing play does not spawn a focus session', async ({

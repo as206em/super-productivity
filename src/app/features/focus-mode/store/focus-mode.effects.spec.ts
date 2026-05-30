@@ -1053,7 +1053,7 @@ describe('FocusModeEffects', () => {
   });
 
   describe('syncTrackingStartToSession$', () => {
-    it('should dispatch startFocusSession when autoStartFocusOnPlay is on and task is selected on Main screen (overlay hidden)', (done) => {
+    it('should show overlay and dispatch startFocusSession when autoStartFocusOnPlay is on and task is selected on Main screen', (done) => {
       store.overrideSelector(selectFocusModeConfig, {
         autoStartFocusOnPlay: true,
         isSkipPreparation: false,
@@ -1070,14 +1070,17 @@ describe('FocusModeEffects', () => {
         currentTaskId$.next('task-123');
       }, 10);
 
-      effects.syncTrackingStartToSession$.pipe(take(1)).subscribe((action) => {
-        expect(action).toEqual(
-          actions.startFocusSession({
-            duration: 25 * 60 * 1000,
-          }),
-        );
-        done();
-      });
+      effects.syncTrackingStartToSession$
+        .pipe(take(2), toArray())
+        .subscribe((emitted) => {
+          expect(emitted).toEqual([
+            actions.showFocusOverlay(),
+            actions.startFocusSession({
+              duration: 25 * 60 * 1000,
+            }),
+          ]);
+          done();
+        });
     });
 
     it('should use remaining task estimate when auto-starting a focus session', (done) => {
@@ -1104,14 +1107,17 @@ describe('FocusModeEffects', () => {
         currentTaskId$.next('task-123');
       }, 10);
 
-      effects.syncTrackingStartToSession$.pipe(take(1)).subscribe((action) => {
-        expect(action).toEqual(
-          actions.startFocusSession({
-            duration: 20 * 60 * 1000,
-          }),
-        );
-        done();
-      });
+      effects.syncTrackingStartToSession$
+        .pipe(take(2), toArray())
+        .subscribe((emitted) => {
+          expect(emitted).toEqual([
+            actions.showFocusOverlay(),
+            actions.startFocusSession({
+              duration: 20 * 60 * 1000,
+            }),
+          ]);
+          done();
+        });
     });
 
     it('should use zero duration when task estimate is already used up', (done) => {
@@ -1138,14 +1144,17 @@ describe('FocusModeEffects', () => {
         currentTaskId$.next('task-123');
       }, 10);
 
-      effects.syncTrackingStartToSession$.pipe(take(1)).subscribe((action) => {
-        expect(action).toEqual(
-          actions.startFocusSession({
-            duration: 0,
-          }),
-        );
-        done();
-      });
+      effects.syncTrackingStartToSession$
+        .pipe(take(2), toArray())
+        .subscribe((emitted) => {
+          expect(emitted).toEqual([
+            actions.showFocusOverlay(),
+            actions.startFocusSession({
+              duration: 0,
+            }),
+          ]);
+          done();
+        });
     });
 
     it('should use focus mode default duration when task has no estimate', (done) => {
@@ -1172,14 +1181,17 @@ describe('FocusModeEffects', () => {
         currentTaskId$.next('task-123');
       }, 10);
 
-      effects.syncTrackingStartToSession$.pipe(take(1)).subscribe((action) => {
-        expect(action).toEqual(
-          actions.startFocusSession({
-            duration: 25 * 60 * 1000,
-          }),
-        );
-        done();
-      });
+      effects.syncTrackingStartToSession$
+        .pipe(take(2), toArray())
+        .subscribe((emitted) => {
+          expect(emitted).toEqual([
+            actions.showFocusOverlay(),
+            actions.startFocusSession({
+              duration: 25 * 60 * 1000,
+            }),
+          ]);
+          done();
+        });
     });
 
     // Bug #7384 fix preserved: when the user is inside the focus-mode overlay
@@ -1212,7 +1224,7 @@ describe('FocusModeEffects', () => {
       }, 50);
     });
 
-    it('should dispatch unPauseFocusSession when session is paused and task is selected', (done) => {
+    it('should dispatch showFocusOverlay and unPauseFocusSession when session is paused and task is selected', (done) => {
       store.overrideSelector(selectFocusModeConfig, {
         isSkipPreparation: false,
       });
@@ -1231,10 +1243,15 @@ describe('FocusModeEffects', () => {
         currentTaskId$.next('task-123');
       }, 10);
 
-      effects.syncTrackingStartToSession$.pipe(take(1)).subscribe((action) => {
-        expect(action).toEqual(actions.unPauseFocusSession());
-        done();
-      });
+      effects.syncTrackingStartToSession$
+        .pipe(take(2), toArray())
+        .subscribe((emitted) => {
+          expect(emitted).toEqual([
+            actions.showFocusOverlay(),
+            actions.unPauseFocusSession(),
+          ]);
+          done();
+        });
     });
 
     it('should NOT dispatch when session is already running', (done) => {
@@ -1382,7 +1399,7 @@ describe('FocusModeEffects', () => {
       currentTaskId$.next('task-123');
 
       setTimeout(() => {
-        expect(emitted.length).toBe(1);
+        expect(emitted.length).toBe(2);
 
         // Toggle an unrelated config setting — should NOT re-trigger
         store.overrideSelector(selectFocusModeConfig, {
@@ -1393,7 +1410,7 @@ describe('FocusModeEffects', () => {
         store.refreshState();
 
         setTimeout(() => {
-          expect(emitted.length).toBe(1);
+          expect(emitted.length).toBe(2);
           done();
         }, 50);
       }, 20);
@@ -1423,7 +1440,7 @@ describe('FocusModeEffects', () => {
       currentTaskId$.next('task-123');
 
       setTimeout(() => {
-        expect(emitted.length).toBe(1);
+        expect(emitted.length).toBe(2);
 
         // Toggle focus mode off and back on — should NOT re-trigger
         store.overrideSelector(selectIsFocusModeEnabled, false);
@@ -1434,7 +1451,7 @@ describe('FocusModeEffects', () => {
           store.refreshState();
 
           setTimeout(() => {
-            expect(emitted.length).toBe(1);
+            expect(emitted.length).toBe(2);
             done();
           }, 50);
         }, 20);
