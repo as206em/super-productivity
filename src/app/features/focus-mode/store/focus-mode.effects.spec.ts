@@ -17,6 +17,7 @@ import { FocusModeMode, FocusScreen, TimerState } from '../focus-mode.model';
 import { unsetCurrentTask, setCurrentTask } from '../../tasks/store/task.actions';
 import { openIdleDialog } from '../../idle/store/idle.actions';
 import { selectLastCurrentTask, selectTaskById } from '../../tasks/store/task.selectors';
+import { Task } from '../../tasks/task.model';
 import {
   selectFocusModeConfig,
   selectIsFocusModeEnabled,
@@ -44,6 +45,21 @@ describe('FocusModeEffects', () => {
     elapsed: 0,
     duration: 0,
     purpose: null,
+    ...overrides,
+  });
+
+  const createMockTask = (overrides: Partial<Task> = {}): Task => ({
+    id: 'task-123',
+    projectId: 'project-1',
+    subTaskIds: [],
+    timeSpentOnDay: {},
+    timeSpent: 0,
+    timeEstimate: 0,
+    isDone: false,
+    title: 'Test Task',
+    tagIds: [],
+    created: 0,
+    attachments: [],
     ...overrides,
   });
 
@@ -124,6 +140,7 @@ describe('FocusModeEffects', () => {
             { selector: selectPomodoroConfig, value: { duration: 25 * 60 * 1000 } },
             { selector: selectIsFocusModeEnabled, value: true },
             { selector: selectLastCurrentTask, value: null },
+            { selector: selectTaskById as any, value: null },
           ],
         }),
         { provide: FocusModeStrategyFactory, useValue: strategyFactoryMock },
@@ -1045,6 +1062,108 @@ describe('FocusModeEffects', () => {
       store.overrideSelector(selectors.selectMode, FocusModeMode.Pomodoro);
       store.overrideSelector(selectors.selectCurrentScreen, FocusScreen.Main);
       store.overrideSelector(selectors.selectIsOverlayShown, false);
+      store.refreshState();
+
+      effects = TestBed.inject(FocusModeEffects);
+
+      setTimeout(() => {
+        currentTaskId$.next('task-123');
+      }, 10);
+
+      effects.syncTrackingStartToSession$.pipe(take(1)).subscribe((action) => {
+        expect(action).toEqual(
+          actions.startFocusSession({
+            duration: 25 * 60 * 1000,
+          }),
+        );
+        done();
+      });
+    });
+
+    it('should use remaining task estimate when auto-starting a focus session', (done) => {
+      store.overrideSelector(selectFocusModeConfig, {
+        autoStartFocusOnPlay: true,
+        isSkipPreparation: false,
+      });
+      store.overrideSelector(selectors.selectTimer, createMockTimer());
+      store.overrideSelector(selectors.selectMode, FocusModeMode.Pomodoro);
+      store.overrideSelector(selectors.selectCurrentScreen, FocusScreen.Main);
+      store.overrideSelector(selectors.selectIsOverlayShown, false);
+      store.overrideSelector(
+        selectTaskById as any,
+        createMockTask({
+          timeEstimate: 60 * 60 * 1000,
+          timeSpent: 40 * 60 * 1000,
+        }),
+      );
+      store.refreshState();
+
+      effects = TestBed.inject(FocusModeEffects);
+
+      setTimeout(() => {
+        currentTaskId$.next('task-123');
+      }, 10);
+
+      effects.syncTrackingStartToSession$.pipe(take(1)).subscribe((action) => {
+        expect(action).toEqual(
+          actions.startFocusSession({
+            duration: 20 * 60 * 1000,
+          }),
+        );
+        done();
+      });
+    });
+
+    it('should use zero duration when task estimate is already used up', (done) => {
+      store.overrideSelector(selectFocusModeConfig, {
+        autoStartFocusOnPlay: true,
+        isSkipPreparation: false,
+      });
+      store.overrideSelector(selectors.selectTimer, createMockTimer());
+      store.overrideSelector(selectors.selectMode, FocusModeMode.Pomodoro);
+      store.overrideSelector(selectors.selectCurrentScreen, FocusScreen.Main);
+      store.overrideSelector(selectors.selectIsOverlayShown, false);
+      store.overrideSelector(
+        selectTaskById as any,
+        createMockTask({
+          timeEstimate: 60 * 60 * 1000,
+          timeSpent: 75 * 60 * 1000,
+        }),
+      );
+      store.refreshState();
+
+      effects = TestBed.inject(FocusModeEffects);
+
+      setTimeout(() => {
+        currentTaskId$.next('task-123');
+      }, 10);
+
+      effects.syncTrackingStartToSession$.pipe(take(1)).subscribe((action) => {
+        expect(action).toEqual(
+          actions.startFocusSession({
+            duration: 0,
+          }),
+        );
+        done();
+      });
+    });
+
+    it('should use focus mode default duration when task has no estimate', (done) => {
+      store.overrideSelector(selectFocusModeConfig, {
+        autoStartFocusOnPlay: true,
+        isSkipPreparation: false,
+      });
+      store.overrideSelector(selectors.selectTimer, createMockTimer());
+      store.overrideSelector(selectors.selectMode, FocusModeMode.Pomodoro);
+      store.overrideSelector(selectors.selectCurrentScreen, FocusScreen.Main);
+      store.overrideSelector(selectors.selectIsOverlayShown, false);
+      store.overrideSelector(
+        selectTaskById as any,
+        createMockTask({
+          timeEstimate: 0,
+          timeSpent: 40 * 60 * 1000,
+        }),
+      );
       store.refreshState();
 
       effects = TestBed.inject(FocusModeEffects);

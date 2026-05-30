@@ -86,7 +86,7 @@ export class FocusModeEffects {
       ),
       switchMap(
         ([
-          [_taskId, cfg],
+          [taskId, cfg],
           timer,
           mode,
           currentScreen,
@@ -95,7 +95,7 @@ export class FocusModeEffects {
         ]) => {
           // If session is paused (purpose is 'work' but not running), resume it
           if (timer.purpose === 'work' && !timer.isRunning) {
-            return of(actions.unPauseFocusSession());
+            return of(actions.showFocusOverlay(), actions.unPauseFocusSession());
           }
           // If break is active, handle based on state and cause
           // Bug #5995 Fix: Don't skip breaks that were just resumed
@@ -122,11 +122,24 @@ export class FocusModeEffects {
             if (isOverlayShown && !cfg?.isSkipPreparation) {
               return EMPTY;
             }
+            if (!taskId) {
+              return EMPTY;
+            }
             const strategy = this.strategyFactory.getStrategy(mode);
-            const duration = strategy.initialSessionDuration;
-            return of(
-              actions.startFocusSession({
-                duration,
+            const defaultDuration = strategy.initialSessionDuration;
+            return this.store.select(selectTaskById, { id: taskId }).pipe(
+              take(1),
+              switchMap((task) => {
+                const duration =
+                  task && task.timeEstimate > 0
+                    ? Math.max(task.timeEstimate - task.timeSpent, 0)
+                    : defaultDuration;
+                return of(
+                  actions.showFocusOverlay(),
+                  actions.startFocusSession({
+                    duration,
+                  }),
+                );
               }),
             );
           }
