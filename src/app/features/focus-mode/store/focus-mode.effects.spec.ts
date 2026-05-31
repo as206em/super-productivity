@@ -1254,6 +1254,47 @@ describe('FocusModeEffects', () => {
         });
     });
 
+    it('should start a new estimated session when a different task is selected after pausing a work session', (done) => {
+      store.overrideSelector(selectFocusModeConfig, {
+        autoStartFocusOnPlay: true,
+        isSkipPreparation: false,
+      });
+      store.overrideSelector(
+        selectors.selectTimer,
+        createMockTimer({ isRunning: false, purpose: 'work' }),
+      );
+      store.overrideSelector(selectors.selectMode, FocusModeMode.Pomodoro);
+      store.overrideSelector(selectors.selectCurrentScreen, FocusScreen.Main);
+      store.overrideSelector(selectors.selectPausedTaskId, 'task-123');
+      store.overrideSelector(
+        selectTaskById as any,
+        createMockTask({
+          id: 'task-456',
+          timeEstimate: 45 * 60 * 1000,
+          timeSpent: 10 * 60 * 1000,
+        }),
+      );
+      store.refreshState();
+
+      effects = TestBed.inject(FocusModeEffects);
+
+      setTimeout(() => {
+        currentTaskId$.next('task-456');
+      }, 10);
+
+      effects.syncTrackingStartToSession$
+        .pipe(take(2), toArray())
+        .subscribe((emitted) => {
+          expect(emitted).toEqual([
+            actions.showFocusOverlay(),
+            actions.startFocusSession({
+              duration: 35 * 60 * 1000,
+            }),
+          ]);
+          done();
+        });
+    });
+
     it('should NOT dispatch when session is already running', (done) => {
       store.overrideSelector(selectFocusModeConfig, {
         isSkipPreparation: false,

@@ -103,12 +103,35 @@ describe('FocusModeReducer', () => {
       expect(result.isOverlayShown).toBe(true);
     });
 
-    it('should hide focus overlay', () => {
-      const state = { ...initialState, isOverlayShown: true };
+    it('should hide focus overlay and clear the active timer', () => {
+      const state = {
+        ...initialState,
+        isOverlayShown: true,
+        currentScreen: FocusScreen.Main,
+        mainState: FocusMainUIState.InProgress,
+        timer: {
+          isRunning: true,
+          startedAt: Date.now(),
+          elapsed: 5 * 60 * 1000,
+          duration: 25 * 60 * 1000,
+          purpose: 'work' as const,
+        },
+        pausedTaskId: 'task-123',
+      };
       const action = a.hideFocusOverlay();
       const result = focusModeReducer(state, action);
 
       expect(result.isOverlayShown).toBe(false);
+      expect(result.currentScreen).toBe(FocusScreen.Main);
+      expect(result.mainState).toBe(FocusMainUIState.Preparation);
+      expect(result.timer).toEqual({
+        isRunning: false,
+        startedAt: null,
+        elapsed: 0,
+        duration: 0,
+        purpose: null,
+      });
+      expect(result.pausedTaskId).toBeNull();
     });
   });
 

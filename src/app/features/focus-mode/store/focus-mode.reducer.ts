@@ -91,6 +91,11 @@ export const focusModeReducer = createReducer(
   on(a.hideFocusOverlay, (state) => ({
     ...state,
     isOverlayShown: false,
+    timer: createIdleTimer(),
+    currentScreen: FocusScreen.Main,
+    mainState: FocusMainUIState.Preparation,
+    pausedTaskId: null,
+    _isOvertimeEnabled: false,
   })),
 
   // Screen navigation

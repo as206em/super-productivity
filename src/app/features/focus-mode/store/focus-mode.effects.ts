@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { createEffect, ofType } from '@ngrx/effects';
 import { LOCAL_ACTIONS } from '../../../util/local-actions.token';
 import { Action, Store } from '@ngrx/store';
-import { combineLatest, EMPTY, of } from 'rxjs';
+import { combineLatest, EMPTY, Observable, of } from 'rxjs';
 import { skipWhileApplyingRemoteOps } from '../../../util/skip-during-sync.operator';
 import {
   distinctUntilChanged,
@@ -60,8 +60,7 @@ export class FocusModeEffects {
   // tracking — resume paused work, skip a stale break, etc.
   //
   // Auto-spawn (opt-in via `autoStartFocusOnPlay`): if no session is active and
-  // the user has opted in, start a new session quietly. The overlay is NOT
-  // dispatched — surface comes from the existing banner / future indicator.
+  // the user has opted in, start a new session and open the full focus overlay.
   // Inside the overlay we still respect `isSkipPreparation` so #7384's
   // rocket-prep flow keeps working for users who entered via F-key.
   syncTrackingStartToSession$ = createEffect(() =>
@@ -83,6 +82,7 @@ export class FocusModeEffects {
         // Bug #5995 Fix: Get the LATEST value of isResumingBreak here
         // to avoid using stale value from outer closure
         this.store.select(selectors.selectIsResumingBreak),
+        this.store.select(selectors.selectPausedTaskId),
       ),
       switchMap(
         ([
@@ -92,9 +92,41 @@ export class FocusModeEffects {
           currentScreen,
           isOverlayShown,
           isResumingBreak,
+          pausedTaskId,
         ]) => {
+          const startSessionForTask = (): Observable<Action> => {
+            if (!taskId) {
+              return EMPTY;
+            }
+            const strategy = this.strategyFactory.getStrategy(mode);
+            const defaultDuration = strategy.initialSessionDuration;
+            return this.store.select(selectTaskById, { id: taskId }).pipe(
+              take(1),
+              switchMap((task) => {
+                const duration =
+                  task && task.timeEstimate > 0
+                    ? Math.max(task.timeEstimate - task.timeSpent, 0)
+                    : defaultDuration;
+                return of(
+                  actions.showFocusOverlay(),
+                  actions.startFocusSession({
+                    duration,
+                  }),
+                );
+              }),
+            );
+          };
+
           // If session is paused (purpose is 'work' but not running), resume it
           if (timer.purpose === 'work' && !timer.isRunning) {
+            if (
+              cfg?.autoStartFocusOnPlay &&
+              pausedTaskId &&
+              pausedTaskId !== taskId &&
+              currentScreen === FocusScreen.Main
+            ) {
+              return startSessionForTask();
+            }
             return of(actions.showFocusOverlay(), actions.unPauseFocusSession());
           }
           // If break is active, handle based on state and cause
@@ -116,32 +148,12 @@ export class FocusModeEffects {
             if (!cfg?.autoStartFocusOnPlay) {
               return EMPTY;
             }
-            // Bug #7384: respect isSkipPreparation only inside the overlay
-            // (preparation screen is overlay-bound). For the quiet auto-spawn
-            // path there's no overlay → no rocket → bypass the prep gate.
+            // Bug #7384: respect isSkipPreparation when the overlay is already open
+            // because preparation is an overlay-bound flow.
             if (isOverlayShown && !cfg?.isSkipPreparation) {
               return EMPTY;
             }
-            if (!taskId) {
-              return EMPTY;
-            }
-            const strategy = this.strategyFactory.getStrategy(mode);
-            const defaultDuration = strategy.initialSessionDuration;
-            return this.store.select(selectTaskById, { id: taskId }).pipe(
-              take(1),
-              switchMap((task) => {
-                const duration =
-                  task && task.timeEstimate > 0
-                    ? Math.max(task.timeEstimate - task.timeSpent, 0)
-                    : defaultDuration;
-                return of(
-                  actions.showFocusOverlay(),
-                  actions.startFocusSession({
-                    duration,
-                  }),
-                );
-              }),
-            );
+            return startSessionForTask();
           }
           return EMPTY;
         },
