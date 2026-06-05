@@ -30,6 +30,7 @@ import {
   PluginMetaDataState,
   PluginUserDataState,
 } from '../../plugins/plugin-persistence.model'; // for more speed
+import { SprintState } from '../../features/sprint/sprint.model';
 
 // TODO check if we can improve on this
 // for more speed
@@ -55,6 +56,7 @@ const _validateTimeTracking = createValidate<TimeTrackingState>();
 const _validatePluginUserData = createValidate<PluginUserDataState>();
 const _validatePluginMetadata = createValidate<PluginMetaDataState>();
 const _validateSection = createValidate<SectionState>();
+const _validateSprint = createValidate<SprintState>();
 
 export const validateAllData = <R>(
   d: AppDataComplete | R,
@@ -114,6 +116,8 @@ export const appDataValidators: {
     _wrapValidate(_validatePluginMetadata(d), d, false, 'pluginMetadata'),
   section: <R>(d: R | SectionState) =>
     _wrapValidate(_validateSection(d), d, true, 'section'),
+  sprint: <R>(d: R | SprintState) =>
+    _wrapValidate(_validateSprint(d), d, false, 'sprint'),
 } as const;
 
 const logValidationFailure = <R>(

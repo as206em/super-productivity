@@ -42,6 +42,10 @@ import { TIME_TRACKING_FEATURE_KEY } from '../../features/time-tracking/store/ti
 import { appStateFeatureKey } from '../../root-store/app-state/app-state.reducer';
 import { getDbDateStr } from '../../util/get-db-date-str';
 import { initialSectionState } from '../../features/section/store/section.reducer';
+import {
+  SPRINT_FEATURE_NAME,
+  initialSprintState,
+} from '../../features/sprint/store/sprint.reducer';
 
 /**
  * Creates a minimal valid AppDataComplete state.
@@ -103,6 +107,7 @@ export const createValidAppData = (
     issueProvider: issueProviderInitialState,
     metric: initialMetricState,
     timeTracking: initialTimeTrackingState,
+    sprint: initialSprintState,
     pluginUserData: [],
     pluginMetadata: [],
     archiveYoung: {
@@ -335,6 +340,7 @@ export const rootStateToAppData = (
     pluginUserData?: AppDataComplete['pluginUserData'];
     pluginMetadata?: AppDataComplete['pluginMetadata'];
     section?: AppDataComplete['section'];
+    sprint?: AppDataComplete['sprint'];
   } = {},
 ): AppDataComplete => {
   return {
@@ -347,6 +353,7 @@ export const rootStateToAppData = (
     planner: state[plannerFeatureKey],
     boards: state[BOARDS_FEATURE_NAME],
     timeTracking: state[TIME_TRACKING_FEATURE_KEY],
+    sprint: state[SPRINT_FEATURE_NAME] || additionalData.sprint || initialSprintState,
     section: additionalData.section || initialSectionState,
     // These are either from additional data or defaults
     simpleCounter: additionalData.simpleCounter || initialSimpleCounterState,
@@ -384,6 +391,7 @@ export const appDataToRootState = (data: AppDataComplete): RootState => {
     [plannerFeatureKey]: data.planner,
     [BOARDS_FEATURE_NAME]: data.boards,
     [TIME_TRACKING_FEATURE_KEY]: data.timeTracking,
+    [SPRINT_FEATURE_NAME]: data.sprint,
     [appStateFeatureKey]: { todayStr: getDbDateStr(), startOfNextDayDiffMs: 0 },
   } as RootState;
 };

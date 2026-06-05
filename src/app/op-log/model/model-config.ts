@@ -42,6 +42,8 @@ import {
   PluginUserDataState,
 } from '../../plugins/plugin-persistence.model';
 import { menuTreeInitialState } from '../../features/menu-tree/store/menu-tree.reducer';
+import { SprintState } from '../../features/sprint/sprint.model';
+import { initialSprintState } from '../../features/sprint/store/sprint.reducer';
 
 export const CROSS_MODEL_VERSION = 4.5 as const;
 
@@ -63,6 +65,7 @@ export type AllModelConfig = {
   timeTracking: ModelCfg<TimeTrackingState>;
   pluginUserData: ModelCfg<PluginUserDataState | undefined>;
   pluginMetadata: ModelCfg<PluginMetaDataState | undefined>;
+  sprint: ModelCfg<SprintState>;
   archiveYoung: ModelCfg<ArchiveModel>;
   archiveOld: ModelCfg<ArchiveModel>;
 };
@@ -129,6 +132,10 @@ export const MODEL_CONFIGS: AllModelConfig = {
   },
   pluginMetadata: {
     defaultData: initialPluginMetaDataState,
+  },
+  sprint: {
+    defaultData: initialSprintState,
+    isMainFileModel: true,
   },
   globalConfig: {
     defaultData: DEFAULT_GLOBAL_CONFIG,

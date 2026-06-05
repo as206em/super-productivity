@@ -111,6 +111,7 @@ describe('WorkViewComponent', () => {
               todayRemainingInProject$: of(0),
               estimateRemainingToday$: of(0),
               workingToday$: of(0),
+              isHasTasksToWorkOn$: of(false),
               isTodayList$: of(false),
               activeWorkContextId$: of(null),
               activeWorkContextTypeAndId$: of({
@@ -275,6 +276,7 @@ describe('WorkViewComponent', () => {
               todayRemainingInProject$: of(0),
               estimateRemainingToday$: of(0),
               workingToday$: of(0),
+              isHasTasksToWorkOn$: of(false),
               isTodayList$: of(false),
               activeWorkContextId$: of('ctx'),
               activeWorkContextTypeAndId$: of({

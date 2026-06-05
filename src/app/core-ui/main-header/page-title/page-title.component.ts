@@ -200,6 +200,8 @@ export class PageTitleComponent {
     [/boards$/, T.MH.BOARDS],
     [/habits$/, T.MH.HABITS],
     [/search$/, T.MH.SEARCH],
+    [/sprint\/current$/, T.SPRINT.CURRENT],
+    [/sprint\/next$/, T.SPRINT.NEXT],
     [/scheduled-list$/, T.MH.ALL_PLANNED_LIST],
     [/donate$/, T.MH.DONATE],
     [/config$/, T.PS.GLOBAL_SETTINGS],

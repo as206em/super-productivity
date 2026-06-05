@@ -1,4 +1,6 @@
-@if (!(workContextService.isContextChangingWithDelay$ | async)) {
+@if (
+  isStandaloneTaskList() || !(workContextService.isContextChangingWithDelay$ | async)
+) {
   <div
     #containerEl
     class="wrapper"
@@ -12,7 +14,7 @@
     >
       @if (!pluginEmbedId()) {
         <header class="work-view-header">
-          @if (estimateRemainingToday() || workingToday()) {
+          @if (!isStandaloneTaskList() && (estimateRemainingToday() || workingToday())) {
             <div
               @fade
               class="status-bar"
@@ -75,6 +77,7 @@
               }
             </div>
           }
+          <ng-content select="[workViewHeaderAction]"></ng-content>
         </header>
       }
 
@@ -86,7 +89,7 @@
         ></plugin-index>
       } @else {
         <div class="task-list-wrapper">
-          @if (!(workContextService.isHasTasksToWorkOn$ | async)) {
+          @if (!isHasTasksToWorkOn()) {
             <div
               @expandFade
               class="add-more-or-finish"
@@ -115,7 +118,7 @@
                 </h2>
               </div>
 
-              @if (!overdueTasks().length) {
+              @if (!isStandaloneTaskList() && !overdueTasks().length) {
                 <div class="btn-wrapper">
                   <button
                     (click)="layoutService.showAddTaskBar()"
@@ -144,12 +147,13 @@
                 >
                   <task-list
                     [tasks]="group.value"
+                    [isSortingDisabled]="isMainListSortingDisabled()"
                     listId="PARENT"
-                    listModelId="UNDONE"
+                    [listModelId]="mainListModelId()"
                   ></task-list>
                 </collapsible>
               }
-            } @else if (sections().length && !customizerService.isCustomized()) {
+            } @else if (visibleSections().length && !customizerService.isCustomized()) {
               @let bySection = undoneTasksBySection();
               <div
                 class="sections-wrapper"
@@ -169,7 +173,7 @@
                     "
                   ></task-list>
                 </div>
-                @for (section of sections(); track section.id) {
+                @for (section of visibleSections(); track section.id) {
                   <div
                     class="section-container"
                     cdkDrag
@@ -226,8 +230,9 @@
               <task-list
                 class="tour-undoneList"
                 [tasks]="customized.list"
+                [isSortingDisabled]="isMainListSortingDisabled()"
                 listId="PARENT"
-                listModelId="UNDONE"
+                [listModelId]="mainListModelId()"
               ></task-list>
             }
           }
@@ -277,7 +282,9 @@
             </section>
           }
 
-          @if (laterTodayTasks().length > 0 && isOnTodayList()) {
+          @if (
+            !isStandaloneTaskList() && laterTodayTasks().length > 0 && isOnTodayList()
+          ) {
             <div
               @expand
               class="collapsible-section"
@@ -379,7 +386,7 @@
             </div>
           }
 
-          @if (isOnTodayList() && isFinishDayEnabled()) {
+          @if (!isStandaloneTaskList() && isOnTodayList() && isFinishDayEnabled()) {
             <finish-day-btn [hasDoneTasks]="hasDoneTasks()"></finish-day-btn>
           }
         </div>

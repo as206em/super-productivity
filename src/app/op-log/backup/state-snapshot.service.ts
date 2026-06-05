@@ -19,6 +19,7 @@ import { selectTagFeatureState } from '../../features/tag/store/tag.reducer';
 import { selectTaskFeatureState } from '../../features/tasks/store/task.selectors';
 import { selectTaskRepeatCfgFeatureState } from '../../features/task-repeat-cfg/store/task-repeat-cfg.selectors';
 import { selectSectionFeatureState } from '../../features/section/store/section.selectors';
+import { selectSprintFeatureState } from '../../features/sprint/store/sprint.reducer';
 import { selectTimeTrackingState } from '../../features/time-tracking/store/time-tracking.selectors';
 import { environment } from '../../../environments/environment';
 import { ArchiveModel } from '../../features/time-tracking/time-tracking.model';
@@ -110,6 +111,7 @@ export class StateSnapshotService {
         this._store.select(selectPluginMetadataFeatureState),
         this._store.select(selectReminderFeatureState),
         this._store.select(selectSectionFeatureState),
+        this._store.select(selectSprintFeatureState),
       ]).pipe(first()),
     );
 
@@ -131,6 +133,7 @@ export class StateSnapshotService {
       pluginMetadata,
       reminders,
       section,
+      sprint,
     ] = ngRxData;
 
     return {
@@ -157,6 +160,7 @@ export class StateSnapshotService {
       pluginMetadata,
       reminders,
       section,
+      sprint,
       archiveYoung,
       archiveOld,
     };
@@ -181,7 +185,8 @@ export class StateSnapshotService {
       taskRepeatCfg: unknown,
       menuTree: unknown,
       timeTracking: unknown,
-      section: unknown;
+      section: unknown,
+      sprint: unknown;
     let pluginUserData: unknown, pluginMetadata: unknown, reminders: unknown;
 
     // Subscribe synchronously to get current values
@@ -253,6 +258,10 @@ export class StateSnapshotService {
       .select(selectSectionFeatureState)
       .pipe(first())
       .subscribe((v) => (section = v));
+    this._store
+      .select(selectSprintFeatureState)
+      .pipe(first())
+      .subscribe((v) => (sprint = v));
 
     return {
       task: {
@@ -278,6 +287,7 @@ export class StateSnapshotService {
       pluginMetadata,
       reminders,
       section,
+      sprint,
     };
   }
 

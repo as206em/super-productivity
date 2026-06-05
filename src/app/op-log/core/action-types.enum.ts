@@ -141,6 +141,12 @@ export enum ActionType {
   SECTION_ADD_TASK = '[Section] Add Task to Section',
   SECTION_REMOVE_TASK = '[Section] Remove Task from Section',
 
+  // Sprint actions (Q)
+  SPRINT_ADD_TASK = '[Sprint] addTaskToSprint',
+  SPRINT_REMOVE_TASK = '[Sprint] removeTaskFromSprint',
+  SPRINT_MOVE_TASK = '[Sprint] moveTaskInSprint',
+  SPRINT_CLOSE = '[Sprint] closeSprint',
+
   // SimpleCounter actions (S)
   COUNTER_ADD = '[SimpleCounter] Add SimpleCounter',
   COUNTER_UPDATE = '[SimpleCounter] Update SimpleCounter',

@@ -51,6 +51,20 @@ export const APP_ROUTES: Routes = [
     canActivate: [FocusOverlayOpenGuard],
   },
   {
+    path: 'sprint/current',
+    loadComponent: () =>
+      import('./routes/pages.routes').then((m) => m.SprintTaskPageComponent),
+    data: { page: 'sprint-current', sprint: 'CURRENT' },
+    canActivate: [FocusOverlayOpenGuard],
+  },
+  {
+    path: 'sprint/next',
+    loadComponent: () =>
+      import('./routes/pages.routes').then((m) => m.SprintTaskPageComponent),
+    data: { page: 'sprint-next', sprint: 'NEXT' },
+    canActivate: [FocusOverlayOpenGuard],
+  },
+  {
     path: 'scheduled-list',
     loadComponent: () =>
       import('./routes/pages.routes').then((m) => m.ScheduledListPageComponent),

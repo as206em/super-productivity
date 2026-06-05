@@ -43,7 +43,7 @@ import { workViewProjectChangeAnimation } from '../../ui/animations/work-view-pr
 import { WorkContextService } from '../work-context/work-context.service';
 import { ProjectService } from '../project/project.service';
 import { TaskViewCustomizerService } from '../task-view-customizer/task-view-customizer.service';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { SectionService } from '../section/section.service';
 import { Section } from '../section/section.model';
 import {
@@ -172,6 +172,7 @@ export class WorkViewComponent implements OnInit, OnDestroy {
    * (`showInWorkContext`) AND the active context is embeddable.
    */
   pluginEmbedId = computed(() => {
+    if (this.isStandaloneTaskList()) return null;
     const id = this._pluginBridge.workContextEmbedPluginId();
     if (!id) return null;
     return this._isEmbeddableContext() ? id : null;
@@ -189,8 +190,11 @@ export class WorkViewComponent implements OnInit, OnDestroy {
     initialValue: [],
   });
   undoneTasks = input.required<TaskWithSubTasks[]>();
+  isStandaloneTaskList = input<boolean>(false);
+  mainListModelId = input<string>('UNDONE');
+  isMainListSortingDisabled = input<boolean>(false);
   customizedUndoneTasks = toSignal(
-    this.customizerService.customizeUndoneTasks(this.workContextService.undoneTasks$),
+    this.customizerService.customizeUndoneTasks(toObservable(this.undoneTasks)),
     { initialValue: { list: [] } },
   );
   doneTasks = input.required<TaskWithSubTasks[]>();
@@ -228,7 +232,9 @@ export class WorkViewComponent implements OnInit, OnDestroy {
 
   isShowRepeatCfgsPanel = computed(
     () =>
-      !this.customizerService.isCustomized() && this.repeatCfgsForContext().length > 0,
+      !this.isStandaloneTaskList() &&
+      !this.customizerService.isCustomized() &&
+      this.repeatCfgsForContext().length > 0,
   );
 
   // Section Logic
@@ -242,10 +248,13 @@ export class WorkViewComponent implements OnInit, OnDestroy {
     ),
     { initialValue: [] as readonly Section[] },
   );
+  visibleSections = computed(() =>
+    this.isStandaloneTaskList() ? ([] as readonly Section[]) : this.sections(),
+  );
 
   undoneTasksBySection = computed(() => {
     const tasks = this.undoneTasks();
-    const sections = this.sections();
+    const sections = this.visibleSections();
 
     if (!sections.length) {
       return { dict: {} as Record<string, TaskWithSubTasks[]>, noSection: tasks };
@@ -276,7 +285,19 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   });
 
   isShowOverduePanel = computed(
-    () => this.isOnTodayList() && this.overdueTasks().length > 0,
+    () =>
+      !this.isStandaloneTaskList() &&
+      this.isOnTodayList() &&
+      this.overdueTasks().length > 0,
+  );
+
+  private _isHasTasksToWorkOn = toSignal(this.workContextService.isHasTasksToWorkOn$, {
+    initialValue: true,
+  });
+  isHasTasksToWorkOn = computed(() =>
+    this.isStandaloneTaskList()
+      ? this.undoneTasks().length > 0
+      : this._isHasTasksToWorkOn(),
   );
 
   isShowTimeWorkedWithoutBreak: boolean = true;
@@ -335,13 +356,16 @@ export class WorkViewComponent implements OnInit, OnDestroy {
 
       if (this._hasTaskInList(this.undoneTasks(), currentSelectedId)) return;
       if (this._hasTaskInList(this.doneTasks(), currentSelectedId)) return;
-      if (this._hasTaskInList(this.laterTodayTasks(), currentSelectedId)) return;
 
-      if (
-        this.workContextService.activeWorkContextId === TODAY_TAG.id &&
-        this._hasTaskInList(this.overdueTasks(), currentSelectedId)
-      )
-        return;
+      if (!this.isStandaloneTaskList()) {
+        if (this._hasTaskInList(this.laterTodayTasks(), currentSelectedId)) return;
+
+        if (
+          this.workContextService.activeWorkContextId === TODAY_TAG.id &&
+          this._hasTaskInList(this.overdueTasks(), currentSelectedId)
+        )
+          return;
+      }
 
       // Check if task is in backlog
       if (this._hasTaskInList(this.backlogTasks(), currentSelectedId)) return;

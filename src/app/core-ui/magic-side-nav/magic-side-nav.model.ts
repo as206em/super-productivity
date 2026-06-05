@@ -47,6 +47,7 @@ export interface NavRouteItem extends NavBaseItem {
   label: string;
   icon: string;
   route: string;
+  nrOfTasks?: number;
 }
 
 export interface NavHrefItem extends NavBaseItem {

@@ -109,6 +109,7 @@ export class NavItemComponent {
   label = input<string | undefined>(undefined);
   icon = input<string | undefined>(undefined);
   svgIcon = input<string | undefined>(undefined);
+  nrOfTasks = input<number | undefined>(undefined);
   showLabels = input<boolean>(true);
   // Optional: menu trigger for dropdown
   menuTriggerFor = input<any | null>(null);

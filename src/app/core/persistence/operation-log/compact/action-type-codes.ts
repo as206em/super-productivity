@@ -27,6 +27,7 @@ import { ActionType } from '../../../../op-log/core/action-types.enum';
  * - W = WorkContextMeta
  * - U = Plugin
  * - H = Task Shared (multi-entity actions)
+ * - Q = Sprint
  *
  * WARNING: NEVER change or reassign existing codes. They are persisted in IndexedDB
  * and used for sync. Changing a code will corrupt stored operations and break
@@ -161,6 +162,12 @@ export const ACTION_TYPE_TO_CODE: Record<ActionType, string> = {
   [ActionType.SECTION_UPDATE_ORDER]: 'S4',
   [ActionType.SECTION_ADD_TASK]: 'S5',
   [ActionType.SECTION_REMOVE_TASK]: 'S6',
+
+  // Sprint actions (Q)
+  [ActionType.SPRINT_ADD_TASK]: 'QA',
+  [ActionType.SPRINT_REMOVE_TASK]: 'QR',
+  [ActionType.SPRINT_MOVE_TASK]: 'QM',
+  [ActionType.SPRINT_CLOSE]: 'QC',
 
   // SimpleCounter actions (S)
   [ActionType.COUNTER_ADD]: 'SA',

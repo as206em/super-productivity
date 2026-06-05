@@ -106,6 +106,7 @@
       routerLinkActive="active"
       mat-menu-item
       class="nav-link"
+      [class.has-tasks]="(nrOfTasks() || 0) > 0"
       [class.expanded]="expanded()"
       [class]="tourClass()"
       (click)="clicked.emit()"
@@ -142,6 +143,10 @@
         </span>
       }
     </a>
+
+    @if ((nrOfTasks() || 0) > 0) {
+      <div class="task-count">{{ nrOfTasks() }}</div>
+    }
 
     @if (featureConfigKey()) {
       <button

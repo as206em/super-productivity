@@ -249,6 +249,17 @@
     </button>
   }
 
+  <button
+    [matMenuTriggerFor]="sprintMenu"
+    mat-menu-item
+    menuTouchFix
+  >
+    <span class="menuItemLeft">
+      <mat-icon>flag</mat-icon>
+      {{ T.SPRINT.ADD_TO_SPRINT | translate }}
+    </span>
+  </button>
+
   @if (!task.subTaskIds.length) {
     <button
       #estimateMenuTrigger="matMenuTrigger"
@@ -319,6 +330,39 @@
     </span>
     <span class="key-i">{{ kb.taskDelete }}</span>
   </button>
+</mat-menu>
+
+<mat-menu
+  #sprintMenu="matMenu"
+  (closed)="focusRelatedTaskOrNext()"
+>
+  <ng-template matMenuContent>
+    <button
+      mat-menu-item
+      menuTouchFix
+      (click)="addToSprint('CURRENT')"
+    >
+      <mat-icon>flag</mat-icon>
+      {{ T.SPRINT.ADD_TO_CURRENT | translate }}
+    </button>
+    <button
+      mat-menu-item
+      menuTouchFix
+      (click)="addToSprint('NEXT')"
+    >
+      <mat-icon>outlined_flag</mat-icon>
+      {{ T.SPRINT.ADD_TO_NEXT | translate }}
+    </button>
+    <mat-divider></mat-divider>
+    <button
+      mat-menu-item
+      menuTouchFix
+      (click)="removeFromSprint()"
+    >
+      <mat-icon>flag_circle</mat-icon>
+      {{ T.SPRINT.REMOVE_FROM_SPRINT | translate }}
+    </button>
+  </ng-template>
 </mat-menu>
 
 <mat-menu

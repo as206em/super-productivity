@@ -60,6 +60,10 @@
     min-width: 40px !important;
   }
 
+  .nav-link.has-tasks {
+    padding-right: var(--s5);
+  }
+
   &.isHidden {
     display: none !important;
   }

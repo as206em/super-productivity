@@ -29,6 +29,7 @@ export const ENTITY_TYPES = [
   'BOARD',
   'SECTION',
   'REMINDER',
+  'SPRINT',
   'PLUGIN_USER_DATA',
   'PLUGIN_METADATA',
   'MIGRATION',

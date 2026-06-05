@@ -79,6 +79,11 @@ import { TaskLog } from '../../../../core/log';
 import { isTouchEventInstance } from '../../../../util/is-touch-event.util';
 import { TaskFocusService } from '../../task-focus.service';
 import { DEFAULT_GLOBAL_CONFIG } from 'src/app/features/config/default-global-config.const';
+import { SprintTarget } from '../../../sprint/sprint.model';
+import {
+  addTaskToSprint,
+  removeTaskFromSprint,
+} from '../../../sprint/store/sprint.actions';
 
 @Component({
   selector: 'task-context-menu-inner',
@@ -541,6 +546,16 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
       : [...task.tagIds, tagId];
 
     this.onTagsUpdated(tagIds);
+  }
+
+  addToSprint(sprint: SprintTarget): void {
+    this._store.dispatch(addTaskToSprint({ taskId: this.task.id, sprint }));
+    this.onClose();
+  }
+
+  removeFromSprint(): void {
+    this._store.dispatch(removeTaskFromSprint({ taskId: this.task.id }));
+    this.onClose();
   }
 
   openAddNewTag(): void {

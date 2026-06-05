@@ -18,6 +18,10 @@ import { of } from 'rxjs';
 import { selectTaskByIdWithSubTaskData } from '../../store/task.selectors';
 import { addSubTask } from '../../store/task.actions';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import {
+  addTaskToSprint,
+  removeTaskFromSprint,
+} from '../../../sprint/store/sprint.actions';
 
 describe('TaskContextMenuInnerComponent', () => {
   let component: TaskContextMenuInnerComponent;
@@ -70,7 +74,10 @@ describe('TaskContextMenuInnerComponent', () => {
         { provide: WorkContextService, useValue: { activeWorkContext$: of({}) } },
         {
           provide: TaskFocusService,
-          useValue: { focusedTaskId: { set: () => {} } },
+          useValue: {
+            focusedTaskId: { set: () => {} },
+            isTaskContextMenuOpen: { set: () => {} },
+          },
         },
         { provide: LocaleDatePipe, useValue: {} },
         { provide: DateAdapter, useValue: { getFirstDayOfWeek: () => 0 } },
@@ -85,6 +92,43 @@ describe('TaskContextMenuInnerComponent', () => {
   afterEach(() => {
     selectTaskByIdWithSubTaskData.release();
     store.resetSelectors();
+  });
+
+  describe('sprint actions', () => {
+    beforeEach(() => {
+      component.task = {
+        id: 'TASK_ID',
+        title: 'Task',
+        projectId: 'P1',
+        tagIds: [],
+        subTaskIds: [],
+      } as any;
+      spyOn(store, 'dispatch');
+    });
+
+    it('should dispatch addTaskToSprint for current sprint', () => {
+      component.addToSprint('CURRENT');
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        addTaskToSprint({ taskId: 'TASK_ID', sprint: 'CURRENT' }),
+      );
+    });
+
+    it('should dispatch addTaskToSprint for next sprint', () => {
+      component.addToSprint('NEXT');
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        addTaskToSprint({ taskId: 'TASK_ID', sprint: 'NEXT' }),
+      );
+    });
+
+    it('should dispatch removeTaskFromSprint', () => {
+      component.removeFromSprint();
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        removeTaskFromSprint({ taskId: 'TASK_ID' }),
+      );
+    });
   });
 
   describe('duplicate()', () => {

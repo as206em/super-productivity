@@ -37,6 +37,10 @@ import { GlobalConfigService } from '../../features/config/global-config.service
 import { AppFeaturesConfig } from '../../features/config/global-config.model';
 import { SnackService } from '../../core/snack/snack.service';
 import { IS_IOS_NATIVE } from '../../util/is-native-platform';
+import {
+  selectCurrentSprintTasks,
+  selectNextSprintTasks,
+} from '../../features/sprint/store/sprint.selectors';
 
 @Injectable({
   providedIn: 'root',
@@ -84,6 +88,16 @@ export class MagicNavConfigService {
   private readonly _archivedProjects = toSignal(
     this._store.select(selectArchivedProjects),
     { initialValue: [] },
+  );
+  private readonly _currentSprintTasks = toSignal(
+    this._store.select(selectCurrentSprintTasks),
+    { initialValue: [] },
+  );
+  private readonly _nextSprintTasks = toSignal(
+    this._store.select(selectNextSprintTasks),
+    {
+      initialValue: [],
+    },
   );
   private readonly _tags = toSignal(this._tagService.tagsNoMyDayAndNoList$, {
     initialValue: [],
@@ -385,7 +399,24 @@ export class MagicNavConfigService {
   }
 
   private _buildMainRoutesItems(): NavItem[] {
-    const items: NavItem[] = [];
+    const items: NavItem[] = [
+      {
+        type: 'route',
+        id: 'current-sprint',
+        label: T.SPRINT.CURRENT,
+        icon: 'flag',
+        route: '/sprint/current',
+        nrOfTasks: this._currentSprintTasks().length,
+      },
+      {
+        type: 'route',
+        id: 'next-sprint',
+        label: T.SPRINT.NEXT,
+        icon: 'outlined_flag',
+        route: '/sprint/next',
+        nrOfTasks: this._nextSprintTasks().length,
+      },
+    ];
 
     if (this.isPlannerEnabled()) {
       items.push({

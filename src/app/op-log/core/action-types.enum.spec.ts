@@ -3,6 +3,12 @@ import {
   ACTION_TYPE_TO_CODE,
   CODE_TO_ACTION_TYPE,
 } from '../../core/persistence/operation-log/compact/action-type-codes';
+import {
+  addTaskToSprint,
+  closeSprint,
+  moveTaskInSprint,
+  removeTaskFromSprint,
+} from '../../features/sprint/store/sprint.actions';
 
 /**
  * These tests verify that the ActionType enum values are stable and match
@@ -12,8 +18,8 @@ describe('ActionType enum', () => {
   const enumValues = Object.values(ActionType) as string[];
   const mappingKeys = Object.keys(ACTION_TYPE_TO_CODE);
 
-  it('should have exactly 143 members', () => {
-    expect(enumValues.length).toBe(143);
+  it('should have exactly 147 members', () => {
+    expect(enumValues.length).toBe(147);
   });
 
   it('should have 1:1 correspondence with ACTION_TYPE_TO_CODE', () => {
@@ -64,6 +70,23 @@ describe('ActionType enum', () => {
         '[Simple Counter] Set SimpleCounter Counter For Date',
       );
       expect(ActionType.COUNTER_ADD).toBe('[SimpleCounter] Add SimpleCounter');
+    });
+
+    it('should have correct Sprint action types', () => {
+      expect(addTaskToSprint({ taskId: 'task-id', sprint: 'CURRENT' }).type).toBe(
+        ActionType.SPRINT_ADD_TASK,
+      );
+      expect(removeTaskFromSprint({ taskId: 'task-id' }).type).toBe(
+        ActionType.SPRINT_REMOVE_TASK,
+      );
+      expect(
+        moveTaskInSprint({
+          sprint: 'CURRENT',
+          taskId: 'task-id',
+          afterTaskId: null,
+        }).type,
+      ).toBe(ActionType.SPRINT_MOVE_TASK);
+      expect(closeSprint().type).toBe(ActionType.SPRINT_CLOSE);
     });
   });
 });

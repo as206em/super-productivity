@@ -16,6 +16,7 @@ import {
   MenuTreeState,
 } from '../../features/menu-tree/store/menu-tree.model';
 import { environment } from '../../../environments/environment';
+import { initialSprintState } from '../../features/sprint/store/sprint.reducer';
 
 describe('ValidateStateService', () => {
   let service: ValidateStateService;
@@ -44,6 +45,7 @@ describe('ValidateStateService', () => {
     reminders: [],
     pluginUserData: [],
     pluginMetadata: [],
+    sprint: initialSprintState,
     archiveYoung: {
       task: { ids: [], entities: {} },
       timeTracking: initialTimeTrackingState,

@@ -1,0 +1,22 @@
+<work-view
+  [backlogTasks]="[]"
+  [doneTasks]="doneTasks()"
+  [isMainListSortingDisabled]="true"
+  [isShowBacklog]="false"
+  [isStandaloneTaskList]="true"
+  [mainListModelId]="listModelId"
+  [undoneTasks]="undoneTasks()"
+>
+  @if (isCurrentSprint) {
+    <button
+      workViewHeaderAction
+      mat-stroked-button
+      color="primary"
+      type="button"
+      (click)="closeSprint()"
+    >
+      <mat-icon>done_all</mat-icon>
+      {{ T.SPRINT.CLOSE | translate }}
+    </button>
+  }
+</work-view>
