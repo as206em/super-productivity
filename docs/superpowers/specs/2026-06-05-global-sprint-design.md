@@ -43,7 +43,7 @@ Expected selectors:
 - `selectNextSprintTasks`
 - `selectSprintForTask(taskId)`
 
-Sprint actions should be persistent and replayable. Remote replay must only update sprint arrays. Data repair and import handling should tolerate stale task ids.
+Sprint state must use the same persistence, backup/import, and sync infrastructure as other app data. Sprint actions should be persistent and replayable, and remote replay must only update sprint arrays. The sprint slice should be part of exported and imported app data once it is added to the persisted model. Data repair and import handling should tolerate stale task ids.
 
 ## UI
 
@@ -67,7 +67,7 @@ Add a Close Sprint button to the Current Sprint page. It should confirm before d
 
 Update English translations only for new UI strings.
 
-Because this adds a user-facing feature and a new app-data shape, update the wiki note that documents user data, export, or backup/import behavior if the new sprint slice is included in persisted app data.
+Because this adds a user-facing feature and a new persisted app-data shape, update the wiki note that documents user data, export, or backup/import behavior.
 
 ## Testing
 
