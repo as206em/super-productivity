@@ -20,7 +20,10 @@ import { T } from '../../t.const';
 import { WorkViewComponent } from '../../features/work-view/work-view.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { msToString } from '../../ui/duration/ms-to-string.pipe';
-import { getCapacityProgressState } from '../../features/capacity/capacity.util';
+import {
+  getCapacityProgressState,
+  getCapacityStats,
+} from '../../features/capacity/capacity.util';
 
 @Component({
   selector: 'sprint-task-page',
@@ -51,7 +54,7 @@ export class SprintTaskPageComponent {
         ? selectCurrentSprintCapacityStats
         : selectNextSprintCapacityStats,
     ),
-    { initialValue: { estimate: 0, capacity: 0 } },
+    { initialValue: getCapacityStats(0, 0) },
   );
   readonly undoneTasks = computed(() => this.tasks().filter((task) => !task.isDone));
   readonly doneTasks = computed(() => this.tasks().filter((task) => task.isDone));
