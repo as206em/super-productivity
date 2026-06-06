@@ -20,6 +20,7 @@ export interface PlannerDay {
   allDayEvents: ScheduleFromCalendarEvent[];
   scheduledIItems: ScheduleItem[];
   availableHours?: number;
+  capacityEstimate?: number;
   progressPercentage?: number;
 }
 

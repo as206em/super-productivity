@@ -17,6 +17,7 @@ import { SHORT_SYNTAX_FORM_CFG } from './form-cfgs/short-syntax-form.const';
 import { CLIPBOARD_IMAGES_FORM } from './form-cfgs/clipboard-images-form.const';
 import { TASKS_SETTINGS_FORM_CFG } from './form-cfgs/tasks-settings-form.const';
 import { TASK_WIDGET_FORM_CFG } from './form-cfgs/task-widget-form.const';
+import { CAPACITY_FORM_CFG } from './form-cfgs/capacity-form.const';
 
 const filterGlobalConfigForm = (cfg: ConfigFormSection<any>): boolean => {
   return (
@@ -38,6 +39,7 @@ export const GLOBAL_GENERAL_FORM_CONFIG: ConfigFormConfig = [
 // Tab: Time & Tracking - Time Tracking, Idle, Schedule, Reminder
 export const GLOBAL_TIME_TRACKING_FORM_CONFIG: ConfigFormConfig = [
   TIME_TRACKING_FORM_CFG,
+  CAPACITY_FORM_CFG,
   IDLE_FORM_CFG,
   SCHEDULE_FORM_CFG,
   REMINDER_FORM_CFG,

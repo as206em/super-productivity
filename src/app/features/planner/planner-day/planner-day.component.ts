@@ -34,6 +34,7 @@ import { ShortDate2Pipe } from '../../../ui/pipes/short-date2.pipe';
 import { ProgressBarComponent } from '../../../ui/progress-bar/progress-bar.component';
 import { dragDelayForTouch } from '../../../util/input-intent';
 import { LayoutService } from '../../../core-ui/layout/layout.service';
+import { getCapacityProgressState } from '../../capacity/capacity.util';
 
 @Component({
   selector: 'planner-day',
@@ -83,15 +84,7 @@ export class PlannerDayComponent {
   protected readonly isXs = this._layoutService.isXs;
 
   getProgressBarClass(percentage: number | undefined): string {
-    if (!percentage) return 'bg-success';
-
-    if (percentage > 95) {
-      return 'bg-danger';
-    } else if (percentage > 80) {
-      return 'bg-warning';
-    } else {
-      return 'bg-success';
-    }
+    return `bg-${getCapacityProgressState(percentage)}`;
   }
 
   // TODO correct type

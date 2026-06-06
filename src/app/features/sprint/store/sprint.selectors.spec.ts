@@ -3,11 +3,22 @@ import { TaskState } from '../../tasks/task.model';
 import { SprintState } from '../sprint.model';
 import {
   selectCurrentSprintTasks,
+  selectCurrentSprintCapacityStats,
   selectNextSprintTasks,
+  selectNextSprintCapacityStats,
   selectSprintForTask,
 } from './sprint.selectors';
+import { CapacityConfig } from '../../config/global-config.model';
 
-const createTask = (id: string): Task =>
+const HOUR = 60 * 60 * 1000;
+
+const capacityConfig: CapacityConfig = {
+  weekdayCapacity: 2 * HOUR,
+  weekendCapacity: 6 * HOUR,
+  sprintCapacity: 22 * HOUR,
+};
+
+const createTask = (id: string, overrides: Partial<Task> = {}): Task =>
   ({
     id,
     projectId: 'project-1',
@@ -20,6 +31,7 @@ const createTask = (id: string): Task =>
     timeSpentOnDay: {},
     attachments: [],
     created: 1,
+    ...overrides,
   }) as Task;
 
 describe('sprint selectors', () => {
@@ -73,5 +85,30 @@ describe('sprint selectors', () => {
     const selector = selectSprintForTask('task-4');
 
     expect(selector.projector(sprintState)).toBe(null);
+  });
+
+  it('should calculate current sprint capacity stats from raw task estimates', () => {
+    const tasks = [
+      { ...createTask('task-1', { timeEstimate: HOUR, isDone: true }), subTasks: [] },
+      { ...createTask('task-2', { timeEstimate: 2 * HOUR }), subTasks: [] },
+    ];
+
+    const result = selectCurrentSprintCapacityStats.projector(tasks, capacityConfig);
+
+    expect(result.estimate).toBe(3 * HOUR);
+    expect(result.capacity).toBe(22 * HOUR);
+    expect(result.progressPercentage).toBe((3 / 22) * 100);
+  });
+
+  it('should calculate next sprint capacity stats from raw task estimates', () => {
+    const tasks = [
+      { ...createTask('task-3', { timeEstimate: 11 * HOUR }), subTasks: [] },
+    ];
+
+    const result = selectNextSprintCapacityStats.projector(tasks, capacityConfig);
+
+    expect(result.estimate).toBe(11 * HOUR);
+    expect(result.capacity).toBe(22 * HOUR);
+    expect(result.progressPercentage).toBe(50);
   });
 });

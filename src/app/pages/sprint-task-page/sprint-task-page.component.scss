@@ -1,0 +1,25 @@
+.capacity-indicator {
+  display: inline-grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: var(--s-half);
+  min-width: 144px;
+  margin-right: var(--s2);
+  font-size: 14px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .capacity-total {
+    opacity: 0.7;
+  }
+
+  progress-bar {
+    grid-column: 1 / -1;
+    height: 4px;
+    width: 100%;
+  }
+}

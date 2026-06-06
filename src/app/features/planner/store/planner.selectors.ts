@@ -24,8 +24,11 @@ import { getDbDateStr } from '../../../util/get-db-date-str';
 import { ScheduleCalendarMapEntry } from '../../schedule/schedule.model';
 import { dateStrToUtcDate } from '../../../util/date-str-to-utc-date';
 import { calculateAvailableHours } from '../util/calculate-available-hours';
-import { selectTimelineConfig } from '../../config/store/global-config.reducer';
-import { ScheduleConfig } from '../../config/global-config.model';
+import {
+  selectCapacityConfig,
+  selectTimelineConfig,
+} from '../../config/store/global-config.reducer';
+import { CapacityConfig, ScheduleConfig } from '../../config/global-config.model';
 import {
   selectStartOfNextDayDiffMs,
   selectTodayStr,
@@ -33,6 +36,11 @@ import {
 import { isTodayWithOffset } from '../../../util/is-today.util';
 import { selectTaskRepeatCfgsForExactDay } from '../../task-repeat-cfg/store/task-repeat-cfg.selectors';
 import { oneDayInMilliseconds } from '../../../util/month-time-conversion';
+import {
+  getCapacityProgressPercentage,
+  getDayCapacity,
+  getRawTaskEstimateTotal,
+} from '../../capacity/capacity.util';
 
 export const selectPlannerState = createFeatureSelector<fromPlanner.PlannerState>(
   fromPlanner.plannerFeatureKey,
@@ -111,7 +119,14 @@ export const selectPlannerDays = (
     selectPlannerState,
     selectTimelineConfig,
     selectStartOfNextDayDiffMs,
-    (activeTasks, plannerState, scheduleConfig, startOfNextDayDiffMs): PlannerDay[] => {
+    selectCapacityConfig,
+    (
+      activeTasks,
+      plannerState,
+      scheduleConfig,
+      startOfNextDayDiffMs,
+      capacityConfig,
+    ): PlannerDay[] => {
       const allDatesWithData = Object.keys(plannerState.days);
       const dayDatesToUse = [
         ...dayDates,
@@ -139,6 +154,7 @@ export const selectPlannerDays = (
           deadlineMap,
           scheduleConfig,
           startOfNextDayDiffMs,
+          capacityConfig,
         ),
       );
     },
@@ -172,6 +188,7 @@ const getPlannerDay = (
   deadlineTasksByDay: Record<string, TaskCopy[]>,
   scheduleConfig?: ScheduleConfig,
   startOfNextDayDiffMs: number = 0,
+  capacityConfig?: CapacityConfig,
 ): PlannerDay => {
   const isTodayI = dayDate === todayStr;
   const currentDayDate = dateStrToUtcDate(dayDate);
@@ -202,7 +219,13 @@ const getPlannerDay = (
 
   const deadlineTasks = deadlineTasksByDay[dayDate] || [];
 
-  const timeEstimate = getAllTimeSpent(
+  const remainingTimeEstimate = getAllTimeSpent(
+    normalTasks,
+    repeatProjectionsForDay,
+    noStartTimeRepeatProjections,
+    scheduledTaskItems,
+  );
+  const rawCapacityEstimate = getRawCapacityEstimate(
     normalTasks,
     repeatProjectionsForDay,
     noStartTimeRepeatProjections,
@@ -216,13 +239,24 @@ const getPlannerDay = (
     0,
   );
 
-  const totalTimeEstimate = timeEstimate + calendarEventsTime;
+  const totalTimeEstimate = remainingTimeEstimate + calendarEventsTime;
+  const totalCapacityEstimate = rawCapacityEstimate + calendarEventsTime;
 
   // Calculate available hours and progress percentage
   let availableHours;
   let progressPercentage;
 
-  if (scheduleConfig && scheduleConfig.isWorkStartEndEnabled) {
+  if (capacityConfig) {
+    const dayCapacity = getDayCapacity(dayDate, capacityConfig);
+    const capacityProgressPercentage = getCapacityProgressPercentage(
+      totalCapacityEstimate,
+      dayCapacity,
+    );
+    if (capacityProgressPercentage !== undefined) {
+      availableHours = dayCapacity;
+      progressPercentage = capacityProgressPercentage;
+    }
+  } else if (scheduleConfig && scheduleConfig.isWorkStartEndEnabled) {
     availableHours = calculateAvailableHours(dayDate, scheduleConfig);
     progressPercentage =
       availableHours > 0 ? (totalTimeEstimate / availableHours) * 100 : 0;
@@ -248,9 +282,30 @@ const getPlannerDay = (
     noStartTimeRepeatProjections,
     allDayEvents,
     timeEstimate: totalTimeEstimate,
+    capacityEstimate: totalCapacityEstimate,
     availableHours,
     progressPercentage,
   };
+};
+
+const getRawCapacityEstimate = (
+  normalTasks: TaskCopy[],
+  taskRepeatProjections: ScheduleItemRepeatProjection[],
+  noStartTimeRepeatProjections: NoStartTimeRepeatProjection[],
+  plannedTaskProjections: ScheduleItemTask[],
+): number => {
+  return (
+    getRawTaskEstimateTotal(normalTasks) +
+    plannedTaskProjections.reduce(
+      (acc, scheduledTask) => acc + (scheduledTask.task.timeEstimate || 0),
+      0,
+    ) +
+    taskRepeatProjections.reduce((acc, rp) => acc + rp.end - rp.start, 0) +
+    noStartTimeRepeatProjections.reduce(
+      (acc, rp) => acc + (rp.repeatCfg.defaultEstimate || 0),
+      0,
+    )
+  );
 };
 
 const getAllTimeSpent = (

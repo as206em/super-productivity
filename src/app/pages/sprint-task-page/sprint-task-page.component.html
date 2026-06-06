@@ -7,6 +7,21 @@
   [mainListModelId]="listModelId"
   [undoneTasks]="undoneTasks()"
 >
+  @if (capacityStats().progressPercentage !== undefined) {
+    <div
+      workViewHeaderAction
+      class="capacity-indicator"
+    >
+      <mat-icon>speed</mat-icon>
+      <span>{{ capacityEstimateLabel() }}</span>
+      <span class="capacity-total">/ {{ capacityTotalLabel() }}</span>
+      <progress-bar
+        [progress]="capacityStats().progressPercentage || 0"
+        [cssClass]="getCapacityProgressBarClass(capacityStats().progressPercentage)"
+      ></progress-bar>
+    </div>
+  }
+
   @if (isCurrentSprint) {
     <button
       workViewHeaderAction

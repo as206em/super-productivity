@@ -9,7 +9,9 @@
   <!--<div class="day-estimate">{{ day.timeEstimate |roundDuration|msToString }}</div>-->
 
   <div class="day-counts">
-    <span>{{ day.timeEstimate | roundDuration | msToString }}</span>
+    <span>{{
+      day.capacityEstimate ?? day.timeEstimate | roundDuration | msToString
+    }}</span>
     @if (day.availableHours !== undefined) {
       <span class="available-hours"
         >/ {{ day.availableHours | roundDuration | msToString }}</span

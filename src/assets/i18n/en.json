@@ -2136,6 +2136,14 @@
     "YESTERDAY": "Yesterday"
   },
   "GCF": {
+    "CAPACITY": {
+      "HELP": "Capacity is used for visual over-commitment warnings on planner days and sprint pages. It does not block task planning.",
+      "SPRINT_CAPACITY": "Sprint capacity",
+      "TITLE": "Capacity",
+      "WEEKDAY_CAPACITY": "Weekday capacity",
+      "WEEKEND_CAPACITY": "Weekend capacity",
+      "ZERO_DISABLES": "Set to 0 to hide capacity warnings for this scope."
+    },
     "APP_FEATURES": {
       "BOARDS": "Boards",
       "DONATE_PAGE": "Donate page",

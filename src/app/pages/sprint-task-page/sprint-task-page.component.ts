@@ -9,19 +9,25 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { filter, tap } from 'rxjs/operators';
 import { SprintTarget } from '../../features/sprint/sprint.model';
 import {
+  selectCurrentSprintCapacityStats,
   selectCurrentSprintTasks,
+  selectNextSprintCapacityStats,
   selectNextSprintTasks,
 } from '../../features/sprint/store/sprint.selectors';
 import { closeSprint } from '../../features/sprint/store/sprint.actions';
 import { DialogConfirmComponent } from '../../ui/dialog-confirm/dialog-confirm.component';
 import { T } from '../../t.const';
 import { WorkViewComponent } from '../../features/work-view/work-view.component';
+import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
+import { msToString } from '../../ui/duration/ms-to-string.pipe';
+import { getCapacityProgressState } from '../../features/capacity/capacity.util';
 
 @Component({
   selector: 'sprint-task-page',
   templateUrl: './sprint-task-page.component.html',
+  styleUrl: './sprint-task-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButton, MatIcon, TranslatePipe, WorkViewComponent],
+  imports: [MatButton, MatIcon, TranslatePipe, WorkViewComponent, ProgressBarComponent],
 })
 export class SprintTaskPageComponent {
   readonly store = inject(Store);
@@ -39,8 +45,24 @@ export class SprintTaskPageComponent {
     ),
     { initialValue: [] },
   );
+  readonly capacityStats = toSignal(
+    this.store.select(
+      this.isCurrentSprint
+        ? selectCurrentSprintCapacityStats
+        : selectNextSprintCapacityStats,
+    ),
+    { initialValue: { estimate: 0, capacity: 0 } },
+  );
   readonly undoneTasks = computed(() => this.tasks().filter((task) => !task.isDone));
   readonly doneTasks = computed(() => this.tasks().filter((task) => task.isDone));
+  readonly capacityEstimateLabel = computed(() =>
+    msToString(this.capacityStats().estimate),
+  );
+  readonly capacityTotalLabel = computed(() => msToString(this.capacityStats().capacity));
+
+  getCapacityProgressBarClass(percentage: number | undefined): string {
+    return `bg-${getCapacityProgressState(percentage)}`;
+  }
 
   closeSprint(): void {
     this._matDialog

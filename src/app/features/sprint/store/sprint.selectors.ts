@@ -4,6 +4,12 @@ import { selectTaskEntitiesInActiveProjects } from '../../tasks/store/task.selec
 import { selectTaskFeatureState } from '../../tasks/store/task.selectors';
 import { SprintTarget } from '../sprint.model';
 import { selectSprintFeatureState } from './sprint.reducer';
+import { selectCapacityConfig } from '../../config/store/global-config.reducer';
+import {
+  CapacityStats,
+  getCapacityStats,
+  getRawTaskEstimateTotal,
+} from '../../capacity/capacity.util';
 
 const mapSprintTasks = (
   taskIds: string[],
@@ -52,6 +58,20 @@ export const selectNextSprintTasks = createSelector(
       taskEntities as Record<string, Task | undefined>,
       taskState,
     ),
+);
+
+export const selectCurrentSprintCapacityStats = createSelector(
+  selectCurrentSprintTasks,
+  selectCapacityConfig,
+  (tasks, capacityConfig): CapacityStats =>
+    getCapacityStats(getRawTaskEstimateTotal(tasks), capacityConfig.sprintCapacity),
+);
+
+export const selectNextSprintCapacityStats = createSelector(
+  selectNextSprintTasks,
+  selectCapacityConfig,
+  (tasks, capacityConfig): CapacityStats =>
+    getCapacityStats(getRawTaskEstimateTotal(tasks), capacityConfig.sprintCapacity),
 );
 
 export const selectSprintForTask = (

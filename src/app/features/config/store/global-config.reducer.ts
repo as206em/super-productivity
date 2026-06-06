@@ -2,6 +2,7 @@ import { updateGlobalConfigSection } from './global-config.actions';
 import { createFeatureSelector, createReducer, createSelector, on } from '@ngrx/store';
 import {
   AppFeaturesConfig,
+  CapacityConfig,
   ClipboardImagesConfig,
   DominaModeConfig,
   EvaluationConfig,
@@ -102,6 +103,10 @@ export const selectTakeABreakConfig = createSelector(
 export const selectTimelineConfig = createSelector(
   selectConfigFeatureState,
   (cfg): ScheduleConfig => cfg?.schedule ?? DEFAULT_GLOBAL_CONFIG.schedule,
+);
+export const selectCapacityConfig = createSelector(
+  selectConfigFeatureState,
+  (cfg): CapacityConfig => cfg?.capacity ?? DEFAULT_GLOBAL_CONFIG.capacity,
 );
 
 /** @deprecated Exists only for migration to the voice-reminder plugin. */
@@ -224,6 +229,10 @@ export const globalConfigReducer = createReducer<GlobalConfigState>(
       shortSyntax: {
         ...DEFAULT_GLOBAL_CONFIG.shortSyntax,
         ...appDataComplete.globalConfig.shortSyntax,
+      },
+      capacity: {
+        ...DEFAULT_GLOBAL_CONFIG.capacity,
+        ...appDataComplete.globalConfig.capacity,
       },
       focusMode: {
         ...DEFAULT_GLOBAL_CONFIG.focusMode,

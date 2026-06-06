@@ -220,6 +220,12 @@ export type ScheduleConfig = Readonly<{
   lunchBreakEnd: string;
 }>;
 
+export type CapacityConfig = Readonly<{
+  weekdayCapacity: number;
+  weekendCapacity: number;
+  sprintCapacity: number;
+}>;
+
 export type ReminderConfig = Readonly<{
   isCountdownBannerEnabled: boolean;
   countdownDuration: number;
@@ -303,6 +309,7 @@ export type GlobalConfigState = Readonly<{
   localBackup: LocalBackupConfig;
   sound: SoundConfig;
   timeTracking: TimeTrackingConfig;
+  capacity: CapacityConfig;
   reminder: ReminderConfig;
   schedule: ScheduleConfig;
   dominaMode: DominaModeConfig;
@@ -333,6 +340,7 @@ export type GlobalSectionConfig =
   | FlowtimeConfig
   | KeyboardConfig
   | ScheduleConfig
+  | CapacityConfig
   | ReminderConfig
   | DailySummaryNote
   | SyncConfig

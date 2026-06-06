@@ -10,6 +10,7 @@ import { TASK_FEATURE_NAME } from '../../tasks/store/task.reducer';
 import { PROJECT_FEATURE_NAME } from '../../project/store/project.reducer';
 import { appStateFeatureKey } from '../../../root-store/app-state/app-state.reducer';
 import { getDbDateStr } from '../../../util/get-db-date-str';
+import { getDayCapacity } from '../../capacity/capacity.util';
 
 const DAY_DURATION_MS = 24 * 60 * 60 * 1000;
 
@@ -316,6 +317,7 @@ describe('Planner Selectors - All Day Events', () => {
 
 describe('Planner Selectors - selectPlannerDays', () => {
   const today = getDbDateStr();
+  const HOUR = 60 * 60 * 1000;
 
   // Helper to create a local timestamp for today at a specific hour
   const todayAtHour = (hour: number): number => {
@@ -357,6 +359,16 @@ describe('Planner Selectors - selectPlannerDays', () => {
     lunchBreakStart: '12:00',
     lunchBreakEnd: '13:00',
   };
+  const defaultCapacityConfig = {
+    weekdayCapacity: 2 * HOUR,
+    weekendCapacity: 6 * HOUR,
+    sprintCapacity: 22 * HOUR,
+  };
+  const disabledCapacityConfig = {
+    ...defaultCapacityConfig,
+    weekdayCapacity: 0,
+    weekendCapacity: 0,
+  };
 
   // The factory returns a selector; test its projector directly
   const createPlannerDaysSelector = (
@@ -368,7 +380,13 @@ describe('Planner Selectors - selectPlannerDays', () => {
   it('should return a PlannerDay for each day date', () => {
     const tasks = createTasksMapFromTasksArray([]);
     const selector = createPlannerDaysSelector([today]);
-    const result = selector.projector(tasks, emptyPlannerState, defaultScheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      emptyPlannerState,
+      defaultScheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     expect(result.length).toBe(1);
     expect(result[0].dayDate).toBe(today);
@@ -385,7 +403,13 @@ describe('Planner Selectors - selectPlannerDays', () => {
 
     const selector = fromSelectors.selectPlannerDays([tomorrow], [], [], [], [], today);
     const tasks = createTasksMapFromTasksArray([task]);
-    const result = selector.projector(tasks, plannerState, defaultScheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      plannerState,
+      defaultScheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     expect(result[0].tasks.length).toBe(1);
     expect(result[0].tasks[0].id).toBe('t1');
@@ -397,13 +421,19 @@ describe('Planner Selectors - selectPlannerDays', () => {
     // Pass t1 as a todayListTaskId (unplanned since allPlannedTasks is empty)
     const selector = fromSelectors.selectPlannerDays([today], [], ['t1'], [], [], today);
     const tasks = createTasksMapFromTasksArray([task]);
-    const result = selector.projector(tasks, emptyPlannerState, defaultScheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      emptyPlannerState,
+      defaultScheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     expect(result[0].tasks.length).toBe(1);
     expect(result[0].tasks[0].id).toBe('t1');
   });
 
-  it('should compute availableHours when schedule config is enabled', () => {
+  it('should compute availableHours from capacity config', () => {
     const scheduleConfig = {
       isWorkStartEndEnabled: true,
       workStart: '09:00',
@@ -414,17 +444,73 @@ describe('Planner Selectors - selectPlannerDays', () => {
     };
     const selector = createPlannerDaysSelector([today]);
     const tasks = createTasksMapFromTasksArray([]);
-    const result = selector.projector(tasks, emptyPlannerState, scheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      emptyPlannerState,
+      scheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
-    // 8 hours = 28800000 ms
-    expect(result[0].availableHours).toBe(28800000);
+    expect(result[0].availableHours).toBe(getDayCapacity(today, defaultCapacityConfig));
     expect(result[0].progressPercentage).toBe(0);
   });
 
-  it('should not set availableHours when schedule is disabled', () => {
+  it('should not set availableHours when capacity is disabled', () => {
     const selector = createPlannerDaysSelector([today]);
     const tasks = createTasksMapFromTasksArray([]);
-    const result = selector.projector(tasks, emptyPlannerState, defaultScheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      emptyPlannerState,
+      defaultScheduleConfig,
+      0,
+      disabledCapacityConfig,
+    );
+
+    expect(result[0].availableHours).toBeUndefined();
+    expect(result[0].progressPercentage).toBeUndefined();
+  });
+
+  it('should compare raw planned load against weekday capacity', () => {
+    const weekday = '2026-06-05';
+    const task = createMockTask({
+      id: 't1',
+      title: 'Completed task with estimate',
+      isDone: true,
+      timeEstimate: HOUR,
+      timeSpent: HOUR,
+    });
+    const plannerState: PlannerState = {
+      ...emptyPlannerState,
+      days: { [weekday]: ['t1'] },
+    };
+
+    const selector = createPlannerDaysSelector([weekday]);
+    const tasks = createTasksMapFromTasksArray([task]);
+    const result = selector.projector(
+      tasks,
+      plannerState,
+      defaultScheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
+
+    expect(result[0].capacityEstimate).toBe(HOUR);
+    const expectedCapacity = getDayCapacity(weekday, defaultCapacityConfig);
+    expect(result[0].availableHours).toBe(expectedCapacity);
+    expect(result[0].progressPercentage).toBe((HOUR / expectedCapacity) * 100);
+  });
+
+  it('should disable capacity indicator when day capacity is zero', () => {
+    const selector = createPlannerDaysSelector([today]);
+    const tasks = createTasksMapFromTasksArray([]);
+    const result = selector.projector(
+      tasks,
+      emptyPlannerState,
+      defaultScheduleConfig,
+      0,
+      disabledCapacityConfig,
+    );
 
     expect(result[0].availableHours).toBeUndefined();
     expect(result[0].progressPercentage).toBeUndefined();
@@ -440,7 +526,13 @@ describe('Planner Selectors - selectPlannerDays', () => {
 
     const selector = createPlannerDaysSelector([today]);
     const tasks = createTasksMapFromTasksArray([task]);
-    const result = selector.projector(tasks, plannerState, defaultScheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      plannerState,
+      defaultScheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     // Should include both today (from dayDates) and tomorrow (from planner state)
     expect(result.length).toBe(2);
@@ -457,7 +549,13 @@ describe('Planner Selectors - selectPlannerDays', () => {
 
     const selector = createPlannerDaysSelector([today]);
     const tasks = createTasksMapFromTasksArray([]);
-    const result = selector.projector(tasks, plannerState, defaultScheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      plannerState,
+      defaultScheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     expect(result[0].tasks.length).toBe(0);
   });
@@ -497,14 +595,20 @@ describe('Planner Selectors - selectPlannerDays', () => {
       today,
     );
     const tasks = createTasksMapFromTasksArray([]);
-    const result = selector.projector(tasks, emptyPlannerState, scheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      emptyPlannerState,
+      scheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     // timeEstimate should include the timed event duration (7200000 ms = 2 hours)
     expect(result[0].timeEstimate).toBe(7200000);
-    // availableHours = 8 hours = 28800000 ms
-    expect(result[0].availableHours).toBe(28800000);
-    // progressPercentage = (7200000 / 28800000) * 100 = 25%
-    expect(result[0].progressPercentage).toBe(25);
+    expect(result[0].availableHours).toBe(getDayCapacity(today, defaultCapacityConfig));
+    expect(result[0].progressPercentage).toBe(
+      (7200000 / getDayCapacity(today, defaultCapacityConfig)) * 100,
+    );
   });
 
   it('should NOT include all-day event durations in timeEstimate', () => {
@@ -543,7 +647,13 @@ describe('Planner Selectors - selectPlannerDays', () => {
       today,
     );
     const tasks = createTasksMapFromTasksArray([]);
-    const result = selector.projector(tasks, emptyPlannerState, scheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      emptyPlannerState,
+      scheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     // timeEstimate should NOT include all-day events (they use raw 24h duration)
     // so it should be 0 when there are no timed events
@@ -584,7 +694,13 @@ describe('Planner Selectors - selectPlannerDays', () => {
       today,
     );
     const tasks = createTasksMapFromTasksArray([]);
-    const result = selector.projector(tasks, emptyPlannerState, scheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      emptyPlannerState,
+      scheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     expect(result[0].timeEstimate).toBe(0);
     expect(result[0].progressPercentage).toBe(0);
@@ -638,7 +754,13 @@ describe('Planner Selectors - selectPlannerDays', () => {
       today,
     );
     const tasks = createTasksMapFromTasksArray([task]);
-    const result = selector.projector(tasks, plannerState, scheduleConfig, 0);
+    const result = selector.projector(
+      tasks,
+      plannerState,
+      scheduleConfig,
+      0,
+      defaultCapacityConfig,
+    );
 
     // timeEstimate = task (3600000) + timed event (7200000) = 10800000 ms = 3 hours
     expect(result[0].timeEstimate).toBe(10800000);

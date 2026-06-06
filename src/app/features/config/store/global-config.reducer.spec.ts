@@ -13,6 +13,7 @@ import {
   selectIsDominaModeConfig,
   selectFocusModeConfig,
   selectPomodoroConfig,
+  selectCapacityConfig,
   selectReminderConfig,
   selectIsFocusModeEnabled,
   selectTimelineWorkStartEndHours,
@@ -88,6 +89,22 @@ describe('GlobalConfigReducer', () => {
         DEFAULT_GLOBAL_CONFIG.tasks.isMarkdownFormattingInNotesEnabled,
       );
       expect(result.tasks.notesTemplate).toBe(DEFAULT_GLOBAL_CONFIG.tasks.notesTemplate);
+    });
+
+    it('should fill missing capacity config with defaults', () => {
+      const legacyConfig = {
+        ...initialGlobalConfigState,
+      } as Record<string, unknown>;
+      delete legacyConfig.capacity;
+
+      const result = globalConfigReducer(
+        initialGlobalConfigState,
+        loadAllData({
+          appDataComplete: { globalConfig: legacyConfig } as unknown as AppDataComplete,
+        }),
+      );
+
+      expect(result.capacity).toEqual(DEFAULT_GLOBAL_CONFIG.capacity);
     });
 
     describe('keyboard migration', () => {
@@ -801,6 +818,18 @@ describe('GlobalConfigReducer', () => {
       it('should return pomodoro config when state is defined', () => {
         const result = selectPomodoroConfig.projector(initialGlobalConfigState);
         expect(result).toEqual(initialGlobalConfigState.pomodoro);
+      });
+    });
+
+    describe('selectCapacityConfig', () => {
+      it('should return default config when state is undefined', () => {
+        const result = selectCapacityConfig.projector(undefined as any);
+        expect(result).toEqual(DEFAULT_GLOBAL_CONFIG.capacity);
+      });
+
+      it('should return capacity config when state is defined', () => {
+        const result = selectCapacityConfig.projector(initialGlobalConfigState);
+        expect(result).toEqual(initialGlobalConfigState.capacity);
       });
     });
 

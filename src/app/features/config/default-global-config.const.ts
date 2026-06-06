@@ -190,6 +190,11 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfigState = {
     isTrackingReminderNotify: false, // Show desktop notification when tracking reminder is triggered
     isTrackingReminderFocusWindow: false, // Focus the application window when tracking reminder is triggered
   },
+  capacity: {
+    weekdayCapacity: 2 * 60 * minute,
+    weekendCapacity: 6 * 60 * minute,
+    sprintCapacity: 22 * 60 * minute,
+  },
   reminder: {
     isCountdownBannerEnabled: true,
     countdownDuration: minute * 10,
