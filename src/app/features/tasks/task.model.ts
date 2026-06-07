@@ -70,6 +70,8 @@ export interface IssueFieldsForTask {
   issueLastSyncedValues?: Record<string, unknown>;
 }
 
+export type TaskScoreLevel = 'xhigh' | 'high' | 'mid' | 'low';
+
 // Extend the plugin Task type with app-specific fields
 // Omit issue fields from PluginTask to avoid conflict with IssueFieldsForTask
 export interface TaskCopy
@@ -132,6 +134,8 @@ export interface TaskCopy
   deadlineRemindAt?: number | null;
   attachments: TaskAttachment[];
   reminderId?: string | null;
+  effort?: TaskScoreLevel;
+  value?: TaskScoreLevel;
 
   // Ensure type compatibility for internal fields
   modified?: number;

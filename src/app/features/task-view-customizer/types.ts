@@ -19,6 +19,7 @@ export enum SORT_OPTION_TYPE {
   estimatedTime = 'estimatedTime',
   timeSpent = 'timeSpent',
   tag = 'tag',
+  score = 'score',
 }
 
 export enum SORT_ORDER {
@@ -135,6 +136,11 @@ const sortOptions: SortOption[] = [
     type: SORT_OPTION_TYPE.tag,
     order: SORT_ORDER.ASC,
     label: T.F.TASK_VIEW.CUSTOMIZER.GROUP_TAG,
+  },
+  {
+    type: SORT_OPTION_TYPE.score,
+    order: SORT_ORDER.DESC,
+    label: T.F.TASK_VIEW.CUSTOMIZER.SORT_SCORE,
   },
 ];
 

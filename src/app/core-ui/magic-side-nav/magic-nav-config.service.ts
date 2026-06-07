@@ -127,6 +127,9 @@ export class MagicNavConfigService {
   private readonly isSearchEnabled = computed(
     () => this._configService.appFeatures().isSearchEnabled,
   );
+  private readonly isPriorityPageEnabled = computed(
+    () => this._configService.appFeatures().isPriorityPageEnabled,
+  );
   readonly areInitialTreesReady = computed(() => {
     const visibleProjects = this._visibleProjects();
     const tags = this._tags();
@@ -426,6 +429,17 @@ export class MagicNavConfigService {
         icon: 'edit_calendar',
         route: '/planner',
         featureConfigKey: 'isPlannerEnabled',
+      });
+    }
+
+    if (this.isPriorityPageEnabled()) {
+      items.push({
+        type: 'route',
+        id: 'priority',
+        label: T.MH.PRIORITY,
+        icon: 'hotel_class',
+        route: '/priority',
+        featureConfigKey: 'isPriorityPageEnabled',
       });
     }
 

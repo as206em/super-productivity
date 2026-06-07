@@ -17,6 +17,7 @@ export type AppFeaturesConfig = Readonly<{
   isProjectNotesEnabled: boolean;
   isSyncIconEnabled: boolean;
   isSearchEnabled: boolean;
+  isPriorityPageEnabled: boolean;
   isDonatePageEnabled: boolean;
   isEnableUserProfiles: boolean;
   isHabitsEnabled: boolean;

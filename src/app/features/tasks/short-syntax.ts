@@ -1,4 +1,4 @@
-import { Task, TaskCopy } from './task.model';
+import { Task, TaskCopy, TaskScoreLevel } from './task.model';
 import { getDbDateStr } from '../../util/get-db-date-str';
 import { stringToMs } from '../../ui/duration/string-to-ms.pipe';
 import { Tag } from '../tag/tag.model';
@@ -96,6 +96,7 @@ const SHORT_SYNTAX_TAGS_REG_EX = new RegExp(`\\${CH_TAG}[^${ALL_SPECIAL}|\\s]+`,
 // Match string starting with the literal @ and followed by 1 or more of the characters
 // not in the ALL_SPECIAL
 const SHORT_SYNTAX_DUE_REG_EX = new RegExp(`\\${CH_DUE}[^${ALL_SPECIAL}]+`, 'gi');
+const SHORT_SYNTAX_SCORE_REG_EX = /(?:^|\s)-(v|e)\s+(xhigh|high|mid|low)(?=\s|$)/gi;
 
 // Match URLs with protocol (http, https, file) or www prefix
 // Matches URLs but excludes trailing punctuation
@@ -176,6 +177,11 @@ export const shortSyntax = async (
     };
   }
 
+  taskChanges = {
+    ...taskChanges,
+    ...parseScoreChanges({ ...task, title: taskChanges.title || task.title }),
+  };
+
   const urlChanges = parseUrlAttachments(
     {
       ...task,
@@ -212,6 +218,35 @@ export const shortSyntax = async (
     projectId: changesForProject.projectId,
     attachments,
     // remindAt: changesForDue.remindAt
+  };
+};
+
+export const parseScoreChanges = (task: Partial<TaskCopy>): Partial<TaskCopy> => {
+  if (!task.title) {
+    return {};
+  }
+
+  let title = task.title;
+  const changes: Partial<TaskCopy> = {};
+  const matches = [...task.title.matchAll(SHORT_SYNTAX_SCORE_REG_EX)];
+  if (!matches.length) {
+    return {};
+  }
+
+  for (const match of matches) {
+    const type = match[1].toLowerCase();
+    const level = match[2].toLowerCase() as TaskScoreLevel;
+    if (type === 'v') {
+      changes.value = level;
+    } else if (type === 'e') {
+      changes.effort = level;
+    }
+    title = title.replace(match[0], ' ');
+  }
+
+  return {
+    ...changes,
+    title: title.replace(/\s+/g, ' ').trim(),
   };
 };
 

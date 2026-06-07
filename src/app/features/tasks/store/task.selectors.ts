@@ -28,6 +28,7 @@ import {
 import { dateStrToUtcDate } from '../../../util/date-str-to-utc-date';
 import { isTodayWithOffset } from '../../../util/is-today.util';
 import { getTimeConflictTaskIds } from '../util/get-time-conflict-task-ids';
+import { compareTasksByScoreDesc, hasTaskScore } from '../util/task-score.util';
 const mapSubTasksToTasks = (tasksIN: Task[]): TaskWithSubTasks[] => {
   // Create a Map for O(1) lookups instead of O(n) find() calls
   const taskMap = new Map<string, Task>();
@@ -185,6 +186,30 @@ export const selectAllTasksInActiveProjects = createSelector(
     archivedIds.size === 0
       ? tasks
       : tasks.filter((t) => !t.projectId || !archivedIds.has(t.projectId)),
+);
+
+export const selectPriorityTasks = createSelector(
+  selectAllTasksInActiveProjects,
+  selectTaskFeatureState,
+  (tasks, taskState): TaskWithSubTasks[] =>
+    tasks
+      .filter(
+        (task): task is Task => !task.isDone && !task.parentId && hasTaskScore(task),
+      )
+      .map((task) => mapSubTasksToTask(task, taskState) as TaskWithSubTasks)
+      .sort(compareTasksByScoreDesc),
+);
+
+export const selectPriorityTasksWithIncompleteScore = createSelector(
+  selectAllTasksInActiveProjects,
+  selectTaskFeatureState,
+  (tasks, taskState): TaskWithSubTasks[] =>
+    tasks
+      .filter(
+        (task): task is Task => !task.isDone && !task.parentId && !hasTaskScore(task),
+      )
+      .map((task) => mapSubTasksToTask(task, taskState) as TaskWithSubTasks)
+      .sort(compareTasksByScoreDesc),
 );
 
 export const selectMapOfAllTasksInActiveProjects = createSelector(

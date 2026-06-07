@@ -419,6 +419,64 @@ describe('TaskViewCustomizerService', () => {
     expect(sorted.map((t) => t.id)).toEqual(['tB', 'tA']);
   });
 
+  it('should sort by score with incomplete score data last', () => {
+    const scoreTasks = [
+      {
+        id: 'missing-effort',
+        title: 'Missing effort',
+        value: 'xhigh',
+        created: 1,
+      },
+      {
+        id: 'best',
+        title: 'Best',
+        effort: 'low',
+        value: 'xhigh',
+        created: 2,
+      },
+      {
+        id: 'middle',
+        title: 'Middle',
+        effort: 'high',
+        value: 'high',
+        created: 3,
+      },
+      {
+        id: 'missing-value',
+        title: 'Missing value',
+        effort: 'low',
+        created: 4,
+      },
+      {
+        id: 'low',
+        title: 'Low',
+        effort: 'xhigh',
+        value: 'low',
+        created: 5,
+      },
+    ] as TaskWithSubTasks[];
+
+    const sorted = {
+      asc: service['applySort'](scoreTasks, SORT_OPTION_TYPE.score, SORT_ORDER.ASC),
+      desc: service['applySort'](scoreTasks, SORT_OPTION_TYPE.score, SORT_ORDER.DESC),
+    };
+
+    expect(sorted.asc.map((t) => t.id)).toEqual([
+      'low',
+      'middle',
+      'best',
+      'missing-effort',
+      'missing-value',
+    ]);
+    expect(sorted.desc.map((t) => t.id)).toEqual([
+      'best',
+      'middle',
+      'low',
+      'missing-effort',
+      'missing-value',
+    ]);
+  });
+
   it('should group by tag', () => {
     const grouped = service['applyGrouping'](mockTasks, GROUP_OPTION_TYPE.tag);
     expect(Object.keys(grouped)).toContain('Tag A');

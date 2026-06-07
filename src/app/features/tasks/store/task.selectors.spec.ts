@@ -1,6 +1,6 @@
 import * as fromSelectors from './task.selectors';
 import { DEFAULT_TASK, Task, TaskState } from '../task.model';
-import { TASK_FEATURE_NAME } from './task.reducer';
+import { initialTaskState, TASK_FEATURE_NAME } from './task.reducer';
 import { taskAdapter } from './task.adapter';
 import { TODAY_TAG } from '../../tag/tag.const';
 import { getDbDateStr } from '../../../util/get-db-date-str';
@@ -1063,6 +1063,149 @@ describe('Task Selectors', () => {
         fromSelectors.selectAllUndoneTasksWithDeadlineSorted.projector(allTasks);
       expect(result.map((t) => t.id)).toContain('task9');
       expect(result.every((t) => !t.isDone)).toBe(true);
+    });
+  });
+
+  describe('selectPriorityTasks', () => {
+    it('returns only undone parent tasks with score fields sorted by score descending', () => {
+      const scoredTasks: Task[] = [
+        {
+          ...DEFAULT_TASK,
+          id: 'missing-effort',
+          projectId: 'project1',
+          title: 'Missing effort',
+          created: 1,
+          value: 'xhigh',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'best',
+          projectId: 'project1',
+          title: 'Best',
+          created: 2,
+          subTaskIds: ['subtask'],
+          effort: 'low',
+          value: 'xhigh',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'done',
+          projectId: 'project1',
+          title: 'Done',
+          created: 3,
+          effort: 'low',
+          value: 'xhigh',
+          isDone: true,
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'subtask',
+          projectId: 'project1',
+          title: 'Subtask',
+          created: 4,
+          effort: 'low',
+          value: 'xhigh',
+          parentId: 'best',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'middle',
+          projectId: 'project2',
+          title: 'Middle',
+          created: 5,
+          effort: 'high',
+          value: 'high',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'low',
+          projectId: 'project2',
+          title: 'Low',
+          created: 6,
+          effort: 'xhigh',
+          value: 'low',
+        },
+      ];
+      const state = taskAdapter.addMany(scoredTasks, initialTaskState);
+
+      const result = fromSelectors.selectPriorityTasks.projector(scoredTasks, state);
+
+      expect(result.map((task) => task.id)).toEqual(['best', 'middle', 'low']);
+      expect(result[0].subTasks.map((task) => task.id)).toEqual(['subtask']);
+    });
+
+    it('returns only undone parent tasks missing value or effort', () => {
+      const priorityTasks: Task[] = [
+        {
+          ...DEFAULT_TASK,
+          id: 'missing-effort',
+          projectId: 'project1',
+          title: 'Missing effort',
+          created: 1,
+          value: 'xhigh',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'best',
+          projectId: 'project1',
+          title: 'Best',
+          created: 2,
+          effort: 'low',
+          value: 'xhigh',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'missing-both',
+          projectId: 'project1',
+          title: 'Missing both',
+          created: 3,
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'done-missing',
+          projectId: 'project1',
+          title: 'Done missing',
+          created: 4,
+          isDone: true,
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'subtask-missing',
+          projectId: 'project1',
+          title: 'Subtask missing',
+          created: 5,
+          parentId: 'best',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'middle',
+          projectId: 'project2',
+          title: 'Middle',
+          created: 6,
+          effort: 'high',
+          value: 'high',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'missing-value',
+          projectId: 'project2',
+          title: 'Missing value',
+          created: 7,
+          effort: 'low',
+        },
+      ];
+      const state = taskAdapter.addMany(priorityTasks, initialTaskState);
+
+      const result = fromSelectors.selectPriorityTasksWithIncompleteScore.projector(
+        priorityTasks,
+        state,
+      );
+
+      expect(result.map((task) => task.id)).toEqual([
+        'missing-effort',
+        'missing-both',
+        'missing-value',
+      ]);
     });
   });
 

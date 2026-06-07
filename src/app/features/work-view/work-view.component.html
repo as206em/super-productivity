@@ -133,7 +133,7 @@
               }
             </div>
           }
-          @if (customizedUndoneTasks(); as customized) {
+          @if (customizedUndoneTasksForView(); as customized) {
             @if (customized.grouped) {
               @for (group of customized.grouped | keyvalue; track group.key) {
                 <collapsible

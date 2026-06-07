@@ -35,6 +35,7 @@ import { LS } from '../../core/persistence/storage-keys.const';
 import { LanguageService } from 'src/app/core/language/language.service';
 import { TranslateService } from '@ngx-translate/core';
 import { T } from '../../t.const';
+import { compareTasksByScore } from '../tasks/util/task-score.util';
 
 const GROUP_OPTIONS_NO_PROJECT = OPTIONS.group.list.filter(
   (opt) => opt.type !== GROUP_OPTION_TYPE.project,
@@ -343,6 +344,11 @@ export class TaskViewCustomizerService {
             : 0;
           return (aSpent - bSpent) * factor;
         });
+
+      case SORT_OPTION_TYPE.score:
+        return tasksCopy.sort((a, b) =>
+          compareTasksByScore(a, b, order === SORT_ORDER.ASC ? 'ASC' : 'DESC'),
+        );
 
       default:
         return tasksCopy;

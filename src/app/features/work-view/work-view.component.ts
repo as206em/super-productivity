@@ -88,6 +88,11 @@ import { DateService } from '../../core/date/date.service';
 import { PluginIndexComponent } from '../../plugins/ui/plugin-index/plugin-index.component';
 import { PluginBridgeService } from '../../plugins/plugin-bridge.service';
 
+export interface WorkViewTaskList {
+  list: TaskWithSubTasks[];
+  grouped?: Record<string, TaskWithSubTasks[]>;
+}
+
 @Component({
   selector: 'work-view',
   templateUrl: './work-view.component.html',
@@ -193,9 +198,13 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   isStandaloneTaskList = input<boolean>(false);
   mainListModelId = input<string>('UNDONE');
   isMainListSortingDisabled = input<boolean>(false);
+  customizedUndoneTasksOverride = input<WorkViewTaskList | null>(null);
   customizedUndoneTasks = toSignal(
     this.customizerService.customizeUndoneTasks(toObservable(this.undoneTasks)),
     { initialValue: { list: [] } },
+  );
+  customizedUndoneTasksForView = computed<WorkViewTaskList>(
+    () => this.customizedUndoneTasksOverride() || this.customizedUndoneTasks(),
   );
   doneTasks = input.required<TaskWithSubTasks[]>();
   backlogTasks = input.required<TaskWithSubTasks[]>();

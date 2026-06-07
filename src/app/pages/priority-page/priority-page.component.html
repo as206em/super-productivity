@@ -1,0 +1,40 @@
+<work-view
+  [backlogTasks]="[]"
+  [customizedUndoneTasksOverride]="customizedTasks()"
+  [doneTasks]="[]"
+  [isMainListSortingDisabled]="true"
+  [isShowBacklog]="false"
+  [isStandaloneTaskList]="true"
+  [mainListModelId]="'PRIORITY'"
+  [undoneTasks]="tasks()"
+>
+  <mat-slide-toggle
+    workViewHeaderAction
+    class="show-incomplete-toggle"
+    [checked]="isShowIncompleteScoreTasks()"
+    (change)="isShowIncompleteScoreTasks.set($event.checked)"
+  >
+    {{ T.F.PRIORITY.SHOW_INCOMPLETE | translate }}
+  </mat-slide-toggle>
+
+  <mat-form-field
+    workViewHeaderAction
+    class="group-mode-select"
+    appearance="outline"
+    subscriptSizing="dynamic"
+  >
+    <mat-label>{{ T.F.PRIORITY.GROUP_BY | translate }}</mat-label>
+    <mat-select
+      [value]="groupMode()"
+      (valueChange)="setGroupMode($event)"
+    >
+      <mat-option value="none">{{ T.F.PRIORITY.GROUP_NONE | translate }}</mat-option>
+      <mat-option value="project">
+        {{ T.F.PRIORITY.GROUP_PROJECT | translate }}
+      </mat-option>
+      <mat-option value="project-section">{{
+        T.F.PRIORITY.GROUP_PROJECT_SECTION | translate
+      }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+</work-view>

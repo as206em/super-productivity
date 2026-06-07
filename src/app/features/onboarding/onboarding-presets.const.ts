@@ -19,6 +19,7 @@ const BASE_FEATURES: AppFeaturesConfig = {
   isProjectNotesEnabled: false,
   isSyncIconEnabled: true,
   isSearchEnabled: true,
+  isPriorityPageEnabled: true,
   isDonatePageEnabled: true,
   isEnableUserProfiles: false,
   isHabitsEnabled: false,

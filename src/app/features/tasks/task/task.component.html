@@ -49,6 +49,31 @@
               [isShowProjectTagNever]="isInSubTaskList()"
             ></tag-list>
           }
+          @if (t.value || t.effort) {
+            <div class="score-badges">
+              @if (t.value) {
+                <span
+                  class="score-badge"
+                  [title]="T.F.TASK.CMP.VALUE | translate"
+                  >V {{ taskValueLabels[t.value] }}</span
+                >
+              }
+              @if (t.effort) {
+                <span
+                  class="score-badge"
+                  [title]="T.F.TASK.CMP.EFFORT | translate"
+                  >E {{ taskEffortLabels[t.effort] }}</span
+                >
+              }
+              @if (taskScore(); as score) {
+                <span
+                  class="score-badge score-badge-score"
+                  [title]="T.F.TASK.CMP.SCORE | translate"
+                  >S {{ score }}</span
+                >
+              }
+            </div>
+          }
         </div>
       </div>
 

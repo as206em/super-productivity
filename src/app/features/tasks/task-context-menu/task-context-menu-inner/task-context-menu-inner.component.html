@@ -276,6 +276,28 @@
   }
 
   <button
+    [matMenuTriggerFor]="valueMenu"
+    mat-menu-item
+    menuTouchFix
+  >
+    <span class="menuItemLeft">
+      <mat-icon>hotel_class</mat-icon>
+      {{ T.F.TASK.CMP.VALUE | translate }}
+    </span>
+  </button>
+
+  <button
+    [matMenuTriggerFor]="effortMenu"
+    mat-menu-item
+    menuTouchFix
+  >
+    <span class="menuItemLeft">
+      <mat-icon>fitness_center</mat-icon>
+      {{ T.F.TASK.CMP.EFFORT | translate }}
+    </span>
+  </button>
+
+  <button
     [matMenuTriggerFor]="tagMenu"
     mat-menu-item
     menuTouchFix
@@ -330,6 +352,68 @@
     </span>
     <span class="key-i">{{ kb.taskDelete }}</span>
   </button>
+</mat-menu>
+
+<mat-menu
+  #valueMenu="matMenu"
+  (closed)="focusRelatedTaskOrNext()"
+>
+  <ng-template matMenuContent>
+    @for (level of TASK_SCORE_LEVELS; track level) {
+      <button
+        mat-menu-item
+        menuTouchFix
+        (click)="setValue(level)"
+      >
+        @if (level === task.value) {
+          <mat-icon>check</mat-icon>
+        }
+        {{ level }}
+      </button>
+    }
+    @if (task.value) {
+      <mat-divider></mat-divider>
+      <button
+        mat-menu-item
+        menuTouchFix
+        (click)="setValue(undefined)"
+      >
+        <mat-icon>clear</mat-icon>
+        {{ T.F.TASK.CMP.CLEAR_VALUE | translate }}
+      </button>
+    }
+  </ng-template>
+</mat-menu>
+
+<mat-menu
+  #effortMenu="matMenu"
+  (closed)="focusRelatedTaskOrNext()"
+>
+  <ng-template matMenuContent>
+    @for (level of TASK_SCORE_LEVELS; track level) {
+      <button
+        mat-menu-item
+        menuTouchFix
+        (click)="setEffort(level)"
+      >
+        @if (level === task.effort) {
+          <mat-icon>check</mat-icon>
+        }
+        {{ level }}
+      </button>
+    }
+    @if (task.effort) {
+      <mat-divider></mat-divider>
+      <button
+        mat-menu-item
+        menuTouchFix
+        (click)="setEffort(undefined)"
+      >
+        <mat-icon>clear</mat-icon>
+        {{ T.F.TASK.CMP.CLEAR_EFFORT | translate }}
+      </button>
+    }
+  </ng-template>
 </mat-menu>
 
 <mat-menu

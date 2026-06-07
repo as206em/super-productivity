@@ -84,6 +84,28 @@
   }
 }
 
+.score-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-half);
+  margin-left: 6px;
+  margin-bottom: var(--s-half);
+}
+
+.score-badge {
+  border: 1px solid var(--extra-border-color);
+  border-radius: var(--s-half);
+  color: var(--text-color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 0 var(--s-half);
+}
+
+.score-badge-score {
+  color: var(--text-color);
+  border-color: var(--palette-primary-500);
+}
+
 @mixin timeWrapperMinimalStyles() {
   .time {
     font-size: 13px;

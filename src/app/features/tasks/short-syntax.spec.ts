@@ -147,6 +147,28 @@ describe('shortSyntax', () => {
     expect(r).toEqual(undefined);
   });
 
+  it('should parse value and effort syntax', async () => {
+    const r = await shortSyntax(
+      {
+        ...TASK,
+        title: 'Important task -v high -e low',
+      },
+      CONFIG,
+    );
+
+    expect(r).toEqual({
+      newTagTitles: [],
+      remindAt: null,
+      projectId: undefined,
+      attachments: [],
+      taskChanges: {
+        title: 'Important task',
+        value: 'high',
+        effort: 'low',
+      },
+    });
+  });
+
   describe('should work for time short syntax', () => {
     it('', async () => {
       const t = {

@@ -905,6 +905,13 @@
         "TASK_PLANNED_FOR": "Task planned for <strong>{{date}}</strong>{{extra}}"
       }
     },
+    "PRIORITY": {
+      "GROUP_BY": "Group",
+      "GROUP_NONE": "No grouping",
+      "GROUP_PROJECT": "By project",
+      "GROUP_PROJECT_SECTION": "By project and section",
+      "SHOW_INCOMPLETE": "Show missing value/effort"
+    },
     "POMODORO": {
       "BREAK_IS_DONE": "Break is over!"
     },
@@ -1643,6 +1650,8 @@
         "ADD_TO_MY_DAY": "Add to Today",
         "ADD_TO_PROJECT": "Add to a project",
         "CLEAR_ESTIMATE": "Clear estimate",
+        "CLEAR_EFFORT": "Clear effort",
+        "CLEAR_VALUE": "Clear value",
         "CONVERT_TO_PARENT_TASK": "Convert to parent task",
         "CUSTOM_ESTIMATE": "Custom…",
         "DELETE": "Delete task",
@@ -1652,6 +1661,7 @@
         "EDIT_DEADLINE": "Edit deadline",
         "EDIT_SCHEDULED": "Reschedule",
         "ESTIMATE": "Estimate",
+        "EFFORT": "Effort",
         "FOCUS_SESSION": "Start focus session",
         "MARK_DONE": "Mark as completed",
         "MOVE_TO_BACKLOG": "Move to backlog",
@@ -1664,6 +1674,7 @@
         "REMOVE_DEADLINE": "Remove deadline",
         "REMOVE_FROM_MY_DAY": "Remove from Today",
         "SCHEDULE": "Schedule task",
+        "SCORE": "Score",
         "SET_DEADLINE": "Set deadline",
         "SHOW_HIDDEN_DONE_SUB_TASKS": "+ {{nr}} completed subtasks",
         "SHOW_HIDDEN_SUB_TASKS": "+ {{nr}} subtasks",
@@ -1676,7 +1687,8 @@
         "TRACK_TIME": "Start tracking time",
         "TRACK_TIME_STOP": "Pause tracking time",
         "UNSCHEDULE_TASK": "Unschedule task",
-        "UPDATE_ISSUE_DATA": "Update issue data"
+        "UPDATE_ISSUE_DATA": "Update issue data",
+        "VALUE": "Value"
       },
       "D_CONFIRM_DELETE": {
         "MSG": "Are you sure you want to delete the task \"{{title}}\"?",
@@ -1945,6 +1957,7 @@
         "SORT_DEFAULT": "Default",
         "SORT_NAME": "Name",
         "SORT_SCHEDULED_DATE": "Scheduled Date",
+        "SORT_SCORE": "Score",
         "TIME_1HOUR": "> 1 Hour",
         "TIME_2HOUR": "> 2 Hours",
         "TIME_10MIN": "> 10 Minutes",
@@ -2153,6 +2166,7 @@
       "HELP": "Enable or disable specific app features across the UI.",
       "ISSUES_PANEL": "Issues panel",
       "PLANNER": "Planner",
+      "PRIORITY_PAGE": "Priority page",
       "PROJECT_NOTES": "Project notes",
       "SCHEDULE": "Schedule",
       "SCHEDULE_DAY_PANEL": "Schedule day panel",
@@ -2588,6 +2602,7 @@
     "NOTES_PANEL_INFO": "Notes can only be shown in the schedule and the regular task list views.",
     "OPEN_APP_FEATURES": "Open Settings",
     "PLANNER": "Planner",
+    "PRIORITY": "Priority",
     "PROCRASTINATE": "Procrastinate",
     "PROJECT_MENU": "Project Menu",
     "PROJECT_SETTINGS": "Project Settings",

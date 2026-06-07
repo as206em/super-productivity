@@ -268,6 +268,8 @@ export interface Task {
   dueDay?: string | null;
   dueWithTime?: number | null;
   repeatCfgId?: string | null;
+  effort?: 'xhigh' | 'high' | 'mid' | 'low';
+  value?: 'xhigh' | 'high' | 'mid' | 'low';
 
   // Issue tracking fields (optional)
   issueId?: string | null;

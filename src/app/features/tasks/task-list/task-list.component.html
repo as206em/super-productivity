@@ -44,7 +44,9 @@
       [cdkDragStartDelay]="dragDelayForTouch()"
       [cdkDragLockAxis]="isXs() ? 'y' : ''"
       [cdkDragDisabled]="
-        listModelId() === 'LATER_TODAY' || listModelId().startsWith('SPRINT_')
+        listModelId() === 'LATER_TODAY' ||
+        listModelId().startsWith('SPRINT_') ||
+        listModelId().startsWith('PRIORITY')
       "
       [cdkDragData]="task"
       (cdkDragStarted)="onDragStarted(task, $event)"

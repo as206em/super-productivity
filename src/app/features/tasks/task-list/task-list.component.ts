@@ -183,6 +183,10 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
     const targetListId = drop.data.listId;
     const isSubtask = !!task.parentId;
 
+    if (typeof targetModelId === 'string' && targetModelId.startsWith('PRIORITY')) {
+      return false;
+    }
+
     if (targetModelId === 'OVERDUE' || targetModelId === 'LATER_TODAY') {
       return false;
     }

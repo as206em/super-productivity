@@ -23,7 +23,7 @@ import {
 } from '@angular/material/menu';
 import { MatDivider } from '@angular/material/divider';
 import { ESTIMATE_OPTIONS } from '../../add-task-bar/add-task-bar.const';
-import { Task, TaskCopy, TaskWithSubTasks } from '../../task.model';
+import { Task, TaskCopy, TaskScoreLevel, TaskWithSubTasks } from '../../task.model';
 import { EMPTY, forkJoin, from, Observable, of, ReplaySubject, Subject } from 'rxjs';
 import {
   concatMap,
@@ -84,6 +84,7 @@ import {
   addTaskToSprint,
   removeTaskFromSprint,
 } from '../../../sprint/store/sprint.actions';
+import { TASK_SCORE_LEVELS } from '../../util/task-score.util';
 
 @Component({
   selector: 'task-context-menu-inner',
@@ -127,6 +128,7 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   protected readonly isTouchActive = isTouchActive;
   protected readonly T = T;
   readonly ESTIMATE_OPTIONS = ESTIMATE_OPTIONS;
+  readonly TASK_SCORE_LEVELS = TASK_SCORE_LEVELS;
 
   isAdvancedControls = input<boolean>(false);
   todayList = toSignal(this._store.select(selectTodayTaskIds), { initialValue: [] });
@@ -449,6 +451,20 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
     this._taskService.update(this.task.id, { timeEstimate: ms });
   }
 
+  setEffort(effort: TaskScoreLevel | undefined): void {
+    if (effort === this.task.effort) {
+      return;
+    }
+    this._taskService.update(this.task.id, { effort });
+  }
+
+  setValue(value: TaskScoreLevel | undefined): void {
+    if (value === this.task.value) {
+      return;
+    }
+    this._taskService.update(this.task.id, { value });
+  }
+
   addSubTask(): void {
     this._taskService.addSubTaskTo(this.task.parentId || this.task.id);
   }
@@ -459,6 +475,8 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
       projectId: this.task.projectId || undefined,
       tagIds: this.task.tagIds || [],
       ...(this.task.notes && { notes: this.task.notes }),
+      ...(this.task.effort && { effort: this.task.effort }),
+      ...(this.task.value && { value: this.task.value }),
     };
     const timeData = {
       ...(this.task.dueDay && { dueDay: this.task.dueDay }),

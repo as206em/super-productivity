@@ -6,6 +6,7 @@ import { SHORT_SYNTAX_TIME_REG_EX, shortSyntax } from '../short-syntax';
 import { ShortSyntaxConfig } from '../../config/global-config.model';
 import { getDbDateStr } from '../../../util/get-db-date-str';
 import { TimeSpentOnDay } from '../task.model';
+import { TaskScoreLevel } from '../task.model';
 import { TaskAttachment } from '../task-attachment/task-attachment.model';
 
 interface PreviousParseResult {
@@ -15,6 +16,8 @@ interface PreviousParseResult {
   newTagTitles: string[];
   timeSpentOnDay: TimeSpentOnDay | null;
   timeEstimate: number | null;
+  effort: TaskScoreLevel | null;
+  value: TaskScoreLevel | null;
   dueDate: string | null;
   dueTime: string | null;
   attachments: TaskAttachment[];
@@ -83,6 +86,8 @@ export class AddTaskBarParserService {
         newTagTitles: [],
         timeSpentOnDay: null,
         timeEstimate: null,
+        effort: null,
+        value: null,
         // Preserve current date/time if user has selected them, otherwise use defaults
         dueDate: currentState.date || (defaultDate ? defaultDate : null),
         dueTime: currentState.time || defaultTime || null,
@@ -121,6 +126,8 @@ export class AddTaskBarParserService {
         newTagTitles: newTagTitles,
         timeSpentOnDay: parseResult.taskChanges.timeSpentOnDay || null,
         timeEstimate: parseResult.taskChanges.timeEstimate || null,
+        effort: parseResult.taskChanges.effort || null,
+        value: parseResult.taskChanges.value || null,
         dueDate: dueDate,
         dueTime: dueTime,
         attachments: parseResult.attachments || [],
@@ -193,6 +200,22 @@ export class AddTaskBarParserService {
         this._previousParseResult.timeEstimate !== currentResult.timeEstimate)
     ) {
       this._stateService.updateEstimate(currentResult.timeEstimate);
+    }
+
+    if (
+      (!this._previousParseResult && currentResult.effort !== null) ||
+      (this._previousParseResult &&
+        this._previousParseResult.effort !== currentResult.effort)
+    ) {
+      this._stateService.updateEffort(currentResult.effort);
+    }
+
+    if (
+      (!this._previousParseResult && currentResult.value !== null) ||
+      (this._previousParseResult &&
+        this._previousParseResult.value !== currentResult.value)
+    ) {
+      this._stateService.updateValue(currentResult.value);
     }
 
     const dateChanged =

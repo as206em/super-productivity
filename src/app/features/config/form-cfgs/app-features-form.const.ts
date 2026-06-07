@@ -91,6 +91,14 @@ export const APP_FEATURES_FORM_CFG: ConfigFormSection<AppFeaturesConfig> = {
       },
     },
     {
+      key: 'isPriorityPageEnabled',
+      type: 'slide-toggle',
+      templateOptions: {
+        label: T.GCF.APP_FEATURES.PRIORITY_PAGE,
+        icon: 'hotel_class',
+      },
+    },
+    {
       key: 'isDonatePageEnabled',
       type: 'slide-toggle',
       templateOptions: {

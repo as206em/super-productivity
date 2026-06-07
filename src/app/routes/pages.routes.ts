@@ -10,3 +10,4 @@ export { DonatePageComponent } from '../pages/donate-page/donate-page.component'
 export { ContrastTestComponent } from '../pages/contrast-test/contrast-test.component';
 export { PluginIndexComponent } from '../plugins/ui/plugin-index/plugin-index.component';
 export { SprintTaskPageComponent } from '../pages/sprint-task-page/sprint-task-page.component';
+export { PriorityPageComponent } from '../pages/priority-page/priority-page.component';
