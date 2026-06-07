@@ -44,6 +44,8 @@ const CONTEXT_VALUE_MODIFIERS: Record<TaskScoreLevel, number> = {
   low: 0.85,
 };
 
+const DATE_MODIFIER_MIN = 0.6;
+const DATE_MODIFIER_MAX = 1.8;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface TaskScorePart {
@@ -130,27 +132,53 @@ const _getDateModifier = (
   if (dayTime === undefined || todayTime === undefined) return undefined;
 
   const diffDays = Math.round((dayTime - todayTime) / DAY_MS);
-  if (diffDays < 0) return { label: 'overdue', modifier: 1.25 };
-  if (diffDays === 0) return { label: 'today', modifier: 1.2 };
-  if (diffDays === 1) return { label: 'tomorrow', modifier: 1.15 };
+  const overdueDays = Math.abs(diffDays);
+  if (diffDays < 0 && overdueDays <= 2) {
+    return { label: 'overdue 1-2 days', modifier: 1.25 };
+  }
+  if (diffDays < 0 && overdueDays <= 7) {
+    return { label: 'overdue 3-7 days', modifier: 1.12 };
+  }
+  if (diffDays < 0 && overdueDays <= 14) {
+    return { label: 'overdue 8-14 days', modifier: 1 };
+  }
+  if (diffDays < 0 && overdueDays <= 30) {
+    return { label: 'overdue 15-30 days', modifier: 0.9 };
+  }
+  if (diffDays < 0) return { label: 'overdue 31+ days', modifier: 0.75 };
+  if (diffDays === 0) return { label: 'today', modifier: 1.22 };
+  if (diffDays === 1) return { label: 'tomorrow', modifier: 1.18 };
+  if (diffDays <= 3) return { label: 'next 2-3 days', modifier: 1.14 };
   if (diffDays <= 7) return { label: 'this week', modifier: 1.08 };
-  return undefined;
+  if (diffDays <= 14) return { label: 'next week', modifier: 1.04 };
+  if (diffDays <= 21) return { label: 'after two weeks', modifier: 0.95 };
+  return { label: 'later', modifier: 0.95 };
 };
 
 const _applyDateModifier = (
-  score: number,
   parts: TaskScorePart[],
   label: string,
   day: string | null | undefined,
   today: string | undefined,
 ): number => {
   const dateModifier = _getDateModifier(day, today);
-  if (!dateModifier) return score;
+  if (!dateModifier) return 1;
   parts.push({
     label,
     value: `${dateModifier.label} x${dateModifier.modifier}`,
   });
-  return score * dateModifier.modifier;
+  return dateModifier.modifier;
+};
+
+const _capDateModifier = (modifier: number): number =>
+  Math.min(DATE_MODIFIER_MAX, Math.max(DATE_MODIFIER_MIN, modifier));
+
+const _appendDateCapPart = (parts: TaskScorePart[], rawModifier: number): number => {
+  const cappedModifier = _capDateModifier(rawModifier);
+  if (cappedModifier !== rawModifier) {
+    parts.push({ label: 'Dates cap', value: `x${cappedModifier}` });
+  }
+  return cappedModifier;
 };
 
 const _applyContextValueModifier = (
@@ -176,28 +204,27 @@ export const calculateTaskScoreWithContext = (
 
   score = _applyContextValueModifier(score, parts, 'Project value', context.projectValue);
   score = _applyContextValueModifier(score, parts, 'Section value', context.sectionValue);
-  score = _applyDateModifier(score, parts, 'Planned', context.dueDay, context.today);
-  score = _applyDateModifier(
-    score,
+  let dateModifier = 1;
+  dateModifier *= _applyDateModifier(parts, 'Planned', context.dueDay, context.today);
+  dateModifier *= _applyDateModifier(
     parts,
     'Task deadline',
     context.deadlineDay,
     context.today,
   );
-  score = _applyDateModifier(
-    score,
+  dateModifier *= _applyDateModifier(
     parts,
     'Project deadline',
     context.projectDeadlineDay,
     context.today,
   );
-  score = _applyDateModifier(
-    score,
+  dateModifier *= _applyDateModifier(
     parts,
     'Section deadline',
     context.sectionDeadlineDay,
     context.today,
   );
+  score *= _appendDateCapPart(parts, dateModifier);
 
   return {
     score: _roundScore(score),

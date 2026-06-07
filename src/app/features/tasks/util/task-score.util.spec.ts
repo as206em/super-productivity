@@ -37,14 +37,14 @@ describe('task-score.util', () => {
     });
 
     expect(result?.baseScore).toBe(8);
-    expect(result?.score).toBe(13.79);
+    expect(result?.score).toBe(15.77);
     expect(result?.parts).toEqual([
       { label: 'Task', value: '8' },
       { label: 'Project value', value: 'xhigh x1.4' },
       { label: 'Section value', value: 'low x0.85' },
-      { label: 'Planned', value: 'tomorrow x1.15' },
-      { label: 'Task deadline', value: 'this week x1.08' },
-      { label: 'Project deadline', value: 'this week x1.08' },
+      { label: 'Planned', value: 'tomorrow x1.18' },
+      { label: 'Task deadline', value: 'next 2-3 days x1.14' },
+      { label: 'Project deadline', value: 'next 2-3 days x1.14' },
       { label: 'Section deadline', value: 'this week x1.08' },
     ]);
   });
@@ -57,6 +57,58 @@ describe('task-score.util', () => {
         today: '2026-06-07',
       })?.score,
     ).toBe(calculateTaskScore('high', 'high'));
+  });
+
+  it('reduces score for very old overdue dates', () => {
+    const result = calculateTaskScoreWithContext({
+      effort: 'low',
+      value: 'xhigh',
+      deadlineDay: '2026-05-01',
+      today: '2026-06-07',
+    });
+
+    expect(result?.score).toBe(15);
+    expect(result?.parts).toContain({
+      label: 'Task deadline',
+      value: 'overdue 31+ days x0.75',
+    });
+  });
+
+  it('prioritizes next week higher than tasks after two weeks', () => {
+    const nextWeek = calculateTaskScoreWithContext({
+      effort: 'low',
+      value: 'xhigh',
+      deadlineDay: '2026-06-15',
+      today: '2026-06-07',
+    });
+    const afterTwoWeeks = calculateTaskScoreWithContext({
+      effort: 'low',
+      value: 'xhigh',
+      deadlineDay: '2026-06-23',
+      today: '2026-06-07',
+    });
+
+    expect(nextWeek?.score).toBe(20.8);
+    expect(afterTwoWeeks?.score).toBe(19);
+    expect((nextWeek?.score || 0) > (afterTwoWeeks?.score || 0)).toBe(true);
+  });
+
+  it('caps the combined date effect', () => {
+    const result = calculateTaskScoreWithContext({
+      effort: 'high',
+      value: 'high',
+      dueDay: '2026-06-07',
+      deadlineDay: '2026-06-07',
+      projectDeadlineDay: '2026-06-07',
+      sectionDeadlineDay: '2026-06-07',
+      today: '2026-06-07',
+    });
+
+    expect(result?.score).toBe(14.4);
+    expect(result?.parts).toContain({
+      label: 'Dates cap',
+      value: 'x1.8',
+    });
   });
 
   it('identifies tasks with both score fields', () => {
