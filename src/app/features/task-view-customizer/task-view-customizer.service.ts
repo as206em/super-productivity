@@ -3,9 +3,11 @@ import { Observable, animationFrameScheduler, combineLatest } from 'rxjs';
 import { map, observeOn, take } from 'rxjs/operators';
 import { TaskWithSubTasks } from '../tasks/task.model';
 import { selectAllProjects } from '../project/store/project.selectors';
+import { selectAllSections } from '../section/store/section.selectors';
 import { selectAllTags } from './../tag/store/tag.reducer';
 import { Store } from '@ngrx/store';
 import { Project } from '../project/project.model';
+import { Section } from '../section/section.model';
 import { Tag } from '../tag/tag.model';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { computed } from '@angular/core';
@@ -35,7 +37,10 @@ import { LS } from '../../core/persistence/storage-keys.const';
 import { LanguageService } from 'src/app/core/language/language.service';
 import { TranslateService } from '@ngx-translate/core';
 import { T } from '../../t.const';
-import { compareTasksByScore } from '../tasks/util/task-score.util';
+import {
+  buildTaskScoreContextByTaskId,
+  compareTasksByScoreWithContext,
+} from '../tasks/util/task-score.util';
 
 const GROUP_OPTIONS_NO_PROJECT = OPTIONS.group.list.filter(
   (opt) => opt.type !== GROUP_OPTION_TYPE.project,
@@ -83,6 +88,7 @@ export class TaskViewCustomizerService {
 
   constructor() {
     this._initProjects();
+    this._initSections();
     this._initTags();
 
     // Load stored customizations for the active work context, and reset to
@@ -123,6 +129,8 @@ export class TaskViewCustomizerService {
 
   private _allProjects: Project[] = [];
   private _projectsLoaded = false;
+  private _allSections: Section[] = [];
+  private _sectionsLoaded = false;
   private _allTags: Tag[] = [];
   private _tagsLoaded = false;
 
@@ -135,6 +143,18 @@ export class TaskViewCustomizerService {
           this._allProjects = projects;
         });
       this._projectsLoaded = true;
+    }
+  }
+
+  private _initSections(): void {
+    if (!this._sectionsLoaded) {
+      this.store
+        .select(selectAllSections)
+        .pipe(takeUntilDestroyed())
+        .subscribe((sections) => {
+          this._allSections = sections;
+        });
+      this._sectionsLoaded = true;
     }
   }
 
@@ -346,8 +366,24 @@ export class TaskViewCustomizerService {
         });
 
       case SORT_OPTION_TYPE.score:
+        const neutralProjectId =
+          this._workContextService.activeWorkContextType === WorkContextType.PROJECT
+            ? this._workContextService.activeWorkContextId
+            : undefined;
+        const scoreContextByTaskId = buildTaskScoreContextByTaskId(
+          tasksCopy,
+          this._allProjects,
+          this._allSections,
+          getDbDateStr(),
+          neutralProjectId,
+        );
         return tasksCopy.sort((a, b) =>
-          compareTasksByScore(a, b, order === SORT_ORDER.ASC ? 'ASC' : 'DESC'),
+          compareTasksByScoreWithContext(
+            a,
+            b,
+            order === SORT_ORDER.ASC ? 'ASC' : 'DESC',
+            scoreContextByTaskId,
+          ),
         );
 
       default:

@@ -1,6 +1,15 @@
 import { ConfigFormSection } from '../config/global-config.model';
 import { T } from '../../t.const';
 import { Project } from './project.model';
+import { TASK_SCORE_LEVELS, TASK_VALUE_LABELS } from '../tasks/util/task-score.util';
+
+const PROJECT_VALUE_OPTIONS = [
+  { value: null, label: '-' },
+  ...TASK_SCORE_LEVELS.map((value) => ({
+    value,
+    label: TASK_VALUE_LABELS[value],
+  })),
+];
 
 export const CREATE_PROJECT_BASIC_CONFIG_FORM_CONFIG: ConfigFormSection<Project> = {
   // TODO translate
@@ -31,6 +40,21 @@ export const CREATE_PROJECT_BASIC_CONFIG_FORM_CONFIG: ConfigFormSection<Project>
       templateOptions: {
         label: T.F.TAG.FORM_BASIC.L_ICON,
         description: T.G.ICON_INP_DESCRIPTION,
+      },
+    },
+    {
+      key: 'value',
+      type: 'select',
+      templateOptions: {
+        label: T.F.PROJECT.FORM_BASIC.L_VALUE,
+        options: PROJECT_VALUE_OPTIONS,
+      },
+    },
+    {
+      key: 'deadlineDay',
+      type: 'date',
+      templateOptions: {
+        label: T.F.PROJECT.FORM_BASIC.L_DEADLINE,
       },
     },
     {

@@ -19,7 +19,7 @@ import { Router, RouterLink, RouterModule } from '@angular/router';
 import { ProjectService } from '../../features/project/project.service';
 import { SectionService } from '../../features/section/section.service';
 import { DialogPromptComponent } from '../../ui/dialog-prompt/dialog-prompt.component';
-import { MatMenuItem } from '@angular/material/menu';
+import { MatMenuItem, MatMenuModule } from '@angular/material/menu';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MatIcon } from '@angular/material/icon';
 import { INBOX_PROJECT } from '../../features/project/project.const';
@@ -28,15 +28,20 @@ import { WorkContextMarkdownService } from '../../features/work-context/work-con
 import { ShareService, ShareSupport } from '../../core/share/share.service';
 import { Store } from '@ngrx/store';
 import { TaskSharedActions } from '../../root-store/meta/task-shared.actions';
-import { TaskWithSubTasks } from '../../features/tasks/task.model';
+import { TaskScoreLevel, TaskWithSubTasks } from '../../features/tasks/task.model';
 import { firstValueFrom } from 'rxjs';
 import type { WorkContextSettingsDialogData } from '../../features/work-context/dialog-work-context-settings/dialog-work-context-settings.component';
+import {
+  TASK_SCORE_LEVELS,
+  TASK_VALUE_LABELS,
+} from '../../features/tasks/util/task-score.util';
+import { isDBDateStr } from '../../util/get-db-date-str';
 
 @Component({
   selector: 'work-context-menu',
   templateUrl: './work-context-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterModule, MatMenuItem, TranslatePipe, MatIcon],
+  imports: [RouterLink, RouterModule, MatMenuItem, MatMenuModule, TranslatePipe, MatIcon],
   standalone: true,
 })
 export class WorkContextMenuComponent implements OnInit {
@@ -61,6 +66,8 @@ export class WorkContextMenuComponent implements OnInit {
   isForProject: boolean = true;
   base: string = 'project';
   shareSupport: ShareSupport = 'none';
+  readonly taskScoreLevels = TASK_SCORE_LEVELS;
+  readonly taskValueLabels = TASK_VALUE_LABELS;
 
   // TODO: Skipped for migration because:
   //  Accessor inputs cannot be migrated as they are too complex.
@@ -192,6 +199,44 @@ export class WorkContextMenuComponent implements OnInit {
             this.isForProject ? WorkContextType.PROJECT : WorkContextType.TAG,
           );
         }
+      });
+  }
+
+  setProjectValue(value: TaskScoreLevel | null): void {
+    if (!this.isForProject) return;
+    this._projectService.update(this.contextId, { value });
+  }
+
+  editProjectDeadline(): void {
+    if (!this.isForProject) return;
+    this._projectService
+      .getByIdOnce$(this.contextId)
+      .pipe(first())
+      .subscribe((project) => {
+        this._matDialog
+          .open(DialogPromptComponent, {
+            data: {
+              placeholder: T.F.PROJECT.FORM_BASIC.L_DEADLINE,
+              txtValue: project?.deadlineDay || '',
+            },
+          })
+          .afterClosed()
+          .subscribe((newDeadline: string | undefined) => {
+            if (newDeadline === undefined) return;
+            const trimmedDeadline = newDeadline.trim();
+            if (!trimmedDeadline) {
+              this._projectService.update(this.contextId, { deadlineDay: null });
+              return;
+            }
+            if (!isDBDateStr(trimmedDeadline)) {
+              this._snackService.open({
+                msg: T.V.E_DATETIME,
+                type: 'ERROR',
+              });
+              return;
+            }
+            this._projectService.update(this.contextId, { deadlineDay: trimmedDeadline });
+          });
       });
   }
 

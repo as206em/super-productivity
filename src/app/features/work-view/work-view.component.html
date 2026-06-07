@@ -209,11 +209,41 @@
                           </button>
                           <button
                             mat-menu-item
+                            [matMenuTriggerFor]="sectionValueMenu"
+                          >
+                            <mat-icon>trending_up</mat-icon>
+                            {{ T.WW.SECTION_VALUE | translate }}
+                          </button>
+                          <button
+                            mat-menu-item
+                            (click)="editSectionDeadline(section.id, section.deadlineDay)"
+                          >
+                            <mat-icon>event</mat-icon>
+                            {{ T.WW.SECTION_DEADLINE | translate }}
+                          </button>
+                          <button
+                            mat-menu-item
                             (click)="deleteSection(section.id)"
                           >
                             <mat-icon>delete</mat-icon>
                             {{ T.G.DELETE | translate }}
                           </button>
+                        </mat-menu>
+                        <mat-menu #sectionValueMenu="matMenu">
+                          <button
+                            mat-menu-item
+                            (click)="setSectionValue(section.id, null)"
+                          >
+                            {{ T.F.TASK.CMP.CLEAR_VALUE | translate }}
+                          </button>
+                          @for (value of taskScoreLevels; track value) {
+                            <button
+                              mat-menu-item
+                              (click)="setSectionValue(section.id, value)"
+                            >
+                              {{ taskValueLabels[value] }}
+                            </button>
+                          }
                         </mat-menu>
                       </ng-container>
 

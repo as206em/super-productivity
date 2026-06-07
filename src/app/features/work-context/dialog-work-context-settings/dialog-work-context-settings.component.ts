@@ -19,11 +19,15 @@ import { buildWorkContextSettingsFormCfg } from './work-context-settings-form-cf
 import { adjustToLiveFormlyForm } from '../../../util/adjust-to-live-formly-form';
 import { MatButton } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
+import { getDbDateStr } from '../../../util/get-db-date-str';
 
 export interface WorkContextSettingsDialogData {
   isProject: boolean;
   entity: Project | Tag;
 }
+
+const _normalizeDeadlineDay = (value: unknown): string | null | undefined =>
+  value instanceof Date ? getDbDateStr(value) : (value as string | null | undefined);
 
 @Component({
   selector: 'dialog-work-context-settings',
@@ -162,6 +166,8 @@ export class DialogWorkContextSettingsComponent {
         icon: p.icon,
         isEnableBacklog: p.isEnableBacklog,
         isHiddenFromMenu: p.isHiddenFromMenu,
+        value: p.value,
+        deadlineDay: _normalizeDeadlineDay(p.deadlineDay),
         theme,
       });
     } else {

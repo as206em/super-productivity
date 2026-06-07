@@ -15,8 +15,12 @@ import { TODAY_TAG } from '../../tag/tag.const';
 import { IssueProvider, isPluginIssueProvider } from '../../issue/issue.model';
 import {
   selectArchivedProjectIds,
+  selectAllProjects,
   selectHiddenProjectIds,
 } from '../../project/store/project.selectors';
+import { Project } from '../../project/project.model';
+import { selectAllSections } from '../../section/store/section.selectors';
+import { Section } from '../../section/section.model';
 import {
   selectTagFeatureState,
   selectTodayTagTaskIds,
@@ -28,7 +32,12 @@ import {
 import { dateStrToUtcDate } from '../../../util/date-str-to-utc-date';
 import { isTodayWithOffset } from '../../../util/is-today.util';
 import { getTimeConflictTaskIds } from '../util/get-time-conflict-task-ids';
-import { compareTasksByScoreDesc, hasTaskScore } from '../util/task-score.util';
+import {
+  buildTaskScoreContextByTaskId,
+  compareTasksByScoreDesc,
+  compareTasksByScoreWithContext,
+  hasTaskScore,
+} from '../util/task-score.util';
 const mapSubTasksToTasks = (tasksIN: Task[]): TaskWithSubTasks[] => {
   // Create a Map for O(1) lookups instead of O(n) find() calls
   const taskMap = new Map<string, Task>();
@@ -191,13 +200,29 @@ export const selectAllTasksInActiveProjects = createSelector(
 export const selectPriorityTasks = createSelector(
   selectAllTasksInActiveProjects,
   selectTaskFeatureState,
-  (tasks, taskState): TaskWithSubTasks[] =>
-    tasks
+  selectAllProjects,
+  selectAllSections,
+  selectTodayStr,
+  (
+    tasks,
+    taskState,
+    projects: Project[] = [],
+    sections: Section[] = [],
+    today?: string,
+  ): TaskWithSubTasks[] => {
+    const scoreContextByTaskId = buildTaskScoreContextByTaskId(
+      tasks,
+      projects,
+      sections,
+      today,
+    );
+    return tasks
       .filter(
         (task): task is Task => !task.isDone && !task.parentId && hasTaskScore(task),
       )
       .map((task) => mapSubTasksToTask(task, taskState) as TaskWithSubTasks)
-      .sort(compareTasksByScoreDesc),
+      .sort((a, b) => compareTasksByScoreWithContext(a, b, 'DESC', scoreContextByTaskId));
+  },
 );
 
 export const selectPriorityTasksWithIncompleteScore = createSelector(

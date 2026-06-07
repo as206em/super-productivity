@@ -59,6 +59,39 @@
   </button>
 }
 
+@if (isForProject) {
+  <button
+    [matMenuTriggerFor]="projectValueMenu"
+    mat-menu-item
+  >
+    <mat-icon>trending_up</mat-icon>
+    <span class="text">{{ T.F.PROJECT.FORM_BASIC.L_VALUE | translate }}</span>
+  </button>
+  <button
+    (click)="editProjectDeadline()"
+    mat-menu-item
+  >
+    <mat-icon>event</mat-icon>
+    <span class="text">{{ T.F.PROJECT.FORM_BASIC.L_DEADLINE | translate }}</span>
+  </button>
+  <mat-menu #projectValueMenu="matMenu">
+    <button
+      (click)="setProjectValue(null)"
+      mat-menu-item
+    >
+      <span class="text">{{ T.F.TASK.CMP.CLEAR_VALUE | translate }}</span>
+    </button>
+    @for (value of taskScoreLevels; track value) {
+      <button
+        (click)="setProjectValue(value)"
+        mat-menu-item
+      >
+        <span class="text">{{ taskValueLabels[value] }}</span>
+      </button>
+    }
+  </mat-menu>
+}
+
 <button
   (click)="openSettings()"
   mat-menu-item

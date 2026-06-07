@@ -310,6 +310,8 @@ export interface Project {
   noteIds: string[];
   isEnableBacklog?: boolean;
   isHiddenFromMenu?: boolean;
+  value?: 'xhigh' | 'high' | 'mid' | 'low' | null;
+  deadlineDay?: string | null;
   folderId?: string | null;
 
   // Advanced config (internal) - must be any to match WorkContextCommon

@@ -934,9 +934,11 @@
         "MSG": "Are you sure you want to delete the project \"{{title}}\"?"
       },
       "FORM_BASIC": {
+        "L_DEADLINE": "Project deadline",
         "L_ENABLE_BACKLOG": "Enable Project Backlog",
         "L_IS_HIDDEN_FROM_MENU": "Hide project from menu",
         "L_TITLE": "Project Name",
+        "L_VALUE": "Project value",
         "TITLE": "Basic Settings"
       },
       "FORM_THEME": {
@@ -2906,7 +2908,9 @@
     "ADD_MORE": "Add more",
     "ADD_SCHEDULED_FOR_TOMORROW": "Add tasks planned for tomorrow ({{nr}})",
     "ADD_SECTION_TITLE": "Add Section",
+    "SECTION_DEADLINE": "Section deadline",
     "SECTION_OPTIONS": "Section options",
+    "SECTION_VALUE": "Section value",
     "DONE_TASKS": "Completed Tasks",
     "DONE_TASKS_IN_ARCHIVE": "There are currently no completed tasks here, but there are some already archived.",
     "ESTIMATE_REMAINING": "Estimate remaining:",

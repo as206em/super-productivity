@@ -37,6 +37,10 @@ import { removeDebounceFromFormItems } from '../../../../util/remove-debounce-fr
 import { MatButton } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Log } from '../../../../core/log';
+import { getDbDateStr } from '../../../../util/get-db-date-str';
+
+const _normalizeDeadlineDay = (value: unknown): string | null | undefined =>
+  value instanceof Date ? getDbDateStr(value) : (value as string | null | undefined);
 
 @Component({
   selector: 'dialog-create-project',
@@ -146,6 +150,7 @@ export class DialogCreateProjectComponent implements OnInit, OnDestroy {
 
     const projectDataToSave: Project | Partial<Project> = {
       ...this.projectData,
+      deadlineDay: _normalizeDeadlineDay(this.projectData.deadlineDay),
     };
 
     let newProjectId: string | undefined;

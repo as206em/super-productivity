@@ -1,10 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { TaskViewCustomizerService } from './task-view-customizer.service';
 import { Project } from '../project/project.model';
+import { Section } from '../section/section.model';
 import { Tag } from '../tag/tag.model';
 import { TaskWithSubTasks } from '../tasks/task.model';
 import { provideMockStore } from '@ngrx/store/testing';
 import { selectAllProjects } from '../project/store/project.selectors';
+import { selectAllSections } from '../section/store/section.selectors';
 import { selectAllTags } from '../tag/store/tag.reducer';
 import { getTomorrow } from '../../util/get-tomorrow';
 import { getDbDateStr } from '../../util/get-db-date-str';
@@ -61,6 +63,7 @@ describe('TaskViewCustomizerService', () => {
     { id: 'Tag A', title: 'Tag A' } as Tag,
     { id: 'Tag B', title: 'Tag B' } as Tag,
   ];
+  const mockSections: Section[] = [];
   const mockTasks: TaskWithSubTasks[] = [
     {
       id: 'Alpha(Tag A)',
@@ -163,6 +166,7 @@ describe('TaskViewCustomizerService', () => {
         provideMockStore({
           selectors: [
             { selector: selectAllProjects, value: mockProjects },
+            { selector: selectAllSections, value: mockSections },
             { selector: selectAllTags, value: mockTags },
           ],
         }),
@@ -170,6 +174,7 @@ describe('TaskViewCustomizerService', () => {
     });
     service = TestBed.inject(TaskViewCustomizerService);
     (service as any)._allProjects = mockProjects;
+    (service as any)._allSections = mockSections;
     (service as any)._allTags = mockTags;
   });
 
@@ -475,6 +480,56 @@ describe('TaskViewCustomizerService', () => {
       'missing-effort',
       'missing-value',
     ]);
+  });
+
+  it('should sort by score with section context while keeping the active project neutral', () => {
+    const scoreTasks = [
+      {
+        id: 'base-best',
+        title: 'Base best',
+        projectId: 'Project A',
+        effort: 'low',
+        value: 'xhigh',
+        created: 1,
+      },
+      {
+        id: 'section-best',
+        title: 'Section best',
+        projectId: 'Project A',
+        effort: 'low',
+        value: 'high',
+        created: 2,
+      },
+    ] as TaskWithSubTasks[];
+    (service as any)._allProjects = [
+      {
+        id: 'Project A',
+        title: 'Project A',
+        value: 'xhigh',
+        deadlineDay: '2026-06-08',
+      },
+    ] as Project[];
+    (service as any)._allSections = [
+      {
+        id: 'section1',
+        contextId: 'Project A',
+        contextType: WorkContextType.PROJECT,
+        title: 'Section 1',
+        value: 'high',
+        deadlineDay: '2026-06-08',
+        taskIds: ['section-best'],
+      },
+    ] as Section[];
+    mockWorkContextService.activeWorkContextId = 'Project A';
+    mockWorkContextService.activeWorkContextType = WorkContextType.PROJECT;
+
+    const sorted = service['applySort'](
+      scoreTasks,
+      SORT_OPTION_TYPE.score,
+      SORT_ORDER.DESC,
+    );
+
+    expect(sorted.map((t) => t.id)).toEqual(['section-best', 'base-best']);
   });
 
   it('should group by tag', () => {
@@ -1108,6 +1163,7 @@ describe('TaskViewCustomizerService', () => {
           provideMockStore({
             selectors: [
               { selector: selectAllProjects, value: mockProjects },
+              { selector: selectAllSections, value: mockSections },
               { selector: selectAllTags, value: mockTags },
             ],
           }),
@@ -1288,6 +1344,7 @@ describe('TaskViewCustomizerService', () => {
           provideMockStore({
             selectors: [
               { selector: selectAllProjects, value: allProjects },
+              { selector: selectAllSections, value: mockSections },
               { selector: selectAllTags, value: mockTags },
               {
                 selector: selectAllTasksWithSubTasks,

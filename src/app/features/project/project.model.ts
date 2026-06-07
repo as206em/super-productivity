@@ -6,6 +6,7 @@ import {
 import { EntityState } from '@ngrx/entity';
 // Import the unified Project type from plugin-api
 import { Project as PluginProject } from '@super-productivity/plugin-api';
+import { TaskScoreLevel } from '../tasks/task.model';
 
 export type RoundTimeOption = '5M' | 'QUARTER' | 'HALF' | 'HOUR' | null | undefined;
 
@@ -15,6 +16,8 @@ export interface ProjectBasicCfg {
   isArchived?: boolean;
   isHiddenFromMenu?: boolean;
   isEnableBacklog?: boolean;
+  value?: TaskScoreLevel | null;
+  deadlineDay?: string | null;
   taskIds: string[];
   backlogTaskIds: string[];
   noteIds: string[];

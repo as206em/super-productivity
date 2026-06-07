@@ -12,8 +12,11 @@ import {
   selectArrayOfArchivedProjectIds,
   selectProjectFeatureState,
 } from '../../project/store/project.selectors';
+import { Project } from '../../project/project.model';
+import { Section } from '../../section/section.model';
 import { TAG_FEATURE_NAME } from '../../tag/store/tag.reducer';
 import { appStateFeatureKey } from '../../../root-store/app-state/app-state.reducer';
+import { WorkContextType } from '../../work-context/work-context.model';
 
 describe('Task Selectors', () => {
   // Define mock tasks
@@ -1128,10 +1131,73 @@ describe('Task Selectors', () => {
       ];
       const state = taskAdapter.addMany(scoredTasks, initialTaskState);
 
-      const result = fromSelectors.selectPriorityTasks.projector(scoredTasks, state);
+      const result = fromSelectors.selectPriorityTasks.projector(
+        scoredTasks,
+        state,
+        [],
+        [],
+        today,
+      );
 
       expect(result.map((task) => task.id)).toEqual(['best', 'middle', 'low']);
       expect(result[0].subTasks.map((task) => task.id)).toEqual(['subtask']);
+    });
+
+    it('sorts by task score with project and section context', () => {
+      const priorityTasks: Task[] = [
+        {
+          ...DEFAULT_TASK,
+          id: 'base-best',
+          projectId: 'project1',
+          title: 'Base best',
+          created: 1,
+          effort: 'low',
+          value: 'xhigh',
+        },
+        {
+          ...DEFAULT_TASK,
+          id: 'context-best',
+          projectId: 'project2',
+          title: 'Context best',
+          created: 2,
+          effort: 'low',
+          value: 'high',
+          deadlineDay: '2026-06-08',
+        },
+      ];
+      const projects = [
+        { id: 'project1', title: 'Project 1' },
+        {
+          id: 'project2',
+          title: 'Project 2',
+          value: 'xhigh',
+          deadlineDay: '2026-06-09',
+        },
+      ] as Project[];
+      const sections = [
+        {
+          id: 'section1',
+          contextId: 'project2',
+          contextType: WorkContextType.PROJECT,
+          title: 'Section 1',
+          value: 'high',
+          deadlineDay: '2026-06-10',
+          taskIds: ['context-best'],
+        },
+      ] as Section[];
+      const state = taskAdapter.addMany(priorityTasks, initialTaskState);
+
+      const result = (
+        fromSelectors.selectPriorityTasks.projector as unknown as (
+          tasks: Task[],
+          taskState: TaskState,
+          projects: Project[],
+          sections: Section[],
+          today: string,
+        ) => Task[]
+      )(priorityTasks, state, projects, sections, '2026-06-07');
+
+      expect(result.map((task) => task.id)).toEqual(['context-best', 'base-best']);
     });
 
     it('returns only undone parent tasks missing value or effort', () => {

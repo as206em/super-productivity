@@ -89,11 +89,8 @@ import { LayoutService } from '../../../core-ui/layout/layout.service';
 import { TaskFocusService } from '../task-focus.service';
 import { selectTimeConflictTaskIds } from '../store/task.selectors';
 import { MatTooltip } from '@angular/material/tooltip';
-import {
-  calculateTaskScore,
-  TASK_EFFORT_LABELS,
-  TASK_VALUE_LABELS,
-} from '../util/task-score.util';
+import { TASK_EFFORT_LABELS, TASK_VALUE_LABELS } from '../util/task-score.util';
+import { TaskScoreService } from '../util/task-score.service';
 
 @Component({
   selector: 'task',
@@ -151,6 +148,7 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
   private readonly _taskFocusService = inject(TaskFocusService);
   private readonly _dateService = inject(DateService);
   private readonly _destroyRef = inject(DestroyRef);
+  private readonly _taskScoreService = inject(TaskScoreService);
 
   readonly workContextService = inject(WorkContextService);
   readonly layoutService = inject(LayoutService);
@@ -195,8 +193,11 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
   );
   readonly taskEffortLabels = TASK_EFFORT_LABELS;
   readonly taskValueLabels = TASK_VALUE_LABELS;
-  readonly taskScore = computed(() =>
-    calculateTaskScore(this.task().effort, this.task().value),
+  readonly taskScoreResult = computed(() =>
+    this._taskScoreService.getScoreResult(this.task()),
+  );
+  readonly taskScoreTooltip = computed(() =>
+    this._taskScoreService.getScoreTooltip(this.taskScoreResult()),
   );
   isTodayListActive = computed(() => this.workContextService.isTodayList);
   taskIdWithPrefix = computed(() => 't-' + this.task().id);

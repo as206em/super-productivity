@@ -34,7 +34,7 @@ import {
   timer,
   zip,
 } from 'rxjs';
-import { TaskWithSubTasks } from '../tasks/task.model';
+import { TaskScoreLevel, TaskWithSubTasks } from '../tasks/task.model';
 import { delay, filter, map, observeOn, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { fadeAnimation } from '../../ui/animations/fade.ani';
@@ -87,6 +87,8 @@ import { dragDelayForTouch } from '../../util/input-intent';
 import { DateService } from '../../core/date/date.service';
 import { PluginIndexComponent } from '../../plugins/ui/plugin-index/plugin-index.component';
 import { PluginBridgeService } from '../../plugins/plugin-bridge.service';
+import { isDBDateStr } from '../../util/get-db-date-str';
+import { TASK_SCORE_LEVELS, TASK_VALUE_LABELS } from '../tasks/util/task-score.util';
 
 export interface WorkViewTaskList {
   list: TaskWithSubTasks[];
@@ -149,6 +151,8 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   private _dateService = inject(DateService);
   private _pluginBridge = inject(PluginBridgeService);
   protected readonly dragDelayForTouch = dragDelayForTouch;
+  readonly taskScoreLevels = TASK_SCORE_LEVELS;
+  readonly taskValueLabels = TASK_VALUE_LABELS;
 
   isProjectContext = toSignal(this.workContextService.isActiveWorkContextProject$, {
     initialValue: false,
@@ -492,6 +496,38 @@ export class WorkViewComponent implements OnInit, OnDestroy {
         if (newTitle?.trim()) {
           this.sectionService.updateSection(id, { title: newTitle });
         }
+      });
+  }
+
+  setSectionValue(id: string, value: TaskScoreLevel | null): void {
+    this.sectionService.updateSection(id, { value });
+  }
+
+  editSectionDeadline(id: string, deadlineDay?: string | null): void {
+    this._matDialog
+      .open(DialogPromptComponent, {
+        data: {
+          placeholder: T.WW.SECTION_DEADLINE,
+          txtValue: deadlineDay || '',
+        },
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe((newDeadline: string | undefined) => {
+        if (newDeadline === undefined) return;
+        const trimmedDeadline = newDeadline.trim();
+        if (!trimmedDeadline) {
+          this.sectionService.updateSection(id, { deadlineDay: null });
+          return;
+        }
+        if (!isDBDateStr(trimmedDeadline)) {
+          this._snackService.open({
+            msg: T.V.E_DATETIME,
+            type: 'ERROR',
+          });
+          return;
+        }
+        this.sectionService.updateSection(id, { deadlineDay: trimmedDeadline });
       });
   }
 

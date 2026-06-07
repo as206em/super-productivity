@@ -65,11 +65,12 @@
                   >E {{ taskEffortLabels[t.effort] }}</span
                 >
               }
-              @if (taskScore(); as score) {
+              @if (taskScoreResult(); as scoreResult) {
                 <span
                   class="score-badge score-badge-score"
-                  [title]="T.F.TASK.CMP.SCORE | translate"
-                  >S {{ score }}</span
+                  [matTooltip]="taskScoreTooltip()"
+                  matTooltipPosition="above"
+                  >S {{ scoreResult.score }}</span
                 >
               }
             </div>
