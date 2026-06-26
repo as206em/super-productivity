@@ -43,10 +43,19 @@
             class="task-title"
           ></task-title>
 
-          @if (t.tagIds?.length || t.projectId || t.repeatCfgId || t.issueId) {
+          @if (
+            !isInSubTaskList() ||
+            t.tagIds?.length ||
+            t.projectId ||
+            t.repeatCfgId ||
+            t.issueId
+          ) {
             <tag-list
               [task]="t"
+              [isShowProjectTagAlways]="!isInSubTaskList()"
               [isShowProjectTagNever]="isInSubTaskList()"
+              [isShowSectionTag]="!isInSubTaskList()"
+              [isShowSprintTag]="!isInSubTaskList()"
             ></tag-list>
           }
           @if (t.value || t.effort) {

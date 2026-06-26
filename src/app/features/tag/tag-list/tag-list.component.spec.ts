@@ -11,18 +11,25 @@ import { WorkContextType } from '../../work-context/work-context.model';
 import { selectTagFeatureState } from '../store/tag.reducer';
 import { selectProjectFeatureState } from '../../project/store/project.selectors';
 import { selectTaskRepeatCfgFeatureState } from '../../task-repeat-cfg/store/task-repeat-cfg.selectors';
+import { selectSectionsByContextIdMap } from '../../section/store/section.selectors';
+import { Section } from '../../section/section.model';
+import { SprintState } from '../../sprint/sprint.model';
+import { selectSprintFeatureState } from '../../sprint/store/sprint.reducer';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { DEFAULT_TAG } from '../tag.const';
 import { DEFAULT_PROJECT } from '../../project/project.const';
 import { TranslateService } from '@ngx-translate/core';
 import { DateTimeFormatService } from '../../../core/date-time-format/date-time-format.service';
 import { PluginIssueProviderRegistryService } from '../../../plugins/issue-provider/plugin-issue-provider-registry.service';
+import { T } from '../../../t.const';
 
 describe('TagListComponent', () => {
   let component: TagListComponent;
   let fixture: ComponentFixture<TagListComponent>;
   let tagState$: BehaviorSubject<TagState>;
   let projectState$: BehaviorSubject<ProjectState>;
+  let sectionsByContextId$: BehaviorSubject<Map<string, Section[]>>;
+  let sprintState$: BehaviorSubject<SprintState>;
   let workContext$: BehaviorSubject<{
     activeId: string;
     activeType: WorkContextType;
@@ -64,6 +71,11 @@ describe('TagListComponent', () => {
   beforeEach(async () => {
     tagState$ = new BehaviorSubject<TagState>({ ids: [], entities: {} });
     projectState$ = new BehaviorSubject<ProjectState>({ ids: [], entities: {} });
+    sectionsByContextId$ = new BehaviorSubject<Map<string, Section[]>>(new Map());
+    sprintState$ = new BehaviorSubject<SprintState>({
+      currentTaskIds: [],
+      nextTaskIds: [],
+    });
     workContext$ = new BehaviorSubject<{
       activeId: string;
       activeType: WorkContextType;
@@ -77,6 +89,10 @@ describe('TagListComponent', () => {
           return projectState$.asObservable();
         } else if (selector === selectTaskRepeatCfgFeatureState) {
           return of({ ids: [], entities: {} });
+        } else if (selector === selectSectionsByContextIdMap) {
+          return sectionsByContextId$.asObservable();
+        } else if (selector === selectSprintFeatureState) {
+          return sprintState$.asObservable();
         }
         return of(null);
       },
@@ -361,6 +377,114 @@ describe('TagListComponent', () => {
 
       const tags = component.tags();
       expect(tags.length).toBe(0);
+    });
+  });
+
+  describe('section tag display', () => {
+    it('should show section tag for the active work context when enabled', () => {
+      workContext$.next({ activeId: 'proj-1', activeType: WorkContextType.PROJECT });
+      sectionsByContextId$.next(
+        new Map([
+          [
+            'proj-1',
+            [
+              {
+                id: 'section-1',
+                contextId: 'proj-1',
+                contextType: WorkContextType.PROJECT,
+                title: 'Milestone A',
+                taskIds: ['task-1'],
+              },
+            ],
+          ],
+        ]),
+      );
+
+      const task = createMockTask();
+      fixture.componentRef.setInput('task', task);
+      fixture.componentRef.setInput('isShowSectionTag', true);
+      fixture.detectChanges();
+
+      expect(component.tags()).toContain(
+        jasmine.objectContaining({
+          id: 'section-1',
+          title: 'Milestone A',
+          icon: 'segment',
+        }),
+      );
+    });
+
+    it('should not show section tag from another work context', () => {
+      workContext$.next({ activeId: 'proj-1', activeType: WorkContextType.PROJECT });
+      sectionsByContextId$.next(
+        new Map([
+          [
+            'other-project',
+            [
+              {
+                id: 'section-1',
+                contextId: 'other-project',
+                contextType: WorkContextType.PROJECT,
+                title: 'Other Section',
+                taskIds: ['task-1'],
+              },
+            ],
+          ],
+        ]),
+      );
+
+      const task = createMockTask();
+      fixture.componentRef.setInput('task', task);
+      fixture.componentRef.setInput('isShowSectionTag', true);
+      fixture.detectChanges();
+
+      expect(component.tags()).not.toContain(
+        jasmine.objectContaining({
+          id: 'section-1',
+        }),
+      );
+    });
+  });
+
+  describe('sprint tag display', () => {
+    it('should show current sprint tag when enabled', () => {
+      sprintState$.next({
+        currentTaskIds: ['task-1'],
+        nextTaskIds: [],
+      });
+
+      const task = createMockTask();
+      fixture.componentRef.setInput('task', task);
+      fixture.componentRef.setInput('isShowSprintTag', true);
+      fixture.detectChanges();
+
+      expect(component.tags()).toContain(
+        jasmine.objectContaining({
+          id: 'SPRINT_CURRENT',
+          title: T.SPRINT.CURRENT,
+          icon: 'flag',
+        }),
+      );
+    });
+
+    it('should show next sprint tag when enabled', () => {
+      sprintState$.next({
+        currentTaskIds: [],
+        nextTaskIds: ['task-1'],
+      });
+
+      const task = createMockTask();
+      fixture.componentRef.setInput('task', task);
+      fixture.componentRef.setInput('isShowSprintTag', true);
+      fixture.detectChanges();
+
+      expect(component.tags()).toContain(
+        jasmine.objectContaining({
+          id: 'SPRINT_NEXT',
+          title: T.SPRINT.NEXT,
+          icon: 'outlined_flag',
+        }),
+      );
     });
   });
 

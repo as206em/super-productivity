@@ -30,6 +30,11 @@ import { TaskRepeatCfgState } from '../../task-repeat-cfg/task-repeat-cfg.model'
 import { getTaskRepeatInfoText } from '../../tasks/task-detail-panel/get-task-repeat-info-text.util';
 import { TranslateService } from '@ngx-translate/core';
 import { DateTimeFormatService } from '../../../core/date-time-format/date-time-format.service';
+import { selectSectionsByContextIdMap } from '../../section/store/section.selectors';
+import { Section } from '../../section/section.model';
+import { SprintState, SprintTarget } from '../../sprint/sprint.model';
+import { selectSprintFeatureState } from '../../sprint/store/sprint.reducer';
+import { T } from '../../../t.const';
 
 @Component({
   selector: 'tag-list',
@@ -53,6 +58,8 @@ export class TagListComponent {
   isShowCurrentContextTag = input(false);
   isShowProjectTagAlways = input(false);
   isShowProjectTagNever = input(false);
+  isShowSectionTag = input(false);
+  isShowSprintTag = input(false);
 
   workContext = toSignal(this._workContextService.activeWorkContextTypeAndId$);
 
@@ -65,10 +72,60 @@ export class TagListComponent {
   repeatCfgState = toSignal(this._store.select(selectTaskRepeatCfgFeatureState), {
     initialValue: { ids: [], entities: {} } as TaskRepeatCfgState,
   });
+  sectionsByContextId = toSignal(this._store.select(selectSectionsByContextIdMap), {
+    initialValue: new Map<string, Section[]>(),
+  });
+  sprintState = toSignal(this._store.select(selectSprintFeatureState), {
+    initialValue: { currentTaskIds: [], nextTaskIds: [] } as SprintState,
+  });
 
   tagIds = computed<string[]>(() => this.task().tagIds || []);
 
-  tags = computed<Tag[]>(() => {
+  sectionTag = computed<TagComponentTag | null>(() => {
+    if (!this.isShowSectionTag()) {
+      return null;
+    }
+
+    const activeId = this.workContext()?.activeId;
+    if (!activeId) {
+      return null;
+    }
+
+    const taskId = this.task().id;
+    const section = this.sectionsByContextId()
+      .get(activeId)
+      ?.find((s) => s.taskIds.includes(taskId));
+
+    return section
+      ? {
+          id: section.id,
+          title: section.title,
+          icon: 'segment',
+          color: 'var(--text-color-muted)',
+        }
+      : null;
+  });
+
+  sprintTag = computed<TagComponentTag | null>(() => {
+    if (!this.isShowSprintTag()) {
+      return null;
+    }
+
+    const taskId = this.task().id;
+    const sprint = this.sprintState().currentTaskIds.includes(taskId)
+      ? 'CURRENT'
+      : this.sprintState().nextTaskIds.includes(taskId)
+        ? 'NEXT'
+        : null;
+
+    return sprint ? this._getSprintTag(sprint) : null;
+  });
+
+  contextTags = computed<TagComponentTag[]>(() =>
+    [this.sectionTag(), this.sprintTag()].filter((tag): tag is TagComponentTag => !!tag),
+  );
+
+  tags = computed<TagComponentTag[]>(() => {
     const tagsToHide = this.tagsToHide();
     const tagIdsFiltered: string[] = !!tagsToHide
       ? tagsToHide.length > 0
@@ -80,23 +137,32 @@ export class TagListComponent {
     const tagsI = tagIdsFiltered
       .map((id) => this.tagState()?.entities[id])
       .filter((tag): tag is Tag => !!tag)
+      .map(
+        (tag): TagComponentTag => ({
+          id: tag.id,
+          title: tag.title,
+          color: tag.color || undefined,
+          icon: tag.icon || undefined,
+        }),
+      )
       .sort((a, b) => a.title.localeCompare(b.title));
 
+    const contextTags = this.contextTags();
     const projectId = this.projectId();
     const project = projectId && this.projectState()?.entities[projectId];
 
     if (project && project.id) {
-      const projectTag: Tag = {
-        ...project,
+      const projectTag: TagComponentTag = {
+        id: project.id,
+        title: project.title,
         color: project.theme?.primary || DEFAULT_PROJECT_COLOR,
-        created: 0,
         icon: project.icon || DEFAULT_PROJECT_ICON,
       };
       // project tag first then sorted tags
-      return [projectTag, ...tagsI];
+      return [projectTag, ...contextTags, ...tagsI];
     }
 
-    return tagsI;
+    return [...contextTags, ...tagsI];
   });
 
   projectId = computed<string | undefined>(() => {
@@ -159,4 +225,15 @@ export class TagListComponent {
 
     return chips;
   });
+
+  private _getSprintTag(sprint: SprintTarget): TagComponentTag {
+    return {
+      id: `SPRINT_${sprint}`,
+      title: this._translateService.instant(
+        sprint === 'CURRENT' ? T.SPRINT.CURRENT : T.SPRINT.NEXT,
+      ),
+      icon: sprint === 'CURRENT' ? 'flag' : 'outlined_flag',
+      color: 'var(--palette-accent-500)',
+    };
+  }
 }
