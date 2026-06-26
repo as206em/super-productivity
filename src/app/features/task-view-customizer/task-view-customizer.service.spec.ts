@@ -515,8 +515,7 @@ describe('TaskViewCustomizerService', () => {
         contextId: 'Project A',
         contextType: WorkContextType.PROJECT,
         title: 'Section 1',
-        value: 'high',
-        deadlineDay: '2026-06-08',
+        value: 'xhigh',
         taskIds: ['section-best'],
       },
     ] as Section[];
