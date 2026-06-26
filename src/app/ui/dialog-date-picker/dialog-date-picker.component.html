@@ -1,0 +1,33 @@
+<mat-dialog-content>
+  <date-picker-input
+    [label]="data.label | translate"
+    [(ngModel)]="selectedDate"
+  ></date-picker-input>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-stroked-button
+    type="button"
+    (click)="clear()"
+  >
+    <mat-icon>clear</mat-icon>
+    {{ T.G.CLEAR | translate }}
+  </button>
+  <button
+    mat-stroked-button
+    type="button"
+    (click)="close()"
+  >
+    {{ T.G.CANCEL | translate }}
+  </button>
+  <button
+    mat-flat-button
+    color="primary"
+    type="button"
+    (click)="save()"
+  >
+    <mat-icon>done</mat-icon>
+    {{ T.G.SAVE | translate }}
+  </button>
+</mat-dialog-actions>

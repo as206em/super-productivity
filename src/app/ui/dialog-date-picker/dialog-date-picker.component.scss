@@ -1,0 +1,8 @@
+:host {
+  display: block;
+  min-width: min(360px, 80vw);
+}
+
+mat-dialog-actions {
+  gap: var(--s);
+}

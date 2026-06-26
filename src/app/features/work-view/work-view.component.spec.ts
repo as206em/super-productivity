@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { MatDialog } from '@angular/material/dialog';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, of } from 'rxjs';
@@ -28,6 +29,7 @@ import {
   selectTaskRepeatCfgsByTagId,
 } from '../task-repeat-cfg/store/task-repeat-cfg.selectors';
 import { TODAY_TAG } from '../tag/tag.const';
+import { DialogDatePickerComponent } from '../../ui/dialog-date-picker/dialog-date-picker.component';
 
 /**
  * Tests for the constructor effect() in WorkViewComponent that deselects the
@@ -381,6 +383,123 @@ describe('WorkViewComponent', () => {
       const result = cmp.undoneTasksBySection();
       expect(result.dict).toEqual({});
       expect(result.noSection.map((t) => t.id)).toEqual(['a', 'b']);
+    });
+
+    it('formats section metadata for the section header', async () => {
+      const cmp = await setup([], []);
+
+      expect(
+        cmp.sectionHeaderMeta({
+          ...buildSection('s1', []),
+          value: 'high',
+          deadlineDay: '2026-06-30',
+        }),
+      ).toEqual({ value: 'high', deadlineDay: '2026-06-30' });
+    });
+  });
+
+  describe('editSectionDeadline', () => {
+    it('opens the date picker dialog', async () => {
+      const matDialog = jasmine.createSpyObj('MatDialog', ['open']);
+      matDialog.open.and.returnValue({ afterClosed: () => of(undefined) });
+
+      TestBed.configureTestingModule({
+        imports: [WorkViewComponent, TranslateModule.forRoot()],
+        providers: [
+          provideNoopAnimations(),
+          provideMockStore({ initialState: {} }),
+          {
+            provide: TaskService,
+            useValue: {
+              selectedTaskId: signal<string | null>(null),
+              setSelectedId: () => {},
+              moveToArchive: () => Promise.resolve(),
+            },
+          },
+          { provide: TakeABreakService, useValue: { resetTimer: () => {} } },
+          {
+            provide: LayoutService,
+            useValue: {
+              isXs: signal(false),
+              isWorkViewScrolled: { set: () => {} },
+              showAddTaskBar: () => {},
+            },
+          },
+          {
+            provide: TaskViewCustomizerService,
+            useValue: {
+              customizeUndoneTasks: () => of({ list: [] as TaskWithSubTasks[] }),
+              isCustomized: signal(false),
+            },
+          },
+          {
+            provide: WorkContextService,
+            useValue: {
+              activeWorkContextId: 'ctx',
+              undoneTasks$: of([]),
+              todayRemainingInProject$: of(0),
+              estimateRemainingToday$: of(0),
+              workingToday$: of(0),
+              isHasTasksToWorkOn$: of(false),
+              isTodayList$: of(false),
+              activeWorkContextId$: of('ctx'),
+              activeWorkContextTypeAndId$: of({
+                activeType: 'PROJECT',
+                activeId: 'ctx',
+              }),
+              activeWorkContext$: of({ id: 'ctx', type: 'PROJECT' }),
+              isActiveWorkContextProject$: of(true),
+              isContextChanging$: of(false),
+            },
+          },
+          {
+            provide: PluginBridgeService,
+            useValue: { workContextEmbedPluginId: signal(null) },
+          },
+          { provide: ProjectService, useValue: { onMoveToBacklog$: of() } },
+          {
+            provide: SectionService,
+            useValue: {
+              getSectionsByContextId$: () => of([] as readonly Section[]),
+              updateSection: () => {},
+            },
+          },
+          { provide: SnackService, useValue: { open: () => {} } },
+          {
+            provide: GlobalConfigService,
+            useValue: {
+              appFeatures: signal({ isFinishDayEnabled: false }),
+              cfg: () => ({}),
+            },
+          },
+          { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
+          { provide: MatDialog, useValue: matDialog },
+        ],
+      });
+      TestBed.overrideComponent(WorkViewComponent, {
+        set: { template: '', imports: [], styles: [''] },
+      });
+      const store = TestBed.inject(MockStore);
+      store.overrideSelector(selectOverdueTasksWithSubTasks, []);
+      store.overrideSelector(selectLaterTodayTasksWithSubTasks, []);
+      store.overrideSelector(selectTaskRepeatCfgsByProjectId, []);
+      store.overrideSelector(selectTaskRepeatCfgsByTagId, []);
+
+      await TestBed.compileComponents();
+      const fixture = TestBed.createComponent(WorkViewComponent);
+      fixture.componentRef.setInput('undoneTasks', []);
+      fixture.componentRef.setInput('doneTasks', []);
+      fixture.componentRef.setInput('backlogTasks', []);
+      fixture.detectChanges();
+
+      fixture.componentInstance.editSectionDeadline('s1', '2026-06-30');
+
+      expect(matDialog.open).toHaveBeenCalledWith(
+        DialogDatePickerComponent,
+        jasmine.objectContaining({
+          data: jasmine.objectContaining({ value: '2026-06-30' }),
+        }),
+      );
     });
   });
 });

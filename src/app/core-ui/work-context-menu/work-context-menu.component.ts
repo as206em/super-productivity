@@ -36,6 +36,7 @@ import {
   TASK_VALUE_LABELS,
 } from '../../features/tasks/util/task-score.util';
 import { isDBDateStr } from '../../util/get-db-date-str';
+import { DialogDatePickerComponent } from '../../ui/dialog-date-picker/dialog-date-picker.component';
 
 @Component({
   selector: 'work-context-menu',
@@ -214,28 +215,27 @@ export class WorkContextMenuComponent implements OnInit {
       .pipe(first())
       .subscribe((project) => {
         this._matDialog
-          .open(DialogPromptComponent, {
+          .open(DialogDatePickerComponent, {
             data: {
-              placeholder: T.F.PROJECT.FORM_BASIC.L_DEADLINE,
-              txtValue: project?.deadlineDay || '',
+              label: T.F.PROJECT.FORM_BASIC.L_DEADLINE,
+              value: project?.deadlineDay,
             },
           })
           .afterClosed()
-          .subscribe((newDeadline: string | undefined) => {
+          .subscribe((newDeadline: string | null | undefined) => {
             if (newDeadline === undefined) return;
-            const trimmedDeadline = newDeadline.trim();
-            if (!trimmedDeadline) {
+            if (newDeadline === null) {
               this._projectService.update(this.contextId, { deadlineDay: null });
               return;
             }
-            if (!isDBDateStr(trimmedDeadline)) {
+            if (!isDBDateStr(newDeadline)) {
               this._snackService.open({
                 msg: T.V.E_DATETIME,
                 type: 'ERROR',
               });
               return;
             }
-            this._projectService.update(this.contextId, { deadlineDay: trimmedDeadline });
+            this._projectService.update(this.contextId, { deadlineDay: newDeadline });
           });
       });
   }

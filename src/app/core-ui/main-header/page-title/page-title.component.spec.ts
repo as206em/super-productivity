@@ -9,6 +9,7 @@ import { WorkContextService } from '../../../features/work-context/work-context.
 import { TaskViewCustomizerService } from '../../../features/task-view-customizer/task-view-customizer.service';
 import { GlobalConfigService } from '../../../features/config/global-config.service';
 import { T } from '../../../t.const';
+import { ProjectService } from '../../../features/project/project.service';
 
 describe('PageTitleComponent', () => {
   let routerEvents$: Subject<NavigationEnd>;
@@ -47,6 +48,24 @@ describe('PageTitleComponent', () => {
         {
           provide: GlobalConfigService,
           useValue: { cfg: () => ({ keyboard: {} }) },
+        },
+        {
+          provide: ProjectService,
+          useValue: {
+            currentProject$: of({
+              id: 'P1',
+              title: 'Project',
+              value: 'high',
+              deadlineDay: '2026-06-30',
+            }),
+            getByIdOnce$: () =>
+              of({
+                id: 'P1',
+                title: 'Project',
+                value: 'high',
+                deadlineDay: '2026-06-30',
+              }),
+          },
         },
         {
           provide: TranslateService,
@@ -139,6 +158,17 @@ describe('PageTitleComponent', () => {
     it('is false for /config', () => {
       const c = setupComponent('/config');
       expect(c.isWorkViewPage()).toBe(false);
+    });
+  });
+
+  describe('activeProjectMeta()', () => {
+    it('returns deadline and value for project work contexts', () => {
+      const c = setupComponent('/project/P1/tasks');
+
+      expect(c.activeProjectMeta()).toEqual({
+        value: 'high',
+        deadlineDay: '2026-06-30',
+      });
     });
   });
 });

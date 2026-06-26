@@ -82,7 +82,11 @@ describe('TaskContextMenuInnerComponent', () => {
         { provide: LocaleDatePipe, useValue: {} },
         { provide: DateAdapter, useValue: { getFirstDayOfWeek: () => 0 } },
       ],
-    }).compileComponents();
+    });
+    TestBed.overrideComponent(TaskContextMenuInnerComponent, {
+      set: { template: '' },
+    });
+    await TestBed.compileComponents();
 
     fixture = TestBed.createComponent(TaskContextMenuInnerComponent);
     component = fixture.componentInstance;
@@ -256,5 +260,20 @@ describe('TaskContextMenuInnerComponent', () => {
 
       expect(getByIdSpy).toHaveBeenCalledWith('t-task-with-{special}-chars');
     }));
+  });
+
+  describe('quick shortcut options', () => {
+    it('uses four estimate shortcuts from 30 minutes to 4 hours', () => {
+      expect(component.estimateShortcutOptions.map((option) => option.ms)).toEqual([
+        30 * 60 * 1000,
+        60 * 60 * 1000,
+        2 * 60 * 60 * 1000,
+        4 * 60 * 60 * 1000,
+      ]);
+    });
+
+    it('uses four score shortcuts for value and effort', () => {
+      expect(component.scoreShortcutLevels).toEqual(['xhigh', 'high', 'mid', 'low']);
+    });
   });
 });

@@ -322,3 +322,25 @@ finish-day-btn,
     }
   }
 }
+
+.section-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s);
+  margin-left: auto;
+  color: var(--text-color-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.section-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-half);
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}

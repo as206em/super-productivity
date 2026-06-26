@@ -191,6 +191,30 @@
                       [isTitleDragHandle]="true"
                     >
                       <ng-container actions>
+                        @if (sectionHeaderMeta(section); as meta) {
+                          @if (meta.deadlineDay || meta.value) {
+                            <div class="section-meta">
+                              @if (meta.deadlineDay) {
+                                <span
+                                  class="section-meta-item"
+                                  [matTooltip]="T.WW.SECTION_DEADLINE | translate"
+                                >
+                                  <mat-icon>event</mat-icon>
+                                  {{ meta.deadlineDay | localDateStr }}
+                                </span>
+                              }
+                              @if (meta.value) {
+                                <span
+                                  class="section-meta-item"
+                                  [matTooltip]="T.WW.SECTION_VALUE | translate"
+                                >
+                                  <mat-icon>hotel_class</mat-icon>
+                                  {{ taskValueLabels[meta.value] }}
+                                </span>
+                              }
+                            </div>
+                          }
+                        }
                         <button
                           mat-icon-button
                           [matMenuTriggerFor]="sectionMenu"

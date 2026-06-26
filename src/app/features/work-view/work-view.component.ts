@@ -89,6 +89,8 @@ import { PluginIndexComponent } from '../../plugins/ui/plugin-index/plugin-index
 import { PluginBridgeService } from '../../plugins/plugin-bridge.service';
 import { isDBDateStr } from '../../util/get-db-date-str';
 import { TASK_SCORE_LEVELS, TASK_VALUE_LABELS } from '../tasks/util/task-score.util';
+import { DialogDatePickerComponent } from '../../ui/dialog-date-picker/dialog-date-picker.component';
+import { LocalDateStrPipe } from '../../ui/pipes/local-date-str.pipe';
 
 export interface WorkViewTaskList {
   list: TaskWithSubTasks[];
@@ -128,6 +130,7 @@ export interface WorkViewTaskList {
     ScheduledDateGroupPipe,
     RepeatCfgPreviewComponent,
     PluginIndexComponent,
+    LocalDateStrPipe,
   ],
 })
 export class WorkViewComponent implements OnInit, OnDestroy {
@@ -503,31 +506,40 @@ export class WorkViewComponent implements OnInit, OnDestroy {
     this.sectionService.updateSection(id, { value });
   }
 
+  sectionHeaderMeta(section: Section): {
+    value?: TaskScoreLevel | null;
+    deadlineDay?: string | null;
+  } {
+    return {
+      value: section.value,
+      deadlineDay: section.deadlineDay,
+    };
+  }
+
   editSectionDeadline(id: string, deadlineDay?: string | null): void {
     this._matDialog
-      .open(DialogPromptComponent, {
+      .open(DialogDatePickerComponent, {
         data: {
-          placeholder: T.WW.SECTION_DEADLINE,
-          txtValue: deadlineDay || '',
+          label: T.WW.SECTION_DEADLINE,
+          value: deadlineDay,
         },
       })
       .afterClosed()
       .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe((newDeadline: string | undefined) => {
+      .subscribe((newDeadline: string | null | undefined) => {
         if (newDeadline === undefined) return;
-        const trimmedDeadline = newDeadline.trim();
-        if (!trimmedDeadline) {
+        if (newDeadline === null) {
           this.sectionService.updateSection(id, { deadlineDay: null });
           return;
         }
-        if (!isDBDateStr(trimmedDeadline)) {
+        if (!isDBDateStr(newDeadline)) {
           this._snackService.open({
             msg: T.V.E_DATETIME,
             type: 'ERROR',
           });
           return;
         }
-        this.sectionService.updateSection(id, { deadlineDay: trimmedDeadline });
+        this.sectionService.updateSection(id, { deadlineDay: newDeadline });
       });
   }
 

@@ -261,6 +261,29 @@
   </button>
 
   @if (!task.subTaskIds.length) {
+    <div class="quick-access-label">
+      <mat-icon>hourglass_empty</mat-icon>
+      {{ T.F.TASK.CMP.ESTIMATE | translate }}
+    </div>
+    <div
+      class="quick-access"
+      (keydown)="quickAccessKeydown($event)"
+    >
+      @for (option of estimateShortcutOptions; track option.value) {
+        <button
+          mat-icon-button
+          tabindex="0"
+          (click)="setEstimate(option.ms)"
+          [matTooltip]="option.label"
+        >
+          @if (option.ms === task.timeEstimate) {
+            <mat-icon>check</mat-icon>
+          } @else {
+            <span class="quick-access-text">{{ option.label }}</span>
+          }
+        </button>
+      }
+    </div>
     <button
       #estimateMenuTrigger="matMenuTrigger"
       [matMenuTriggerFor]="estimateMenu"
@@ -275,6 +298,30 @@
     </button>
   }
 
+  <div class="quick-access-label">
+    <mat-icon>hotel_class</mat-icon>
+    {{ T.F.TASK.CMP.VALUE | translate }}
+  </div>
+  <div
+    class="quick-access"
+    (keydown)="quickAccessKeydown($event)"
+  >
+    @for (level of scoreShortcutLevels; track level) {
+      <button
+        mat-icon-button
+        tabindex="0"
+        (click)="setValue(level)"
+        [matTooltip]="taskValueLabels[level]"
+      >
+        @if (level === task.value) {
+          <mat-icon>check</mat-icon>
+        } @else {
+          <span class="quick-access-text">{{ taskValueLabels[level] }}</span>
+        }
+      </button>
+    }
+  </div>
+
   <button
     [matMenuTriggerFor]="valueMenu"
     mat-menu-item
@@ -285,6 +332,30 @@
       {{ T.F.TASK.CMP.VALUE | translate }}
     </span>
   </button>
+
+  <div class="quick-access-label">
+    <mat-icon>fitness_center</mat-icon>
+    {{ T.F.TASK.CMP.EFFORT | translate }}
+  </div>
+  <div
+    class="quick-access"
+    (keydown)="quickAccessKeydown($event)"
+  >
+    @for (level of scoreShortcutLevels; track level) {
+      <button
+        mat-icon-button
+        tabindex="0"
+        (click)="setEffort(level)"
+        [matTooltip]="level"
+      >
+        @if (level === task.effort) {
+          <mat-icon>check</mat-icon>
+        } @else {
+          <span class="quick-access-text">{{ level }}</span>
+        }
+      </button>
+    }
+  </div>
 
   <button
     [matMenuTriggerFor]="effortMenu"

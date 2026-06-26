@@ -84,7 +84,7 @@ import {
   addTaskToSprint,
   removeTaskFromSprint,
 } from '../../../sprint/store/sprint.actions';
-import { TASK_SCORE_LEVELS } from '../../util/task-score.util';
+import { TASK_SCORE_LEVELS, TASK_VALUE_LABELS } from '../../util/task-score.util';
 
 @Component({
   selector: 'task-context-menu-inner',
@@ -129,6 +129,11 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   protected readonly T = T;
   readonly ESTIMATE_OPTIONS = ESTIMATE_OPTIONS;
   readonly TASK_SCORE_LEVELS = TASK_SCORE_LEVELS;
+  readonly estimateShortcutOptions = ESTIMATE_OPTIONS.filter((option) =>
+    ['30m', '1h', '2h', '4h'].includes(option.value),
+  );
+  readonly scoreShortcutLevels = TASK_SCORE_LEVELS;
+  readonly taskValueLabels = TASK_VALUE_LABELS;
 
   isAdvancedControls = input<boolean>(false);
   todayList = toSignal(this._store.select(selectTodayTaskIds), { initialValue: [] });

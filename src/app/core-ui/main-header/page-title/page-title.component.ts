@@ -16,6 +16,9 @@ import { TaskViewCustomizerService } from '../../../features/task-view-customize
 import { TaskViewCustomizerPanelComponent } from '../../../features/task-view-customizer/task-view-customizer-panel/task-view-customizer-panel.component';
 import { GlobalConfigService } from '../../../features/config/global-config.service';
 import { KeyboardConfig } from '../../../features/config/keyboard-config.model';
+import { ProjectService } from '../../../features/project/project.service';
+import { LocalDateStrPipe } from '../../../ui/pipes/local-date-str.pipe';
+import { TASK_VALUE_LABELS } from '../../../features/tasks/util/task-score.util';
 
 @Component({
   selector: 'page-title',
@@ -32,6 +35,7 @@ import { KeyboardConfig } from '../../../features/config/keyboard-config.model';
     WorkContextMenuComponent,
     TaskViewCustomizerPanelComponent,
     TranslatePipe,
+    LocalDateStrPipe,
   ],
   template: `
     @if (activeWorkContextTypeAndId()) {
@@ -43,6 +47,30 @@ import { KeyboardConfig } from '../../../features/config/keyboard-config.model';
       >
         {{ displayTitle() }}
       </div>
+      @if (activeProjectMeta(); as meta) {
+        @if (meta.deadlineDay || meta.value) {
+          <div class="page-title-meta">
+            @if (meta.deadlineDay) {
+              <span
+                class="page-title-meta-item"
+                [matTooltip]="T.F.PROJECT.FORM_BASIC.L_DEADLINE | translate"
+              >
+                <mat-icon>event</mat-icon>
+                {{ meta.deadlineDay | localDateStr }}
+              </span>
+            }
+            @if (meta.value) {
+              <span
+                class="page-title-meta-item"
+                [matTooltip]="T.F.PROJECT.FORM_BASIC.L_VALUE | translate"
+              >
+                <mat-icon>hotel_class</mat-icon>
+                {{ taskValueLabels[meta.value] }}
+              </span>
+            }
+          </div>
+        }
+      }
       @if (!isXxxs() && !isSpecialSection()) {
         <div class="page-title-actions">
           <button
@@ -118,6 +146,28 @@ import { KeyboardConfig } from '../../../features/config/keyboard-config.model';
         margin-right: var(--s2);
       }
 
+      .page-title-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s);
+        color: var(--text-color-muted);
+        font-size: 12px;
+        white-space: nowrap;
+        margin-right: var(--s);
+      }
+
+      .page-title-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-half);
+      }
+
+      .page-title-meta-item mat-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+      }
+
       .project-settings-btn {
         opacity: 1;
 
@@ -170,17 +220,22 @@ export class PageTitleComponent {
   private _breakpointObserver = inject(BreakpointObserver);
   private _router = inject(Router);
   private _workContextService = inject(WorkContextService);
+  private _projectService = inject(ProjectService);
   readonly taskViewCustomizerService = inject(TaskViewCustomizerService);
   private readonly _configService = inject(GlobalConfigService);
   private _translateService = inject(TranslateService);
 
   readonly T = T;
+  readonly taskValueLabels = TASK_VALUE_LABELS;
 
   // Get data directly from services instead of inputs
   activeWorkContextTitle = toSignal(this._workContextService.activeWorkContextTitle$);
   activeWorkContextTypeAndId = toSignal(
     this._workContextService.activeWorkContextTypeAndId$,
   );
+  private _activeProject = toSignal(this._projectService.currentProject$, {
+    initialValue: null,
+  });
 
   // Single source for the current URL path — all route-derived signals compute off this.
   // Query and fragment are stripped so end-anchored matchers work for e.g. `/config#plugins`.
@@ -219,6 +274,16 @@ export class PageTitleComponent {
   displayTitle = computed(() => {
     const key = this._routeTitleKey();
     return key ? this._translateService.instant(key) : this.activeWorkContextTitle();
+  });
+
+  activeProjectMeta = computed(() => {
+    if (this.isSpecialSection()) return null;
+    const project = this._activeProject();
+    if (!project?.deadlineDay && !project?.value) return null;
+    return {
+      value: project.value,
+      deadlineDay: project.deadlineDay,
+    };
   });
 
   private _isXxxs$ = this._breakpointObserver.observe('(max-width: 350px)');
