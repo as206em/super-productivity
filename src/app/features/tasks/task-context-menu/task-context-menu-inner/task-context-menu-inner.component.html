@@ -84,6 +84,110 @@
     }
   </div>
 
+  <div
+    class="quick-access"
+    (keydown)="quickAccessKeydown($event)"
+  >
+    <button
+      mat-icon-button
+      tabindex="0"
+      (click)="addToSprint('CURRENT')"
+      [matTooltip]="T.SPRINT.ADD_TO_CURRENT | translate"
+    >
+      <mat-icon>flag</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      tabindex="0"
+      (click)="addToSprint('NEXT')"
+      [matTooltip]="T.SPRINT.ADD_TO_NEXT | translate"
+    >
+      <mat-icon>outlined_flag</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      tabindex="0"
+      (click)="removeFromSprint()"
+      [matTooltip]="T.SPRINT.REMOVE_FROM_SPRINT | translate"
+    >
+      <mat-icon>flag_circle</mat-icon>
+    </button>
+  </div>
+
+  @if (!task.subTaskIds.length) {
+    <div class="quick-access-label">
+      <mat-icon>hourglass_empty</mat-icon>
+      {{ T.F.TASK.CMP.ESTIMATE | translate }}
+    </div>
+    <div
+      class="quick-access"
+      (keydown)="quickAccessKeydown($event)"
+    >
+      @for (option of estimateShortcutOptions; track option.value) {
+        <button
+          mat-icon-button
+          tabindex="0"
+          (click)="setEstimate(option.ms)"
+          [matTooltip]="option.label"
+        >
+          @if (option.ms === task.timeEstimate) {
+            <mat-icon>check</mat-icon>
+          } @else {
+            <span class="quick-access-text">{{ option.label }}</span>
+          }
+        </button>
+      }
+    </div>
+  }
+
+  <div class="quick-access-label">
+    <mat-icon>hotel_class</mat-icon>
+    {{ T.F.TASK.CMP.VALUE | translate }}
+  </div>
+  <div
+    class="quick-access"
+    (keydown)="quickAccessKeydown($event)"
+  >
+    @for (level of scoreShortcutLevels; track level) {
+      <button
+        mat-icon-button
+        tabindex="0"
+        (click)="setValue(level)"
+        [matTooltip]="taskValueLabels[level]"
+      >
+        @if (level === task.value) {
+          <mat-icon>check</mat-icon>
+        } @else {
+          <span class="quick-access-text">{{ taskValueLabels[level] }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <div class="quick-access-label">
+    <mat-icon>fitness_center</mat-icon>
+    {{ T.F.TASK.CMP.EFFORT | translate }}
+  </div>
+  <div
+    class="quick-access"
+    (keydown)="quickAccessKeydown($event)"
+  >
+    @for (level of scoreShortcutLevels; track level) {
+      <button
+        mat-icon-button
+        tabindex="0"
+        (click)="setEffort(level)"
+        [matTooltip]="level"
+      >
+        @if (level === task.effort) {
+          <mat-icon>check</mat-icon>
+        } @else {
+          <span class="quick-access-text">{{ level }}</span>
+        }
+      </button>
+    }
+  </div>
+
   @if (
     isTimeTrackingEnabled() &&
     ((isAdvancedControls() && isTouchActive()) || !isAdvancedControls()) &&
@@ -178,19 +282,6 @@
     </button>
   }
 
-  <!-- Only show the duplicate command if it is a parent unfinished task -->
-  @if (isAdvancedControls() && !task.parentId && !task.isDone) {
-    <button
-      (click)="duplicate()"
-      mat-menu-item
-    >
-      <span class="menuItemLeft">
-        <mat-icon>file_copy</mat-icon>
-        {{ T.F.TASK.CMP.DUPLICATE | translate }}
-      </span>
-    </button>
-  }
-
   <!--TODO maybe handle dynamically -->
   @if (task.issueId && task.issueType !== ICAL_TYPE) {
     <a
@@ -250,125 +341,6 @@
   }
 
   <button
-    [matMenuTriggerFor]="sprintMenu"
-    mat-menu-item
-    menuTouchFix
-  >
-    <span class="menuItemLeft">
-      <mat-icon>flag</mat-icon>
-      {{ T.SPRINT.ADD_TO_SPRINT | translate }}
-    </span>
-  </button>
-
-  @if (!task.subTaskIds.length) {
-    <div class="quick-access-label">
-      <mat-icon>hourglass_empty</mat-icon>
-      {{ T.F.TASK.CMP.ESTIMATE | translate }}
-    </div>
-    <div
-      class="quick-access"
-      (keydown)="quickAccessKeydown($event)"
-    >
-      @for (option of estimateShortcutOptions; track option.value) {
-        <button
-          mat-icon-button
-          tabindex="0"
-          (click)="setEstimate(option.ms)"
-          [matTooltip]="option.label"
-        >
-          @if (option.ms === task.timeEstimate) {
-            <mat-icon>check</mat-icon>
-          } @else {
-            <span class="quick-access-text">{{ option.label }}</span>
-          }
-        </button>
-      }
-    </div>
-    <button
-      #estimateMenuTrigger="matMenuTrigger"
-      [matMenuTriggerFor]="estimateMenu"
-      mat-menu-item
-      [menuTouchFix]="estimateMenuTrigger"
-    >
-      <span class="menuItemLeft">
-        <mat-icon>hourglass_empty</mat-icon>
-        {{ T.F.TASK.CMP.ESTIMATE | translate }}
-      </span>
-      <span class="key-i">{{ kb.taskOpenEstimationDialog }}</span>
-    </button>
-  }
-
-  <div class="quick-access-label">
-    <mat-icon>hotel_class</mat-icon>
-    {{ T.F.TASK.CMP.VALUE | translate }}
-  </div>
-  <div
-    class="quick-access"
-    (keydown)="quickAccessKeydown($event)"
-  >
-    @for (level of scoreShortcutLevels; track level) {
-      <button
-        mat-icon-button
-        tabindex="0"
-        (click)="setValue(level)"
-        [matTooltip]="taskValueLabels[level]"
-      >
-        @if (level === task.value) {
-          <mat-icon>check</mat-icon>
-        } @else {
-          <span class="quick-access-text">{{ taskValueLabels[level] }}</span>
-        }
-      </button>
-    }
-  </div>
-
-  <button
-    [matMenuTriggerFor]="valueMenu"
-    mat-menu-item
-    menuTouchFix
-  >
-    <span class="menuItemLeft">
-      <mat-icon>hotel_class</mat-icon>
-      {{ T.F.TASK.CMP.VALUE | translate }}
-    </span>
-  </button>
-
-  <div class="quick-access-label">
-    <mat-icon>fitness_center</mat-icon>
-    {{ T.F.TASK.CMP.EFFORT | translate }}
-  </div>
-  <div
-    class="quick-access"
-    (keydown)="quickAccessKeydown($event)"
-  >
-    @for (level of scoreShortcutLevels; track level) {
-      <button
-        mat-icon-button
-        tabindex="0"
-        (click)="setEffort(level)"
-        [matTooltip]="level"
-      >
-        @if (level === task.effort) {
-          <mat-icon>check</mat-icon>
-        } @else {
-          <span class="quick-access-text">{{ level }}</span>
-        }
-      </button>
-    }
-  </div>
-
-  <button
-    [matMenuTriggerFor]="effortMenu"
-    mat-menu-item
-    menuTouchFix
-  >
-    <span class="menuItemLeft">
-      <mat-icon>fitness_center</mat-icon>
-      {{ T.F.TASK.CMP.EFFORT | translate }}
-    </span>
-  </button>
-
-  <button
     [matMenuTriggerFor]="tagMenu"
     mat-menu-item
     menuTouchFix
@@ -409,6 +381,19 @@
     </button>
   }
 
+  <!-- Only show the duplicate command if it is a parent unfinished task -->
+  @if (isAdvancedControls() && !task.parentId && !task.isDone) {
+    <button
+      (click)="duplicate()"
+      mat-menu-item
+    >
+      <span class="menuItemLeft">
+        <mat-icon>file_copy</mat-icon>
+        {{ T.F.TASK.CMP.DUPLICATE | translate }}
+      </span>
+    </button>
+  }
+
   <button
     (click)="deleteTask()"
     class="color-warn"
@@ -423,140 +408,6 @@
     </span>
     <span class="key-i">{{ kb.taskDelete }}</span>
   </button>
-</mat-menu>
-
-<mat-menu
-  #valueMenu="matMenu"
-  (closed)="focusRelatedTaskOrNext()"
->
-  <ng-template matMenuContent>
-    @for (level of TASK_SCORE_LEVELS; track level) {
-      <button
-        mat-menu-item
-        menuTouchFix
-        (click)="setValue(level)"
-      >
-        @if (level === task.value) {
-          <mat-icon>check</mat-icon>
-        }
-        {{ level }}
-      </button>
-    }
-    @if (task.value) {
-      <mat-divider></mat-divider>
-      <button
-        mat-menu-item
-        menuTouchFix
-        (click)="setValue(undefined)"
-      >
-        <mat-icon>clear</mat-icon>
-        {{ T.F.TASK.CMP.CLEAR_VALUE | translate }}
-      </button>
-    }
-  </ng-template>
-</mat-menu>
-
-<mat-menu
-  #effortMenu="matMenu"
-  (closed)="focusRelatedTaskOrNext()"
->
-  <ng-template matMenuContent>
-    @for (level of TASK_SCORE_LEVELS; track level) {
-      <button
-        mat-menu-item
-        menuTouchFix
-        (click)="setEffort(level)"
-      >
-        @if (level === task.effort) {
-          <mat-icon>check</mat-icon>
-        }
-        {{ level }}
-      </button>
-    }
-    @if (task.effort) {
-      <mat-divider></mat-divider>
-      <button
-        mat-menu-item
-        menuTouchFix
-        (click)="setEffort(undefined)"
-      >
-        <mat-icon>clear</mat-icon>
-        {{ T.F.TASK.CMP.CLEAR_EFFORT | translate }}
-      </button>
-    }
-  </ng-template>
-</mat-menu>
-
-<mat-menu
-  #sprintMenu="matMenu"
-  (closed)="focusRelatedTaskOrNext()"
->
-  <ng-template matMenuContent>
-    <button
-      mat-menu-item
-      menuTouchFix
-      (click)="addToSprint('CURRENT')"
-    >
-      <mat-icon>flag</mat-icon>
-      {{ T.SPRINT.ADD_TO_CURRENT | translate }}
-    </button>
-    <button
-      mat-menu-item
-      menuTouchFix
-      (click)="addToSprint('NEXT')"
-    >
-      <mat-icon>outlined_flag</mat-icon>
-      {{ T.SPRINT.ADD_TO_NEXT | translate }}
-    </button>
-    <mat-divider></mat-divider>
-    <button
-      mat-menu-item
-      menuTouchFix
-      (click)="removeFromSprint()"
-    >
-      <mat-icon>flag_circle</mat-icon>
-      {{ T.SPRINT.REMOVE_FROM_SPRINT | translate }}
-    </button>
-  </ng-template>
-</mat-menu>
-
-<mat-menu
-  #estimateMenu="matMenu"
-  (closed)="focusRelatedTaskOrNext()"
->
-  <ng-template matMenuContent>
-    @for (option of ESTIMATE_OPTIONS; track option.value) {
-      <button
-        mat-menu-item
-        menuTouchFix
-        (click)="setEstimate(option.ms)"
-      >
-        @if (option.ms === task.timeEstimate) {
-          <mat-icon>check</mat-icon>
-        }
-        {{ option.label }}
-      </button>
-    }
-    <mat-divider></mat-divider>
-    <button
-      mat-menu-item
-      menuTouchFix
-      (click)="estimateTime()"
-    >
-      <mat-icon>tune</mat-icon>
-      {{ T.F.TASK.CMP.CUSTOM_ESTIMATE | translate }}
-    </button>
-    @if (task.timeEstimate > 0) {
-      <button
-        mat-menu-item
-        menuTouchFix
-        (click)="setEstimate(0)"
-      >
-        <mat-icon>clear</mat-icon>
-        {{ T.F.TASK.CMP.CLEAR_ESTIMATE | translate }}
-      </button>
-    }
-  </ng-template>
 </mat-menu>
 
 <mat-menu

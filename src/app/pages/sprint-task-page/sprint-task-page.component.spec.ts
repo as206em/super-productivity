@@ -125,6 +125,6 @@ describe('SprintTaskPageComponent', () => {
     expect(workView?.isShowBacklog()).toBe(false);
     expect(workView?.isStandaloneTaskList()).toBe(true);
     expect(workView?.mainListModelId()).toBe('SPRINT_CURRENT');
-    expect(workView?.isMainListSortingDisabled()).toBe(true);
+    expect(workView?.isMainListSortingDisabled()).toBe(false);
   });
 });

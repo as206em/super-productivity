@@ -19,6 +19,7 @@ import { KeyboardConfig } from '../../../features/config/keyboard-config.model';
 import { ProjectService } from '../../../features/project/project.service';
 import { LocalDateStrPipe } from '../../../ui/pipes/local-date-str.pipe';
 import { TASK_VALUE_LABELS } from '../../../features/tasks/util/task-score.util';
+import { isTaskViewCustomizerRoute } from '../../../features/task-view-customizer/is-task-view-customizer-route.util';
 
 @Component({
   selector: 'page-title',
@@ -71,17 +72,19 @@ import { TASK_VALUE_LABELS } from '../../../features/tasks/util/task-score.util'
           </div>
         }
       }
-      @if (!isXxxs() && !isSpecialSection()) {
+      @if (!isXxxs() && (!isSpecialSection() || isTaskViewCustomizerPage())) {
         <div class="page-title-actions">
-          <button
-            [mat-menu-trigger-for]="activeWorkContextMenu"
-            [matTooltip]="T.MH.PROJECT_MENU | translate"
-            class="project-settings-btn"
-            mat-icon-button
-          >
-            <mat-icon>more_vert</mat-icon>
-          </button>
-          @if (isWorkViewPage()) {
+          @if (!isSpecialSection()) {
+            <button
+              [mat-menu-trigger-for]="activeWorkContextMenu"
+              [matTooltip]="T.MH.PROJECT_MENU | translate"
+              class="project-settings-btn"
+              mat-icon-button
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+          }
+          @if (isTaskViewCustomizerPage()) {
             <button
               class="task-filter-btn"
               [class.isCustomized]="taskViewCustomizerService.isCustomized()"
@@ -270,6 +273,7 @@ export class PageTitleComponent {
 
   isSpecialSection = computed(() => !!this._routeTitleKey());
   isWorkViewPage = computed(() => /tasks$/.test(this._url()));
+  isTaskViewCustomizerPage = computed(() => isTaskViewCustomizerRoute(this._url()));
 
   displayTitle = computed(() => {
     const key = this._routeTitleKey();

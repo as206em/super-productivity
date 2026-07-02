@@ -28,6 +28,7 @@ import { togglePluginPanel } from '../../layout/store/layout.actions';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs/operators';
 import { BreakpointObserver } from '@angular/cdk/layout';
+import { isTaskViewCustomizerRoute } from '../../../features/task-view-customizer/is-task-view-customizer-route.util';
 
 @Component({
   selector: 'mobile-side-panel-menu',
@@ -147,10 +148,10 @@ export class MobileSidePanelMenuComponent {
   readonly isWorkViewPage = toSignal(
     this._router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-      map((event) => !!event.urlAfterRedirects.match(/tasks$/)),
-      startWith(!!this._router.url.match(/tasks$/)),
+      map((event) => isTaskViewCustomizerRoute(event.urlAfterRedirects)),
+      startWith(isTaskViewCustomizerRoute(this._router.url)),
     ),
-    { initialValue: !!this._router.url.match(/tasks$/) },
+    { initialValue: isTaskViewCustomizerRoute(this._router.url) },
   );
 
   readonly kb: KeyboardConfig = this._globalConfigService.cfg()?.keyboard || {};

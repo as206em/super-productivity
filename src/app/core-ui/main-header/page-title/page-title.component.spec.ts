@@ -161,6 +161,28 @@ describe('PageTitleComponent', () => {
     });
   });
 
+  describe('isTaskViewCustomizerPage()', () => {
+    it('is true for /active/tasks', () => {
+      const c = setupComponent('/active/tasks');
+      expect(c.isTaskViewCustomizerPage()).toBe(true);
+    });
+
+    it('is true for /sprint/current', () => {
+      const c = setupComponent('/sprint/current');
+      expect(c.isTaskViewCustomizerPage()).toBe(true);
+    });
+
+    it('is true for /sprint/next', () => {
+      const c = setupComponent('/sprint/next');
+      expect(c.isTaskViewCustomizerPage()).toBe(true);
+    });
+
+    it('is false for /config', () => {
+      const c = setupComponent('/config');
+      expect(c.isTaskViewCustomizerPage()).toBe(false);
+    });
+  });
+
   describe('activeProjectMeta()', () => {
     it('returns deadline and value for project work contexts', () => {
       const c = setupComponent('/project/P1/tasks');

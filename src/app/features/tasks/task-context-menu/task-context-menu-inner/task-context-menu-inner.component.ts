@@ -21,7 +21,6 @@ import {
   MatMenuItem,
   MatMenuTrigger,
 } from '@angular/material/menu';
-import { MatDivider } from '@angular/material/divider';
 import { ESTIMATE_OPTIONS } from '../../add-task-bar/add-task-bar.const';
 import { Task, TaskCopy, TaskScoreLevel, TaskWithSubTasks } from '../../task.model';
 import { EMPTY, forkJoin, from, Observable, of, ReplaySubject, Subject } from 'rxjs';
@@ -94,7 +93,6 @@ import { TASK_SCORE_LEVELS, TASK_VALUE_LABELS } from '../../util/task-score.util
     MatMenu,
     MatMenuContent,
     MatMenuItem,
-    MatDivider,
     TranslateModule,
     MatMenuTrigger,
     MatIconButton,
@@ -128,7 +126,6 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   protected readonly isTouchActive = isTouchActive;
   protected readonly T = T;
   readonly ESTIMATE_OPTIONS = ESTIMATE_OPTIONS;
-  readonly TASK_SCORE_LEVELS = TASK_SCORE_LEVELS;
   readonly estimateShortcutOptions = ESTIMATE_OPTIONS.filter((option) =>
     ['30m', '1h', '2h', '4h'].includes(option.value),
   );
