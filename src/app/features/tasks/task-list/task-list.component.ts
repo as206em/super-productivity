@@ -46,6 +46,8 @@ import { ScheduleExternalDragService } from '../../schedule/schedule-week/schedu
 import { DEFAULT_OPTIONS } from '../../task-view-customizer/types';
 import { dragDelayForTouch } from '../../../util/input-intent';
 import { DateService } from '../../../core/date/date.service';
+import { moveTaskInSprint } from '../../sprint/store/sprint.actions';
+import { SprintTarget } from '../../sprint/sprint.model';
 
 export type TaskListId = 'PARENT' | 'SUB';
 export type ListModelId = DropListModelSource | string;
@@ -72,6 +74,12 @@ const RESERVED_LIST_IDS = new Set<string>([
   'ADD_TASK_PANEL',
 ] satisfies DropListModelSource[]);
 const PARENT_ALLOWED_LISTS = ['DONE', 'UNDONE', 'OVERDUE', 'BACKLOG', 'ADD_TASK_PANEL'];
+
+const getSprintFromListModelId = (listModelId: unknown): SprintTarget | null => {
+  if (listModelId === 'SPRINT_CURRENT') return 'CURRENT';
+  if (listModelId === 'SPRINT_NEXT') return 'NEXT';
+  return null;
+};
 
 export interface DropModelDataForList {
   listId: TaskListId;
@@ -176,6 +184,11 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
     this._scheduleExternalDragService.setActiveTask(null);
   }
 
+  isDragDisabled(): boolean {
+    const listModelId = this.listModelId();
+    return listModelId === 'LATER_TODAY' || listModelId.startsWith('PRIORITY');
+  }
+
   enterPredicate = (drag: CdkDrag, drop: CdkDropList): boolean => {
     // TODO this gets called very often for nested lists. Maybe there are possibilities to optimize
     const task = drag.data;
@@ -223,6 +236,12 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
     const srcModelId = drag.dropContainer?.data?.listModelId;
     const srcListIdRaw = drag.dropContainer?.data?.listId;
     const isSrcSection = srcListIdRaw === 'PARENT' && !RESERVED_LIST_IDS.has(srcModelId);
+    const srcSprint = getSprintFromListModelId(srcModelId);
+    const targetSprint = getSprintFromListModelId(targetModelId);
+
+    if (srcSprint || targetSprint) {
+      return !!targetSprint && srcSprint === targetSprint;
+    }
 
     if (PARENT_ALLOWED_LISTS.includes(targetModelId)) {
       // Reject section → BACKLOG: _move() dispatches `removeTaskFromSection`
@@ -364,6 +383,18 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
 
     // Handle LATER_TODAY - prevent any moves to or from this list
     if (src === 'LATER_TODAY' || target === 'LATER_TODAY') {
+      return;
+    }
+
+    const srcSprint = getSprintFromListModelId(src);
+    const targetSprint = getSprintFromListModelId(target);
+    if (srcSprint || targetSprint) {
+      if (srcSprint && srcSprint === targetSprint) {
+        const afterTaskId = getAnchorFromDragDrop(taskId, newOrderedIds);
+        this._store.dispatch(
+          moveTaskInSprint({ sprint: srcSprint, taskId, afterTaskId }),
+        );
+      }
       return;
     }
 

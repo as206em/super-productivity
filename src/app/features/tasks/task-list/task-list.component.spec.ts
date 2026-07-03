@@ -14,6 +14,7 @@ import { TaskWithSubTasks } from '../task.model';
 import { SectionService } from '../../section/section.service';
 import { moveSubTask } from '../store/task.actions';
 import { WorkContextType } from '../../work-context/work-context.model';
+import { moveTaskInSprint } from '../../sprint/store/sprint.actions';
 
 describe('TaskListComponent', () => {
   let component: TaskListComponent;
@@ -93,6 +94,19 @@ describe('TaskListComponent', () => {
   });
 
   describe('enterPredicate', () => {
+    it('should keep sprint tasks draggable for manual sorting', () => {
+      fixture.componentRef.setInput('listModelId', 'SPRINT_CURRENT');
+      fixture.detectChanges();
+
+      expect(
+        (
+          component as unknown as {
+            isDragDisabled: () => boolean;
+          }
+        ).isDragDisabled(),
+      ).toBe(false);
+    });
+
     describe('subtasks appearing as top-level items (parent not in list)', () => {
       it('should allow subtask to reorder within UNDONE list when parent not present', () => {
         const subtask = { id: 'sub1', parentId: 'parent1' };
@@ -358,6 +372,37 @@ describe('TaskListComponent', () => {
       expect(dispatchedAction.taskId).toBe('sub1');
       expect(dispatchedAction.srcTaskId).toBe('parentA');
       expect(dispatchedAction.targetTaskId).toBe('parentB');
+    });
+
+    it('routes a current sprint reorder to moveTaskInSprint', () => {
+      callMove('task-1', 'SPRINT_CURRENT', 'SPRINT_CURRENT', 'PARENT', 'PARENT', [
+        'task-2',
+        'task-1',
+        'task-3',
+      ]);
+
+      expect(sectionServiceMock.addTaskToSection).not.toHaveBeenCalled();
+      expect(sectionServiceMock.removeTaskFromSection).not.toHaveBeenCalled();
+      const dispatchedAction = (store.dispatch as jasmine.Spy).calls.mostRecent()
+        .args[0] as ReturnType<typeof moveTaskInSprint>;
+      expect(dispatchedAction.type).toBe(moveTaskInSprint.type);
+      expect(dispatchedAction.sprint).toBe('CURRENT');
+      expect(dispatchedAction.taskId).toBe('task-1');
+      expect(dispatchedAction.afterTaskId).toBe('task-2');
+    });
+
+    it('routes a next sprint reorder to moveTaskInSprint', () => {
+      callMove('task-1', 'SPRINT_NEXT', 'SPRINT_NEXT', 'PARENT', 'PARENT', [
+        'task-1',
+        'task-2',
+      ]);
+
+      const dispatchedAction = (store.dispatch as jasmine.Spy).calls.mostRecent()
+        .args[0] as ReturnType<typeof moveTaskInSprint>;
+      expect(dispatchedAction.type).toBe(moveTaskInSprint.type);
+      expect(dispatchedAction.sprint).toBe('NEXT');
+      expect(dispatchedAction.taskId).toBe('task-1');
+      expect(dispatchedAction.afterTaskId).toBeNull();
     });
 
     it('routes a parent drop into a section drop-list (PARENT + non-reserved id) to addTaskToSection', () => {
