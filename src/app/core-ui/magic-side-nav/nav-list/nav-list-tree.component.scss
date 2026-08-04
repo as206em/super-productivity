@@ -8,6 +8,37 @@
   -webkit-user-drag: none; /* Safari/Chrome */
 }
 
+// SectionLabel — the group header reads as the uppercase 11px eyebrow, the
+// only uppercase in the system. It keeps its chevron because collapsing a
+// group is real behaviour the eyebrow in the spec's static prototype had no
+// need to express.
+:host > .g-multi-btn-wrapper > nav-item ::ng-deep .nav-link {
+  height: var(--h-chip);
+  min-height: var(--h-chip);
+  padding-top: var(--space-10);
+  padding-bottom: var(--space-2);
+  box-sizing: content-box;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-quiet);
+  border-radius: 0;
+
+  &:focus,
+  &:hover {
+    background: transparent;
+    color: var(--text-meta) !important;
+  }
+
+  .nav-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: inherit;
+  }
+}
+
 .g-multi-btn-wrapper {
   display: flex;
   align-items: center;
@@ -61,9 +92,17 @@
   }
 }
 
+// The group's actions sit on top of the eyebrow row rather than in the flow.
+// In the flow they claimed ~120px of a 232px rail, squeezing the label until
+// it overflowed its own clip and lost its first letter.
 .additional-btns {
   display: flex;
   margin-left: auto;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--surface-rail);
 }
 
 .additional-btn {

@@ -38,7 +38,13 @@ import { HISTORY_STATE } from '../../app.constants';
 import { SwipeDirective } from '../../ui/swipe-gesture/swipe.directive';
 import { DataInitStateService } from '../../core/data-init/data-init-state.service';
 
-const COLLAPSED_WIDTH = 64;
+// The collapsed rail. 52px is wide enough for an 18px glyph to sit centred and
+// is the width every other fixed column in the system is measured against.
+const COLLAPSED_WIDTH = 52;
+// What the rail widens to while the pointer is over it. The host keeps
+// reserving COLLAPSED_WIDTH, so the expansion overlays the content rather than
+// pushing it sideways.
+const RAIL_EXPANDED_WIDTH = 232;
 const MOBILE_NAV_WIDTH = 300;
 const FOCUS_DELAY_MS = 10;
 const INITIAL_ENTER_ANIMATION_DURATION_MS = 425;
@@ -58,6 +64,9 @@ const INITIAL_ENTER_ANIMATION_DURATION_MS = 425;
   styleUrl: './magic-side-nav.component.scss',
   host: {
     '[style.width.px]': 'hostWidthSignal()',
+    '[class.railRevealed]': 'isRailRevealed()',
+    '(mouseenter)': 'onRailPointerEnter()',
+    '(mouseleave)': 'onRailPointerLeave()',
     '[class.animate]': 'animateWidth()',
     '[class.initial-shell-enter]': 'playInitialShellEnter()',
     '[class.initial-enter]': 'playInitialEnter()',
@@ -120,18 +129,38 @@ export class MagicSideNavComponent implements OnDestroy, AfterViewInit {
   startX = signal(0);
   startWidth = signal(0);
 
+  // True while the pointer rests on the collapsed rail. Drives the reveal.
+  isRailHovered = signal(false);
+
+  // The rail is only hover-expandable in its collapsed desktop state — in full
+  // mode it is already wide, and on mobile it is a drawer.
+  readonly isRailRevealed = computed(
+    () => this.isRailHovered() && !this.isFullMode() && !this.isMobile(),
+  );
+
   // Computed values
   sidenavWidth = computed(() => {
     if (this.isMobile()) return MOBILE_NAV_WIDTH;
+    if (!this.isFullMode()) {
+      return this.isRailHovered() ? RAIL_EXPANDED_WIDTH : COLLAPSED_WIDTH;
+    }
+    return this.currentWidth();
+  });
+
+  // Host width as computed signal: don't reserve space on mobile overlay, and
+  // don't reserve the revealed width either — the rail expands over the content.
+  readonly hostWidthSignal = computed(() => {
+    if (this.isMobile()) return 0;
     if (!this.isFullMode()) return COLLAPSED_WIDTH;
     return this.currentWidth();
   });
 
-  // Host width as computed signal: don't reserve space on mobile overlay
-  readonly hostWidthSignal = computed(() => (this.isMobile() ? 0 : this.sidenavWidth()));
-
-  // Commonly used derived state for template readability
-  readonly showText = computed(() => this.isFullMode() || this.isMobile());
+  // Commonly used derived state for template readability. Labels are present in
+  // the DOM whenever the rail is wide enough to show them; the rail clips them
+  // by overflow rather than fading them out.
+  readonly showText = computed(
+    () => this.isFullMode() || this.isMobile() || this.isRailRevealed(),
+  );
 
   // Keep stable references for event listeners to ensure proper cleanup
   private readonly _onDrag: (event: MouseEvent) => void = (event: MouseEvent) =>
@@ -369,6 +398,17 @@ export class MagicSideNavComponent implements OnDestroy, AfterViewInit {
 
     // Mobile menu is visible but still has state in history - restore it
     else window.history.back();
+  }
+
+  onRailPointerEnter(): void {
+    // Touch devices synthesise a mouseenter on tap, which would leave the rail
+    // stuck open after the finger lifts. Reveal on real pointers only.
+    if (this.isMobile() || !window.matchMedia('(hover: hover)').matches) return;
+    this.isRailHovered.set(true);
+  }
+
+  onRailPointerLeave(): void {
+    this.isRailHovered.set(false);
   }
 
   toggleSideNavMode(): void {

@@ -45,6 +45,13 @@
     swipeGesture
     [swipeEnabled]="swipeEnabled()"
   >
+    <!-- Rail head. 52px tall so it squares off the 52px collapsed rail; the
+         tile stands in for a mark the repo does not ship. -->
+    <div class="rail-head">
+      <div class="rail-mark">SP</div>
+      <div class="rail-product">Super Productivity</div>
+    </div>
+
     <!-- Desktop Toggle Button (inside sidenav) -->
     @if (!isMobile()) {
       <button

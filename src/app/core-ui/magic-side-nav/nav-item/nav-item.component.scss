@@ -32,21 +32,21 @@
 
     // to make space for the task-count
     &.has-tasks {
-      padding-right: var(--s5);
+      padding-right: var(--space-13);
     }
 
+    // The label is clipped by the rail's `overflow: hidden` as it widens — it
+    // is never opacity-faded, so it reads as revealed rather than dissolved.
+    // No transition here on purpose: the rail's width transition is the whole
+    // animation.
     .nav-label {
       color: inherit;
       font: inherit;
       letter-spacing: inherit;
       @include truncateText();
-      // smooth collapse/expand for title
       display: inline-block;
-      max-width: 100%;
-      transition:
-        opacity var(--transition-duration-m, 0.25s) var(--ani-standard-timing),
-        max-width var(--transition-duration-m, 0.25s) var(--ani-standard-timing),
-        margin var(--transition-duration-m, 0.25s) var(--ani-standard-timing);
+      flex: 1;
+      min-width: 0;
     }
 
     .ico-wrapper {
@@ -61,7 +61,7 @@
   }
 
   .nav-link.has-tasks {
-    padding-right: var(--s5);
+    padding-right: var(--space-13);
   }
 
   &.isHidden {
@@ -79,17 +79,20 @@
   }
 }
 
+// A quiet, tabular count at the trailing edge — it changes while you watch it,
+// so the digits hold their column.
 .task-count {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   line-height: 1;
-  text-align: center;
-  font-size: 10px;
-  right: 16px;
+  text-align: right;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  right: var(--space-6);
   display: flex;
   align-items: center;
-  color: var(--text-color-muted);
+  color: var(--text-quiet);
   // avoid affecting drag handle
   pointer-events: none;
 }
@@ -110,18 +113,35 @@
   }
 }
 
-// Active state visuals - ensure they override Angular Material styles
-//button[mat-menu-item].nav-link[routerlinkactive="active"],
+// Active state visuals - ensure they override Angular Material styles.
+// Ink at weight 500 on a wash fill; the accent colour is deliberately absent.
 button[mat-menu-item].nav-link.active {
-  color: var(--sidenav-active-text) !important;
-  background: var(--sidenav-item-active-bg) !important;
+  color: var(--text-title) !important;
+  background: var(--wash-7) !important;
+  font-weight: var(--weight-medium);
 
   .nav-label {
-    color: var(--sidenav-active-text) !important;
+    color: var(--text-title) !important;
+    font-weight: var(--weight-medium);
   }
 
   .nav-icon {
-    color: var(--sidenav-active-text) !important;
+    color: var(--text-title) !important;
+  }
+}
+
+// Material sizes every menu item from its own tokens. The rail's rows are
+// 30px, so the override matches on Material's own class to outrank them.
+a.nav-link.mat-mdc-menu-item,
+button.nav-link.mat-mdc-menu-item {
+  height: var(--h-nav);
+  min-height: var(--h-nav);
+  line-height: var(--h-nav);
+  padding: 0 var(--space-6);
+
+  // Room for the trailing count without pushing the label into it.
+  &.has-tasks {
+    padding-right: var(--space-13);
   }
 }
 
@@ -143,11 +163,11 @@ button[mat-menu-item].nav-link.active {
   }
 }
 
+// Collapsed rail: the label is still laid out at full width and simply falls
+// outside the 52px clip. Hiding it with `max-width: 0` would let the icon
+// re-centre and shift as the rail widens.
 .nav-label.label-hidden,
 .text.label-hidden {
-  opacity: 0;
-  max-width: 0;
-  margin-left: 0 !important;
   pointer-events: none;
 }
 
@@ -166,25 +186,30 @@ button[mat-menu-item].nav-link.active {
   }
 }
 
-// Standard navigation row styles (simplified to be the only style)
+// RailItem — one row of the rail. 30px tall, an 18px glyph pulled 1px left so
+// it lands on the centre of the 52px collapsed rail, then the label and a
+// quiet count. Nothing here moves on hover; only the wash appears.
 .nav-link {
   display: flex;
   align-items: center;
-  gap: var(--s2);
-  padding: var(--s) var(--s2);
-  color: var(--sidenav-text);
+  gap: var(--space-9);
+  height: var(--h-nav);
+  min-height: var(--h-nav);
+  padding: 0 var(--space-6);
+  color: var(--text-secondary);
   text-decoration: none;
-  border-radius: 6px;
-  transition: var(--transition-standard);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-standard);
   cursor: pointer;
   background: transparent;
   border: none;
   width: 100%;
   text-align: left;
-  font-size: 14px;
+  font-size: var(--text-base);
   font-family: inherit;
-  font-weight: 400;
-  letter-spacing: normal;
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-body);
+  white-space: nowrap;
 
   // Override Angular Material mat-menu-item defaults so buttons/anchors match our palette
   &[mat-menu-item] {
@@ -197,11 +222,11 @@ button[mat-menu-item].nav-link.active {
 
   &:focus,
   &:hover {
-    background: var(--sidenav-hover-bg);
-    color: var(--sidenav-text-hover) !important;
+    background: var(--wash-5);
+    color: var(--text-title) !important;
 
     .nav-label {
-      color: var(--sidenav-text-hover) !important;
+      color: var(--text-title) !important;
     }
 
     // Ensure mat-menu-item uses hover color for text only
@@ -215,40 +240,38 @@ button[mat-menu-item].nav-link.active {
   // Route items (a.nav-link) should change icon color on hover
   &:not(.active):is(a):hover .nav-icon,
   &:not(.active):is(a):focus .nav-icon {
-    color: var(--sidenav-text-hover);
+    color: var(--text-title);
   }
 
+  // Active is a wash fill plus ink text at weight 500. No left border, no
+  // accent bar, no coloured background, no shadow.
   &.active {
-    background: var(--sidenav-item-active-bg);
-    color: var(--sidenav-active-text);
-    box-shadow: var(--whiteframe-shadow-1dp);
+    background: var(--wash-7);
+    color: var(--text-title);
+    font-weight: var(--weight-medium);
+    box-shadow: none;
 
     .nav-icon {
-      color: var(--sidenav-active-text);
+      color: var(--text-title);
     }
 
     .nav-label {
-      color: var(--sidenav-active-text);
+      color: var(--text-title);
+      font-weight: var(--weight-medium);
     }
 
     // Prevent Material focus styles from reducing contrast on active items
     &:focus,
     &:focus-visible {
-      background: var(--sidenav-item-active-bg);
-      color: var(--sidenav-active-text) !important;
+      background: var(--wash-7);
+      color: var(--text-title) !important;
 
       .nav-label,
       .nav-icon,
       .mat-mdc-menu-item-text {
-        color: var(--sidenav-active-text) !important;
+        color: var(--text-title) !important;
       }
     }
-  }
-
-  .nav-icon {
-    width: 24px;
-    height: 24px;
-    font-size: 18px;
   }
 
   .nav-label {
@@ -258,11 +281,13 @@ button[mat-menu-item].nav-link.active {
   }
 }
 
-// Navigation icon and chevron
+// Navigation icon. 18px in an 18px box, pulled 1px left so the glyph's optical
+// centre lands on the centre of the 52px collapsed rail.
 .nav-icon {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
+  margin-left: -1px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -296,69 +321,29 @@ button[mat-menu-item].nav-link.active {
   transform: rotate(180deg);
 }
 
+// Collapsed rail. The row keeps its full 232px layout and the rail clips it —
+// that is what makes the reveal read as the label sliding into view rather
+// than fading in, and it stops the icon from jumping as the width animates.
 :host-context(.nav-sidenav.compactMode) {
   .nav-link {
-    justify-content: center;
-    padding: 12px;
-
-    &:focus,
-    &:hover {
-      background: var(--sidenav-hover-bg);
-      color: var(--sidenav-text-hover);
-    }
-
-    ::ng-deep .mat-mdc-menu-item-text {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      padding: 0;
-
-      > * {
-        margin: 0 !important;
-      }
-    }
-
-    // Hide the text wrapper if there is a mat-icon sibling (Regular Icon case)
-    // This prevents the empty wrapper from shifting the icon
-    mat-icon.nav-icon ~ ::ng-deep .mat-mdc-menu-item-text {
-      display: none !important;
-    }
-
-    &.active {
-      color: var(--sidenav-active-text) !important;
-      background: var(--sidenav-item-active-bg) !important;
-      box-shadow: var(--whiteframe-shadow-1dp);
-
-      &::after {
-        position: absolute;
-        inset: 4px;
-      }
-
-      .nav-icon {
-        color: var(--sidenav-active-text) !important;
-      }
-
-      .nav-label {
-        color: var(--sidenav-active-text) !important;
-      }
-    }
+    // Explicitly NOT `justify-content: center`: the icon must stay at the same
+    // x-position collapsed and revealed.
+    justify-content: flex-start;
   }
 
-  .nav-icon {
-    margin: 0;
-  }
-
-  // Hide the overflow menu button entirely when compactMode
-  .additional-btn {
-    display: none !important;
-  }
-
-  // Hide only text labels, not icons in compact mode
-  .nav-label {
-    display: none !important;
-  }
-
+  // The row overflow menu has nowhere to sit at 52px, and the count would land
+  // outside the clip. Both come back with the reveal.
+  .additional-btn,
   .task-count {
-    display: none;
+    display: none !important;
+  }
+}
+
+// `railRevealed` is only ever set while the rail is collapsed, so it alone is
+// enough to bring the trailing bits back.
+:host-context(magic-side-nav.railRevealed) {
+  .additional-btn,
+  .task-count {
+    display: flex !important;
   }
 }
