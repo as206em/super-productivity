@@ -1,6 +1,16 @@
 import { IS_ANDROID_WEB_VIEW } from './util/is-android-web-view';
 
-export const IS_ELECTRON = navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
+// The user agent alone is not sufficient: Electron-based *browsers* (and any
+// embedded webview built on Electron) carry ` electron/` in their UA while
+// exposing no preload bridge. Treating those as Electron makes every
+// `window.ea.*` call below throw during module evaluation, which rejects
+// bootstrap before an error handler exists — the app hangs on the splash
+// screen with nothing in the console. Requiring the bridge keeps real Electron
+// builds unchanged (preload always defines `window.ea`) and lets everything
+// else fall through to the web path.
+export const IS_ELECTRON =
+  navigator.userAgent.toLowerCase().indexOf(' electron/') > -1 &&
+  typeof window.ea !== 'undefined';
 // effectively IS_BROWSER
 export const IS_WEB_BROWSER = !IS_ELECTRON && !IS_ANDROID_WEB_VIEW;
 export const IS_GNOME_DESKTOP = IS_ELECTRON && window.ea.isGnomeDesktop();
