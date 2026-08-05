@@ -57,12 +57,14 @@ describe('CustomThemeService', () => {
     expect(service.activeRef()).toEqual({ kind: 'builtin', id: 'default' });
   });
 
-  it('injects a <link> stylesheet for built-in themes', async () => {
+  // The bundled skins were removed with the redesign, so `default` is the
+  // only built-in left and it ships no stylesheet. A ref to one of the
+  // removed ones resolves back to default rather than 404-ing a <link>.
+  it('falls back to default for a built-in that no longer ships', async () => {
     const service = buildService();
     await service.loadTheme({ kind: 'builtin', id: 'dracula' });
-    const el = document.getElementById(STYLESHEET_ID);
-    expect(el?.tagName).toBe('LINK');
-    expect((el as HTMLLinkElement).href).toContain('assets/themes/dracula.css');
+    expect(document.getElementById(STYLESHEET_ID)).toBeNull();
+    expect(service.activeRef()).toEqual({ kind: 'builtin', id: 'default' });
   });
 
   it('injects no stylesheet for the default built-in', async () => {
@@ -112,19 +114,31 @@ describe('CustomThemeService', () => {
   });
 
   it('writes back to localStorage when setActiveTheme is called', async () => {
+    storageMock.getTheme.and.resolveTo({
+      id: 'mine',
+      name: 'Mine',
+      css: 'a {}',
+      uploadDate: 1,
+    });
     const service = buildService();
-    await service.setActiveTheme({ kind: 'builtin', id: 'dracula' });
-    expect(localStorage.getItem(LS.CUSTOM_THEME)).toBe('builtin:dracula');
-    expect(service.activeRef()).toEqual({ kind: 'builtin', id: 'dracula' });
+    await service.setActiveTheme({ kind: 'user', id: 'mine' });
+    expect(localStorage.getItem(LS.CUSTOM_THEME)).toBe('user:mine');
+    expect(service.activeRef()).toEqual({ kind: 'user', id: 'mine' });
   });
 
   it('replaces the previous stylesheet when switching themes', async () => {
+    storageMock.getTheme.and.callFake(async (id: string) => ({
+      id,
+      name: id,
+      css: `:root { --bg: #${id === 'one' ? '111111' : '222222'}; }`,
+      uploadDate: 1,
+    }));
     const service = buildService();
-    await service.loadTheme({ kind: 'builtin', id: 'dracula' });
-    await service.loadTheme({ kind: 'builtin', id: 'arc' });
+    await service.loadTheme({ kind: 'user', id: 'one' });
+    await service.loadTheme({ kind: 'user', id: 'two' });
     const elements = document.querySelectorAll(`#${STYLESHEET_ID}`);
     expect(elements.length).toBe(1);
-    expect((elements[0] as HTMLLinkElement).href).toContain('assets/themes/arc.css');
+    expect(elements[0].textContent).toContain('#222222');
   });
 
   it('exposes built-ins followed by user themes in the themes signal', () => {
@@ -154,12 +168,18 @@ describe('CustomThemeService', () => {
   });
 
   it('applyActiveTheme loads whatever activeRef currently points at', async () => {
-    localStorage.setItem(LS.CUSTOM_THEME, 'builtin:dracula');
+    localStorage.setItem(LS.CUSTOM_THEME, 'user:mine');
+    storageMock.getTheme.and.resolveTo({
+      id: 'mine',
+      name: 'Mine',
+      css: ':root { --bg: #123456; }',
+      uploadDate: 1,
+    });
     const service = buildService();
     await service.applyActiveTheme();
     const el = document.getElementById(STYLESHEET_ID);
-    expect(el?.tagName).toBe('LINK');
-    expect((el as HTMLLinkElement).href).toContain('dracula.css');
+    expect(el?.tagName).toBe('STYLE');
+    expect(el?.textContent).toContain('#123456');
   });
 
   describe('removeUserTheme', () => {
@@ -234,14 +254,14 @@ describe('CustomThemeService', () => {
       expect(service.activeRef()).toEqual({ kind: 'builtin', id: 'default' });
     });
 
-    it('promotes a known built-in id into LS and applies the theme', async () => {
+    // The legacy allowlist named the bundled skins, all of which were removed
+    // with the redesign. Migrating one now lands on the default rather than
+    // promoting a ref to a stylesheet that no longer ships.
+    it('resolves a legacy id for a removed built-in to the default', async () => {
       const service = buildService();
       await service.migrateLegacyCustomTheme('dracula');
-      expect(localStorage.getItem(LS.CUSTOM_THEME)).toBe('builtin:dracula');
-      expect(service.activeRef()).toEqual({ kind: 'builtin', id: 'dracula' });
-      const el = document.getElementById(STYLESHEET_ID);
-      expect(el?.tagName).toBe('LINK');
-      expect((el as HTMLLinkElement).href).toContain('assets/themes/dracula.css');
+      expect(service.activeRef()).toEqual({ kind: 'builtin', id: 'default' });
+      expect(document.getElementById(STYLESHEET_ID)).toBeNull();
     });
   });
 
@@ -272,17 +292,10 @@ describe('CustomThemeService', () => {
       });
     });
 
-    it('picks Liquid Glass on first run for Apple Silicon Macs', () => {
-      expect(pickInitialActiveRef(null, true)).toEqual({
-        kind: 'builtin',
-        id: 'liquid-glass',
-      });
-    });
-
-    it('does not write the platform default to LS — leaves it for legacy migration', () => {
+    it('does not write the default to LS — leaves it for legacy migration', () => {
       // `migrateLegacyCustomTheme` short-circuits when LS already has a
-      // value. Persisting on first run would lock new Apple Silicon Macs
-      // out of inheriting a synced device's theme choice.
+      // value. Persisting on first run would lock a new install out of
+      // inheriting a synced device's theme choice.
       pickInitialActiveRef(null, true);
       expect(localStorage.getItem(LS.CUSTOM_THEME)).toBeNull();
     });

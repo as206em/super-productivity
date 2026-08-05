@@ -5,12 +5,13 @@ import { LS } from '../persistence/storage-keys.const';
 import { ThemeStorageService } from './theme-storage.service';
 import { validateThemeCss } from './validate-theme-css.util';
 import { ThemeCssWarning } from './theme-contract.const';
-import { IS_APPLE_SILICON } from '../../app.constants';
 
 /**
  * A theme entry surfaced in the picker.
  *
- * Built-in themes load from `assets/themes/*.css` via a `<link>` tag.
+ * The only built-in left is `default`, which ships no stylesheet — the
+ * bundled skins were removed with the redesign. The `<link>` load path is
+ * kept because the shape still allows a built-in with a `url`.
  * User themes load from IDB-stored CSS bytes via a `<style>` tag.
  *
  * `kind` discriminates the load path and lines up with `CustomThemeRef.kind`,
@@ -40,8 +41,6 @@ const STYLESHEET_ID = 'custom-theme-stylesheet';
 
 const DEFAULT_REF: CustomThemeRef = { kind: 'builtin', id: 'default' };
 
-const LIQUID_GLASS_REF: CustomThemeRef = { kind: 'builtin', id: 'liquid-glass' };
-
 const parseRef = (raw: string | null): CustomThemeRef => {
   if (!raw) return DEFAULT_REF;
   const idx = raw.indexOf(':');
@@ -57,128 +56,40 @@ const parseRef = (raw: string | null): CustomThemeRef => {
 const serializeRef = (ref: CustomThemeRef): string => `${ref.kind}:${ref.id}`;
 
 /**
- * Pick the cold-start theme. Honors any stored selection first; otherwise
- * Apple Silicon Macs land on Liquid Glass (backdrop-filter is cheap on
- * M-series GPUs, the macOS aesthetic feels at home), everyone else stays
- * on the default theme.
+ * Pick the cold-start theme. Honors any stored selection, otherwise the
+ * default.
+ *
+ * The Apple Silicon / Liquid Glass first-run branch went away with the
+ * bundled skins — the stylesheet it pointed at no longer ships. The second
+ * parameter is kept so the signature stays stable for callers and tests.
  *
  * Deliberately does *not* write to LS on first run — leaving LS untouched
  * lets `migrateLegacyCustomTheme` still detect the "no choice yet" state
- * and import a synced device's preference. The consequence is that a
- * future change to this rule will silently re-pick for users who never
- * touched the picker, which is the expected behavior of a default.
- *
- * Exported so tests can exercise both branches without monkey-patching
- * the module-level `IS_APPLE_SILICON` constant.
+ * and import a synced device's preference.
  */
 export const pickInitialActiveRef = (
   stored: string | null,
-  isAppleSilicon: boolean,
+  _isAppleSilicon: boolean = false,
 ): CustomThemeRef => {
   if (stored) return parseRef(stored);
-  return isAppleSilicon ? LIQUID_GLASS_REF : DEFAULT_REF;
+  return DEFAULT_REF;
 };
 
+/**
+ * The app ships light and dark and nothing else.
+ *
+ * The bundled skins (Zen, Arc, Dracula, Nord, Velvet, Liquid Glass, …) were
+ * written against the pre-redesign variable names. The redesigned components
+ * consume the design system's tokens directly, so those skins could only ever
+ * restyle half the app — a theme that reaches the sidebar but not the task
+ * rows looks broken rather than themed. They are removed rather than left
+ * half-working.
+ *
+ * User-uploaded themes are untouched: they are the user's own data and still
+ * load through `_themeStorage` below.
+ */
 export const BUILT_IN_THEMES: CustomTheme[] = [
   { id: 'default', name: 'Default', kind: 'builtin', url: '', requiredMode: 'system' },
-  {
-    id: 'zen',
-    name: 'Zen',
-    kind: 'builtin',
-    url: 'assets/themes/zen.css',
-    requiredMode: 'system',
-  },
-  {
-    id: 'arc',
-    name: 'Arc',
-    kind: 'builtin',
-    url: 'assets/themes/arc.css',
-    requiredMode: 'dark',
-  },
-  {
-    id: 'catppuccin-mocha',
-    name: 'Catppuccin Mocha',
-    kind: 'builtin',
-    url: 'assets/themes/catppuccin-mocha.css',
-    requiredMode: 'dark',
-  },
-  {
-    id: 'cybr',
-    name: 'Cybr (Cyberpunk)',
-    kind: 'builtin',
-    url: 'assets/themes/cybr.css',
-    requiredMode: 'dark',
-  },
-  {
-    id: 'dark-base',
-    name: 'Dark Base',
-    kind: 'builtin',
-    url: 'assets/themes/dark-base.css',
-    requiredMode: 'dark',
-  },
-  {
-    id: 'dracula',
-    name: 'Dracula',
-    kind: 'builtin',
-    url: 'assets/themes/dracula.css',
-    requiredMode: 'dark',
-  },
-  {
-    id: 'everforest',
-    name: 'Everforest',
-    kind: 'builtin',
-    url: 'assets/themes/everforest.css',
-    requiredMode: 'system',
-  },
-  {
-    id: 'glass',
-    name: 'Glass',
-    kind: 'builtin',
-    url: 'assets/themes/glass.css',
-    requiredMode: 'dark',
-  },
-  {
-    id: 'lines',
-    name: 'Lines',
-    kind: 'builtin',
-    url: 'assets/themes/lines.css',
-    requiredMode: 'system',
-  },
-  {
-    id: 'liquid-glass',
-    name: 'Liquid Glass (macOS)',
-    kind: 'builtin',
-    url: 'assets/themes/liquid-glass.css',
-    requiredMode: 'system',
-  },
-  {
-    id: 'nord-polar-night',
-    name: 'Nord Polar Night',
-    kind: 'builtin',
-    url: 'assets/themes/nord-polar-night.css',
-    requiredMode: 'dark',
-  },
-  {
-    id: 'nord-snow-storm',
-    name: 'Nord Snow Storm',
-    kind: 'builtin',
-    url: 'assets/themes/nord-snow-storm.css',
-    requiredMode: 'light',
-  },
-  {
-    id: 'rainbow',
-    name: 'Rainbow',
-    kind: 'builtin',
-    url: 'assets/themes/rainbow.css',
-    requiredMode: 'system',
-  },
-  {
-    id: 'velvet',
-    name: 'Velvet',
-    kind: 'builtin',
-    url: 'assets/themes/velvet.css',
-    requiredMode: 'dark',
-  },
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -187,7 +98,7 @@ export class CustomThemeService {
   private _themeStorage = inject(ThemeStorageService);
 
   private _activeRef = signal<CustomThemeRef>(
-    pickInitialActiveRef(localStorage.getItem(LS.CUSTOM_THEME), IS_APPLE_SILICON),
+    pickInitialActiveRef(localStorage.getItem(LS.CUSTOM_THEME)),
   );
 
   /** The currently selected theme reference. */
