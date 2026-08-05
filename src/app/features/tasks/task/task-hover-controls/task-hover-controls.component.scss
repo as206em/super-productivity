@@ -1,22 +1,25 @@
 @use '../../../../../styles/_globals.scss' as *;
 @use '../task.component.mixins' as *;
 
-// The cluster used to float over the row from `right: 100%`, revealed by a
-// `.first-line:hover` rule. The redesigned row has no `.first-line`, so it
-// stayed hidden — and when forced visible it covered the row and swallowed
-// clicks meant for the status glyph. Angular only renders this component while
-// the row is hovered, so the visibility machinery is redundant: it is simply
-// the last item in the row's control cluster.
 :host {
   transform-origin: right center;
-  position: static;
+  position: absolute;
+  right: 100%;
+  top: 0;
+  bottom: 0;
   z-index: var(--z-hover-controls);
-  display: flex;
-  align-items: center;
+  display: none;
   border-radius: var(--card-border-radius);
 
   &:before {
-    content: none;
+    content: '';
+    border-left: var(--hover-controls-border);
+    width: 1px;
+    height: 90%;
+    position: absolute;
+    left: 0;
+    top: 5%;
+    opacity: var(--hover-controls-border-opacity);
 
     :host-context([dir='rtl']) & {
       right: 0;
@@ -24,8 +27,10 @@
   }
 
   :host-context([dir='rtl']) & {
-    // Nothing to mirror now that the cluster is in flow — the row itself flips.
+    position: absolute;
     transform-origin: left center;
+    left: 100%;
+    right: unset;
   }
 
   @include mq(xs, max) {

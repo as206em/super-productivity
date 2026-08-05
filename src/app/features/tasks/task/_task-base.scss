@@ -312,37 +312,6 @@
   gap: var(--space-1);
 }
 
-// The hover cluster hides itself by default and its own stylesheet reveals it
-// from `.first-line:hover` — a class this row does not have, so it rendered at
-// zero size and nothing in it was reachable, the detail-panel button included.
-// It also positioned itself absolutely over the old layout; here it is just
-// another item in the control cluster.
-.task-controls task-hover-controls {
-  display: flex;
-  position: static;
-  align-items: center;
-
-  .ico-btn {
-    width: var(--h-chip);
-    height: var(--h-chip);
-    padding: 0;
-    border-radius: var(--radius-sm);
-    color: var(--icon-meta);
-    line-height: 1;
-
-    .mat-icon {
-      font-size: 15px;
-      width: 15px;
-      height: 15px;
-      line-height: 1;
-    }
-
-    &:hover {
-      background: var(--wash-7);
-    }
-  }
-}
-
 .task-icon-btn {
   width: var(--h-chip);
   height: var(--h-chip);
