@@ -171,7 +171,7 @@ task-detail-item {
   }
 }
 
-// MetaRows. The label column is a fixed 84px, which is the whole reason the
+// MetaRows. The label column is a fixed 96px, which is the whole reason the
 // values line up.
 .detail-meta {
   margin-top: var(--space-11);
@@ -204,7 +204,7 @@ task-detail-item {
 }
 
 .meta-row__label {
-  flex: 0 0 84px;
+  flex: 0 0 96px;
   display: flex;
   align-items: center;
   gap: var(--space-4);

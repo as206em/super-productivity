@@ -765,17 +765,24 @@ body.isDarkTheme {
   --font-ui: var(--font-primary-stack);
   --font-icon: 'Material Symbols Outlined';
 
-  // Scale: 10.5px → 15px in half-pixel steps, plus two display sizes used once
+  // Scale: 11.5px → 16px in half-pixel steps, plus two display sizes used once
   // each (the summary stat and the focus clock).
-  --text-2xs: 10.5px; // planner card meta
-  --text-xs: 11px; // metadata, counts, keycaps, eyebrows
-  --text-xs-plus: 11.5px; // settings hint, detail meta labels
-  --text-sm: 12px; // dense row title, notes, chrome buttons
-  --text-sm-plus: 12.5px; // page buttons, board cards
-  --text-base: 13px; // body default
-  --text-base-plus: 13.5px; // command-palette input
-  --text-md: 14.5px; // detail panel title
-  --text-lg: 15px; // largest in-app heading
+  //
+  // The whole ramp carries a uniform +1px over the original draft, which read
+  // too small at normal viewing distance. Shifting every step by the same
+  // amount keeps the relationships between them exactly as they were, so the
+  // hierarchy is unchanged and only the floor moved. The two display sizes are
+  // deliberately left alone: they are already display-scale, and lifting them
+  // in step would have exaggerated a gap that is wide enough.
+  --text-2xs: 11.5px; // planner card meta
+  --text-xs: 12px; // metadata, counts, keycaps, eyebrows
+  --text-xs-plus: 12.5px; // settings hint, detail meta labels
+  --text-sm: 13px; // dense row title, notes, chrome buttons
+  --text-sm-plus: 13.5px; // page buttons, board cards
+  --text-base: 14px; // body default
+  --text-base-plus: 14.5px; // command-palette input
+  --text-md: 15.5px; // detail panel title
+  --text-lg: 16px; // largest in-app heading
   --text-stat: 22px; // summary metric (once)
   --text-clock: 92px; // focus clock (once)
 

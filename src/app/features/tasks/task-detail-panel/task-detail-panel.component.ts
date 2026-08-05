@@ -373,7 +373,7 @@ export class TaskDetailPanelComponent implements OnInit, AfterViewInit, OnDestro
   readonly hasNotes = computed(() => !!this.task().notes?.trim());
 
   /**
-   * The label/value lines. A fixed 84px label column is what makes the values
+   * The label/value lines. A fixed 96px label column is what makes the values
    * align; the rows are rendered from this list so the column can never drift
    * between them.
    *
