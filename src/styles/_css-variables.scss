@@ -1116,4 +1116,11 @@ body.isDarkTheme {
   --color-warning: var(--warn);
   --color-danger: var(--over);
   --success-green: var(--done);
+
+  // The planner card is the smallest card in the system — it has to survive a
+  // 164px day column, so it runs a step below everything else.
+  --planner-font-size: var(--text-xs-plus);
+  --planner-font-size-mobile: var(--text-xs-plus);
+  --planner-font-size-smaller: var(--text-2xs);
+  --planner-font-size-smaller-mobile: var(--text-2xs);
 }

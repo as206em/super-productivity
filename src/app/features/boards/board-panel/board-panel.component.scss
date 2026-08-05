@@ -1,26 +1,29 @@
 @use '../../../../styles/_globals.scss' as *;
 
+// A board column: a sunken well holding cards, so the cards read as sitting
+// on top of it rather than floating on the page.
 :host {
-  //border: 1px solid var(--c-light-20);
-  @include extraBorder();
-  border-radius: 8px;
+  border: 1px solid var(--line-hair);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-sunken);
   min-height: 200px;
-  min-width: 280px;
+  // The column stops here and the board scrolls sideways instead of letting
+  // it compress to unreadable.
+  min-width: var(--board-col-min);
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   overflow: auto;
   max-height: 100%;
-  // space for outline
-  padding: 1px;
+  padding: var(--space-6);
 
   @include mq(xs, max) {
     min-height: 300px;
   }
 
   planner-task {
-    margin-bottom: var(--s);
-    margin-right: var(--s-half);
+    margin-bottom: var(--space-4);
+    margin-right: 0;
   }
 
   add-task-inline {

@@ -66,17 +66,23 @@ $summary-point-inner-margin: var(--s);
   margin-top: var(--s2);
 }
 
+// The one moment of warmth in the product. One sentence, then straight back
+// to numbers — 15px, the largest heading in the app.
 .done-headline {
-  margin-top: var(--s4);
-  margin-bottom: calc(var(--s3) - var(--s));
+  margin-top: var(--space-13);
+  margin-bottom: var(--space-11);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-heading);
+  color: var(--text-title);
 }
 
 .daily-summary-summary {
-  margin-bottom: var(--s5);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  transition: opacity 0.2s ease;
+  margin-bottom: var(--space-12);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-8);
+  transition: opacity var(--duration-fast) var(--ease-standard);
 
   &.is-loading-archive {
     opacity: 0.6;
@@ -87,19 +93,21 @@ $summary-point-inner-margin: var(--s);
   }
 }
 
+// StatCard. A hairline card with a quiet label, the metric, and a delta that
+// is a plain observation rather than a coloured percentage badge.
 .summary-point {
-  vertical-align: center;
-  display: inline-block;
-  align-items: center;
-  text-align: center;
-  margin: $summary-point-inner-margin;
-  //flex-grow: 1;
-  flex-basis: 160px;
+  display: block;
+  text-align: left;
+  margin: 0;
+  padding: var(--space-9) var(--space-9);
+  border: 1px solid var(--line-card);
+  border-radius: var(--radius-2xl);
   position: relative;
 
   .summary-val {
     display: flex;
-    justify-content: center;
+    // The card reads left-to-right now, so the metric starts at the label.
+    justify-content: flex-start;
 
     :first-child {
       justify-content: right;
@@ -128,7 +136,17 @@ $summary-point-inner-margin: var(--s);
 }
 
 .summary-val {
-  font-weight: bold;
+  // The summary metric is one of two display sizes in the system, used once.
+  font-size: var(--text-stat);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-stat);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-title);
+}
+
+.summary-text {
+  font-size: var(--text-xs);
+  color: var(--text-meta);
 }
 
 .tabs {
