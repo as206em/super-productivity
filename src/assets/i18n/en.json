@@ -897,7 +897,8 @@
       "NO_TASKS": "No tasks",
       "PLAN_VIEW": {
         "NO_DEADLINES": "No deadlines",
-        "NO_SCHEDULED_ITEMS": "No scheduled items"
+        "NO_SCHEDULED_ITEMS": "No scheduled items",
+        "SCHEDULED": "Scheduled"
       },
       "S": {
         "REMOVED_PLAN_DATE": "Removed plan date for task \"{{taskTitle}}\"",

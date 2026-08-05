@@ -1,37 +1,29 @@
+<!-- Day header. An 11px uppercase eyebrow, the date, and one quiet load line —
+     the whole thing is the height of a single task card so the columns stay
+     about the work, not about their own chrome. -->
 <header>
-  <div class="day-title">
+  <div class="day-head">
+    <span class="day-dow">{{ day.dayDate | localeDate: 'EEE' }}</span>
+    <span class="day-num">{{ day.dayDate | localeDate: 'd' }}</span>
     @if (day.isToday) {
-      <mat-icon inline="true">wb_sunny</mat-icon>
-    }
-    {{ day.dayDate | localeDate: 'EEE' }}
-    <span class="date">{{ day.dayDate | shortDate2 }}</span>
-  </div>
-  <!--<div class="day-estimate">{{ day.timeEstimate |roundDuration|msToString }}</div>-->
-
-  <div class="day-counts">
-    <span>{{
-      day.capacityEstimate ?? day.timeEstimate | roundDuration | msToString
-    }}</span>
-    @if (day.availableHours !== undefined) {
-      <span class="available-hours"
-        >/ {{ day.availableHours | roundDuration | msToString }}</span
-      >
-    }
-
-    @if (day.itemsTotal > 5) {
-      <mat-icon inline="true">task_alt</mat-icon>
-      <span>{{ day.itemsTotal }}</span>
+      <span class="day-today">Today</span>
     }
   </div>
 
-  @if (day.progressPercentage !== undefined) {
-    <div class="progress-container">
-      <progress-bar
-        [progress]="day.progressPercentage"
-        [cssClass]="getProgressBarClass(day.progressPercentage)"
-      ></progress-bar>
-    </div>
-  }
+  <!-- "free" rather than a zero: an empty day is a fact, not a failure. -->
+  <div class="day-load sp-num">
+    @if (day.itemsTotal) {
+      {{ day.itemsTotal }} ·
+      {{ day.capacityEstimate ?? day.timeEstimate | roundDuration | msToString }}
+      @if (day.availableHours !== undefined) {
+        <span class="day-capacity"
+          >/ {{ day.availableHours | roundDuration | msToString }}</span
+        >
+      }
+    } @else {
+      <span class="day-free">free</span>
+    }
+  </div>
 </header>
 
 <div class="normal-tasks">
@@ -72,97 +64,82 @@
       ></planner-calendar-event>
     }
 
-    <!-- -->
-    @if (
-      day.tasks.length === 0 &&
-      day.noStartTimeRepeatProjections.length === 0 &&
-      day.allDayEvents.length === 0
-    ) {
-      <div class="empty">{{ T.F.PLANNER.NO_TASKS | translate }}</div>
-    }
+    <!-- No empty-state text here on purpose: the header already says `free`,
+         and three stacked "nothing here" messages per column was the noisiest
+         thing on the screen. -->
   </div>
 
   <add-task-inline [planForDay]="day.dayDate"></add-task-inline>
 </div>
 
-<div
-  class="scheduled"
-  [class.no-items]="day.scheduledIItems.length === 0"
->
-  <div class="section-title">
-    <mat-icon>alarm</mat-icon>
-  </div>
+@if (day.scheduledIItems.length > 0) {
+  <div class="scheduled">
+    <div class="section-title">{{ T.F.PLANNER.PLAN_VIEW.SCHEDULED | translate }}</div>
 
-  <div
-    class="scheduled-items"
-    cdkDropList
-    cdkDropListSortingDisabled
-    [cdkDropListData]="day.dayDate"
-    [cdkDropListAutoScrollStep]="8"
-    (cdkDropListDropped)="drop('SCHEDULED', day.scheduledIItems, $event)"
-  >
-    @for (scheduledItem of day.scheduledIItems; track scheduledItem.id) {
-      <div
-        class="scheduled-item"
-        [ngClass]="scheduledItem.type"
-      >
-        @if (scheduledItem.type === SCHEDULE_ITEM_TYPE.Task) {
-          <div
-            class="time"
-            (click)="editTaskReminderOrReScheduleIfPossible(scheduledItem.task)"
-          >
-            <span
-              class="time-time"
+    <div
+      class="scheduled-items"
+      cdkDropList
+      cdkDropListSortingDisabled
+      [cdkDropListData]="day.dayDate"
+      [cdkDropListAutoScrollStep]="8"
+      (cdkDropListDropped)="drop('SCHEDULED', day.scheduledIItems, $event)"
+    >
+      @for (scheduledItem of day.scheduledIItems; track scheduledItem.id) {
+        <div
+          class="scheduled-item"
+          [ngClass]="scheduledItem.type"
+        >
+          @if (scheduledItem.type === SCHEDULE_ITEM_TYPE.Task) {
+            <div
+              class="time"
+              (click)="editTaskReminderOrReScheduleIfPossible(scheduledItem.task)"
+            >
+              <span
+                class="time-time"
+                [innerHTML]="scheduledItem.start | roundDuration | shortTimeHtml"
+              ></span>
+              <mat-icon>alarm</mat-icon>
+            </div>
+          } @else {
+            <div
+              class="time time-time"
               [innerHTML]="scheduledItem.start | roundDuration | shortTimeHtml"
-            ></span>
-            <mat-icon>alarm</mat-icon>
-          </div>
-        } @else {
-          <div
-            class="time time-time"
-            [innerHTML]="scheduledItem.start | roundDuration | shortTimeHtml"
-          ></div>
-        }
+            ></div>
+          }
 
-        <!-- -->
-        @switch (scheduledItem.type) {
-          @case (SCHEDULE_ITEM_TYPE.Task) {
-            <planner-task
-              cdkDrag
-              [task]="scheduledItem.task"
-              [day]="day.dayDate"
-              [cdkDragData]="scheduledItem.task"
-              [cdkDragStartDelay]="dragDelayForTouch()"
-              [cdkDragLockAxis]="isXs() ? 'y' : ''"
-            ></planner-task>
+          <!-- -->
+          @switch (scheduledItem.type) {
+            @case (SCHEDULE_ITEM_TYPE.Task) {
+              <planner-task
+                cdkDrag
+                [task]="scheduledItem.task"
+                [day]="day.dayDate"
+                [cdkDragData]="scheduledItem.task"
+                [cdkDragStartDelay]="dragDelayForTouch()"
+                [cdkDragLockAxis]="isXs() ? 'y' : ''"
+              ></planner-task>
+            }
+            @case (SCHEDULE_ITEM_TYPE.CalEvent) {
+              <planner-calendar-event
+                [calendarEvent]="scheduledItem.calendarEvent"
+              ></planner-calendar-event>
+            }
+            @case (SCHEDULE_ITEM_TYPE.RepeatProjection) {
+              <planner-repeat-projection
+                [repeatCfg]="scheduledItem.repeatCfg"
+                [dayDate]="day.dayDate"
+              ></planner-repeat-projection>
+            }
           }
-          @case (SCHEDULE_ITEM_TYPE.CalEvent) {
-            <planner-calendar-event
-              [calendarEvent]="scheduledItem.calendarEvent"
-            ></planner-calendar-event>
-          }
-          @case (SCHEDULE_ITEM_TYPE.RepeatProjection) {
-            <planner-repeat-projection
-              [repeatCfg]="scheduledItem.repeatCfg"
-              [dayDate]="day.dayDate"
-            ></planner-repeat-projection>
-          }
-        }
-      </div>
-    }
-
-    <!-- -->
-    @if (day.scheduledIItems.length === 0) {
-      <div class="empty">{{ T.F.PLANNER.PLAN_VIEW.NO_SCHEDULED_ITEMS | translate }}</div>
-    }
+        </div>
+      }
+    </div>
   </div>
-</div>
+}
 
 @if (day.deadlineTasks.length > 0) {
   <div class="deadlines">
-    <div class="section-title">
-      <mat-icon>flag</mat-icon>
-    </div>
+    <div class="section-title">{{ T.F.TASK.ADDITIONAL_INFO.DEADLINE | translate }}</div>
 
     <div class="deadline-items">
       @for (task of day.deadlineTasks; track task.id) {

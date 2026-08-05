@@ -2,20 +2,30 @@
 @use '../../tasks/task/task.component.mixins' as *;
 
 :host {
-  border-radius: var(--task-border-radius);
-  min-height: var(--planner-item-height);
+  // The smallest card in the system — it has to survive a 164px day column,
+  // so it is a hairline box with no shadow rather than a lifted card.
+  border-radius: var(--radius-md);
+  min-height: 0;
   display: flex;
   align-items: stretch;
   @include grabCursor();
-  color: var(--text-color);
-  background: var(--task-c-bg);
-  box-shadow: var(--task-shadow);
-  border: var(--task-border, none);
+  color: var(--text-title);
+  background: var(--surface-page);
+  border: 1px solid var(--line-card);
+  box-shadow: none;
+  transition: border-color var(--duration-fast) var(--ease-standard);
 
+  &:hover {
+    border-color: rgba(var(--ink-channel), 0.18);
+  }
+
+  // Done keeps its height and is not dimmed as a block — only the words go
+  // quiet, the same as a task row.
   &.isDone {
-    opacity: var(--task-is-done-dim-opacity);
+    opacity: 1;
 
     .title {
+      color: var(--text-meta);
       text-decoration: line-through;
     }
   }
@@ -30,8 +40,8 @@
 }
 
 :host.isDragReady:not(.cdk-drag-placeholder) {
-  background: var(--bg-lighter);
-  box-shadow: var(--whiteframe-shadow-8dp);
+  background: var(--surface-page);
+  box-shadow: var(--shadow-card-hover);
   z-index: 1;
   position: relative;
   transition:
@@ -40,21 +50,40 @@
 }
 
 :host.isCurrent {
-  background: var(--task-c-current-bg);
-  box-shadow: var(--task-current-shadow);
+  background: var(--live-row);
+  box-shadow: none;
 }
 
 .no-drag {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: var(--space-1);
   flex-grow: 1;
   flex-shrink: 1;
   min-width: 0;
   position: relative;
-  padding: var(--s-half) 0;
+  padding: var(--space-4) var(--space-5);
+}
 
-  @include mq(xs) {
-    padding: var(--s-quarter) 0;
+// One line under the title: status, tag square, then the estimate pushed
+// right so the numbers align down the column.
+.planner-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+
+  .planner-time-remaining-shared {
+    margin-left: auto;
+    font-size: var(--text-2xs);
+    color: var(--text-meta);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  ::ng-deep tag-list {
+    min-width: 0;
+    overflow: hidden;
   }
 }
 
@@ -71,16 +100,16 @@ swipe-block {
 
 .task-content {
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   flex-grow: 1;
   min-width: 0;
 }
 
+// Small enough to sit on the meta line rather than dominate the card.
 done-toggle {
-  --done-toggle-size: 30px;
+  --done-toggle-size: 15px;
 
-  margin-left: var(--s-half);
-  align-self: center;
+  flex: 0 0 auto;
   cursor: pointer;
 }
 
@@ -91,37 +120,28 @@ done-toggle {
 }
 
 .title {
-  padding-left: var(--s-half);
-  padding-right: var(--s-half);
-  // to have room for the coloured edit border
-  padding-top: 1px;
-  padding-bottom: 1px;
-
-  line-height: 1.5;
+  padding: 0;
+  line-height: var(--leading-tight);
   position: relative;
+  font-size: var(--planner-font-size);
+  color: inherit;
+  // Wrap on words and cap at three lines. `overflow-wrap: anywhere` was
+  // breaking mid-word — in a 164px column "Quarterly" came out as "Quarterl / y".
   overflow: hidden;
-  overflow-wrap: anywhere;
-  flex-grow: 1;
-  flex-shrink: 1;
-
-  @include mq(xs) {
-    font-size: var(--planner-font-size);
-  }
+  overflow-wrap: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .parent-title {
-  padding-left: var(--s-half);
-  padding-right: var(--s-half);
-  padding-top: var(--s-half);
-  padding-bottom: var(--s-half);
+  padding: 0;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  line-height: 1.1;
-  font-size: var(--planner-font-size-smaller-mobile);
-
-  @include mq(xs) {
-    font-size: var(--planner-font-size-smaller);
-  }
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+  font-size: var(--planner-font-size-smaller);
+  color: var(--text-quiet);
 }
 
 .planner-time-remaining-shared {
