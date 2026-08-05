@@ -373,9 +373,13 @@ export class TaskDetailPanelComponent implements OnInit, AfterViewInit, OnDestro
   readonly hasNotes = computed(() => !!this.task().notes?.trim());
 
   /**
-   * The six label/value lines. A fixed 84px label column is what makes the
-   * values align; the rows themselves are rendered from this list so the
-   * column can never drift between them.
+   * The label/value lines. A fixed 84px label column is what makes the values
+   * align; the rows are rendered from this list so the column can never drift
+   * between them.
+   *
+   * Tags are deliberately absent: the tag row further down the panel is the
+   * editable one, and a read-only copy here would just say the same thing
+   * twice.
    */
   readonly metaRows = computed<
     ReadonlyArray<{
@@ -412,7 +416,6 @@ export class TaskDetailPanelComponent implements OnInit, AfterViewInit, OnDestro
         value: project || 'None',
         edit: null,
       },
-      { icon: 'label', label: 'Tag', value: t.tagIds?.length ? '' : 'None', edit: null },
       {
         icon: 'hourglass_empty',
         label: 'Estimate',

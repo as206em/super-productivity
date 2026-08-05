@@ -76,6 +76,16 @@ progress-bar {
 
 .detail-head {
   padding: var(--space-10);
+  // The MetaRows already end on a hairline, so the sections below continue
+  // straight on without a gap.
+  padding-bottom: 0;
+}
+
+// The accordion sections share the head's inset so their label column lines
+// up with the MetaRows above rather than starting at the panel edge.
+task-detail-item {
+  display: block;
+  padding: 0 var(--space-10);
 }
 
 .detail-title {

@@ -118,12 +118,24 @@
   color: var(--text-quiet);
 }
 
+// A row is one line, always. The title truncates rather than wrapping — a
+// wrapped title breaks the 34px row height and knocks every column out of
+// alignment with the rows above and below it.
 .task-title {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   font-size: var(--text-base);
   color: var(--text-title);
+
+  ::ng-deep .wrapper,
+  ::ng-deep .display-value {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
 }
 
 // Done keeps its height. Only the words go quiet.

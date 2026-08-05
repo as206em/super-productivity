@@ -1639,7 +1639,8 @@
         "SCHEDULE_TASK": "Schedule Task",
         "SUB_TASKS": "Subtasks ({{nr}})",
         "TIME": "Duration",
-        "TITLE_PLACEHOLDER": "Enter a title"
+        "TITLE_PLACEHOLDER": "Enter a title",
+        "TAGS": "Tags"
       },
       "B": {
         "ADD_ALL_TO_TODAY": "Add all to today",
