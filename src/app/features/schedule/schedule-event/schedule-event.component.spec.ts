@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { provideMockStore } from '@ngrx/store/testing';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TranslateModule } from '@ngx-translate/core';
@@ -49,7 +49,11 @@ describe('ScheduleEventComponent – isReferenceCalendar', () => {
         { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
         {
           provide: TaskService,
-          useValue: { setSelectedId: jasmine.createSpy('setSelectedId') },
+          useValue: {
+            setSelectedId: jasmine.createSpy('setSelectedId'),
+            // Read by the block's `isCurrent` class; nothing is tracking here.
+            currentTaskId: signal(null),
+          },
         },
         {
           provide: CalendarEventActionsService,
