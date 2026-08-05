@@ -4,7 +4,9 @@
   //--mat-fab-small-container-elevation-shadow: var(--whiteframe-shadow-4dp);
   --mat-dialog-container-small-max-width: 94vw;
   --mat-dialog-container-max-width: 85vw;
-  --mat-menu-item-label-text-size: 12.5px;
+  // Menu labels sit at the body size, matching a task row title. Below
+  // that they read as secondary to the list they act on.
+  --mat-menu-item-label-text-size: var(--text-base);
 
   // Tab contrast improvements - use darker shade for light theme
   --mat-tab-header-active-label-text-color: var(--palette-primary-700);
@@ -688,7 +690,7 @@ body.has-multi-selection .cdk-drag-preview::after {
   padding: 0 var(--space-6) !important;
   border-radius: var(--radius-md);
   color: var(--text-body) !important;
-  font-size: var(--text-sm-plus) !important;
+  font-size: var(--text-base) !important;
   letter-spacing: var(--tracking-body);
 
   &:hover:not([disabled]),
