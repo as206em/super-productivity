@@ -354,12 +354,12 @@ describe('TaskContextMenuInnerComponent', () => {
     it('shows estimate, value, and effort before focus session', fakeAsync(() => {
       openMenu();
       tick();
+      // The axis rows are found by their leading icon: the names moved into
+      // that icon's tooltip, so they are no longer rendered as row text.
       const texts = getMenuContentChildTexts();
-      const estimateIndex = texts.findIndex((text) =>
-        text.includes('F.TASK.CMP.ESTIMATE'),
-      );
-      const valueIndex = texts.findIndex((text) => text.includes('F.TASK.CMP.VALUE'));
-      const effortIndex = texts.findIndex((text) => text.includes('F.TASK.CMP.EFFORT'));
+      const estimateIndex = texts.findIndex((text) => text.includes('hourglass_empty'));
+      const valueIndex = texts.findIndex((text) => text.includes('hotel_class'));
+      const effortIndex = texts.findIndex((text) => text.includes('fitness_center'));
       const focusIndex = texts.findIndex((text) =>
         text.includes('F.TASK.CMP.FOCUS_SESSION'),
       );
