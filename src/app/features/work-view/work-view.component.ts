@@ -71,6 +71,9 @@ import { CollapsibleComponent } from '../../ui/collapsible/collapsible.component
 import { SnackService } from '../../core/snack/snack.service';
 import { GlobalConfigService } from '../config/global-config.service';
 import { Store } from '@ngrx/store';
+import { TaskListDensity } from '../config/global-config.model';
+import { updateGlobalConfigSection } from '../config/store/global-config.actions';
+import { msToString } from '../../ui/duration/ms-to-string.pipe';
 import { TaskSharedActions } from '../../root-store/meta/task-shared.actions';
 import { TODAY_TAG } from '../tag/tag.const';
 import { LS } from '../../core/persistence/storage-keys.const';
@@ -319,6 +322,57 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   isShowTimeWorkedWithoutBreak: boolean = true;
   splitInputPos: number = 100;
   T: typeof T = T;
+
+  // ---------------------------------------------------------------------------
+  // Sticky list toolbar
+  // ---------------------------------------------------------------------------
+
+  /**
+   * The three density treatments of the same data. The choice lives in the
+   * global config so it travels with the rest of the user's settings rather
+   * than being stranded in this device's localStorage.
+   */
+  readonly density = computed<TaskListDensity>(
+    () => this._globalConfigService.misc()?.taskListDensity ?? 'rows',
+  );
+
+  readonly densityOptions: ReadonlyArray<{ id: TaskListDensity; label: string }> = [
+    { id: 'rows', label: T.WW.DENSITY_ROWS },
+    { id: 'cards', label: T.WW.DENSITY_CARDS },
+    { id: 'compact', label: T.WW.DENSITY_COMPACT },
+  ];
+
+  setDensity(density: TaskListDensity): void {
+    this._store.dispatch(
+      updateGlobalConfigSection({
+        sectionKey: 'misc',
+        sectionCfg: { taskListDensity: density },
+        isSkipSnack: true,
+      }),
+    );
+  }
+
+  /**
+   * The toolbar's meta line: `7 tasks · 2h 15m left · 3h 40m tracked`. Each
+   * part is dropped when it has nothing to report rather than printing a zero,
+   * and the interpunct only appears between parts that survived.
+   */
+  readonly listMeta = computed<string>(() => {
+    const parts: string[] = [];
+    const openCount = this.undoneTasks().length;
+    if (openCount) {
+      parts.push(`${openCount} ${openCount === 1 ? 'task' : 'tasks'}`);
+    }
+    const remaining = this.estimateRemainingToday();
+    if (remaining) {
+      parts.push(`${msToString(remaining, false, true)} left`);
+    }
+    const worked = this.workingToday();
+    if (worked) {
+      parts.push(`${msToString(worked, false, true)} tracked`);
+    }
+    return parts.join(' · ');
+  });
 
   // NOTE: not perfect but good enough for now
   isTriggerBacklogIconAni$: Observable<boolean> =

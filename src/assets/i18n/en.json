@@ -2932,6 +2932,10 @@
     "TODAY_REMAINING": "Today remaining:",
     "WITHOUT_BREAK": "Without break:",
     "WORKING_TODAY": "Working today:",
-    "WORKING_TODAY_ARCHIVED": "Time worked today on archived tasks"
+    "WORKING_TODAY_ARCHIVED": "Time worked today on archived tasks",
+    "DENSITY_ROWS": "Rows",
+    "DENSITY_CARDS": "Cards",
+    "DENSITY_COMPACT": "Compact",
+    "NEW_TASK": "New task"
   }
 }

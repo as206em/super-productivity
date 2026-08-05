@@ -54,6 +54,7 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfigState = {
     startOfNextDayTime: '00:00',
     isDisableAnimations: false,
     isVerticalActionBar: false,
+    taskListDensity: 'rows',
     isDisableCelebration: false,
     isShowProductivityTipLonger: false,
     customTheme: 'default',

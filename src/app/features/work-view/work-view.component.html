@@ -13,70 +13,44 @@
       cdkScrollable
     >
       @if (!pluginEmbedId()) {
-        <header class="work-view-header">
-          @if (!isStandaloneTaskList() && (estimateRemainingToday() || workingToday())) {
-            <div
-              @fade
-              class="status-bar"
-            >
-              <div
-                class="item"
-                matTooltip="{{ T.WW.TODAY_REMAINING | translate }} ~{{
-                  todayRemainingInProject() | msToString
-                }}"
-                [matTooltipDisabled]="
-                  !(workContextService.isActiveWorkContextProject$ | async)
-                "
-                matTooltipPosition="above"
+        <!-- Sticky list toolbar. Rows scroll under it, so it carries a blur
+             and a hairline rather than an opaque band. -->
+        <header class="list-toolbar">
+          <div class="list-toolbar__headline">
+            <span class="list-toolbar__title">{{
+              workContextService.activeWorkContextTitle$ | async
+            }}</span>
+            @if (listMeta(); as meta) {
+              <span class="list-toolbar__meta">{{ meta }}</span>
+            }
+          </div>
+
+          <!-- SegmentedControl: an inset track, the active segment raised. -->
+          <div
+            class="density-switch"
+            role="group"
+          >
+            @for (opt of densityOptions; track opt.id) {
+              <button
+                class="density-switch__seg"
+                [class.isActive]="density() === opt.id"
+                (click)="setDensity(opt.id)"
+                type="button"
               >
-                <span class="label">{{ T.WW.ESTIMATE_REMAINING | translate }}</span>
-                <span class="no-wrap">
-                  ~<strong class="time-val">{{
-                    estimateRemainingToday() | msToString
-                  }}</strong>
-                  <mat-icon style="margin-left: 2px">hourglass_empty</mat-icon>
-                </span>
-              </div>
-              <div class="item">
-                <span class="label">{{ T.WW.WORKING_TODAY | translate }}</span>
-                <span class="no-wrap">
-                  <strong class="time-val">{{ workingToday() | msToString }}</strong>
-                  @if (
-                    workContextService.workingTodayArchived$ | async;
-                    as workingTodayArchived
-                  ) {
-                    <span [matTooltip]="T.WW.WORKING_TODAY_ARCHIVED | translate"
-                      >(+{{ workingTodayArchived | msToString }})</span
-                    >
-                  }
-                  <mat-icon>timelapse</mat-icon>
-                </span>
-              </div>
-              @if (isShowTimeWorkedWithoutBreak) {
-                <div class="item hide-xs">
-                  <span class="label">{{ T.WW.WITHOUT_BREAK | translate }} </span>
-                  <span class="no-wrap">
-                    <strong class="time-val">{{
-                      takeABreakService.timeWorkingWithoutABreak$ | async | msToString
-                    }}</strong
-                    ><mat-icon>timer</mat-icon>
-                  </span>
-                  <div
-                    [matTooltip]="T.WW.RESET_BREAK_TIMER | translate"
-                    class="take-a-break-reset-btn"
-                  >
-                    <button
-                      (click)="resetBreakTimer()"
-                      color="lighter"
-                      mat-mini-fab
-                    >
-                      <mat-icon>timer_off</mat-icon>
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          }
+                {{ opt.label | translate }}
+              </button>
+            }
+          </div>
+
+          <!-- The one primary action in the view. -->
+          <button
+            class="new-task-btn"
+            (click)="layoutService.showAddTaskBar()"
+            type="button"
+          >
+            <mat-icon>add</mat-icon>{{ T.WW.NEW_TASK | translate }}
+          </button>
+
           <ng-content select="[workViewHeaderAction]"></ng-content>
         </header>
       }
@@ -88,7 +62,12 @@
           [skipCleanupOnDestroy]="true"
         ></plugin-index>
       } @else {
-        <div class="task-list-wrapper">
+        <div
+          class="task-list-wrapper"
+          [class.density-rows]="density() === 'rows'"
+          [class.density-cards]="density() === 'cards'"
+          [class.density-compact]="density() === 'compact'"
+        >
           @if (!isHasTasksToWorkOn()) {
             <div
               @expandFade

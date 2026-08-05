@@ -24,6 +24,12 @@ export type AppFeaturesConfig = Readonly<{
   isFinishDayEnabled: boolean;
 }>;
 
+/**
+ * The three treatments of the same task data. Adding a fourth is a smell —
+ * change the data shown, not the container.
+ */
+export type TaskListDensity = 'rows' | 'cards' | 'compact';
+
 export type MiscConfig = Readonly<{
   isConfirmBeforeExit: boolean;
   isConfirmBeforeExitWithoutFinishDay: boolean;
@@ -38,6 +44,9 @@ export type MiscConfig = Readonly<{
   // the right edge of the viewport instead of the horizontal top header.
   // Desktop only. Optional because it was added later.
   isVerticalActionBar?: boolean;
+  // Which of the three task-list density treatments the user picked. Optional
+  // because it was added later; absent means the 34px hairline rows default.
+  taskListDensity?: TaskListDensity;
   // optional because it was added later
   isDisableCelebration?: boolean;
   isShowProductivityTipLonger?: boolean;
