@@ -17,7 +17,7 @@
 >
   <div
     mat-menu-item
-    style="height: 0; padding: 0; margin: 0; border: none; min-height: 0"
+    class="menu-focus-stub"
     (focus)="focusFirstBtn($event)"
   ></div>
 
@@ -123,77 +123,86 @@
   </div>
 
   @if (!task.subTaskIds.length) {
-    <div class="quick-access-label">
-      <mat-icon>hourglass_empty</mat-icon>
-      {{ T.F.TASK.CMP.ESTIMATE | translate }}
+    <div class="quick-set">
+      <mat-icon
+        class="quick-set-icon"
+        [matTooltip]="T.F.TASK.CMP.ESTIMATE | translate"
+        >hourglass_empty</mat-icon
+      >
+      <div
+        class="quick-access"
+        (keydown)="quickAccessKeydown($event)"
+      >
+        @for (option of estimateShortcutOptions; track option.value) {
+          <button
+            mat-icon-button
+            tabindex="0"
+            (click)="setEstimate(option.ms)"
+            [matTooltip]="option.label"
+          >
+            @if (option.ms === task.timeEstimate) {
+              <mat-icon>check</mat-icon>
+            } @else {
+              <span class="quick-access-text">{{ option.label }}</span>
+            }
+          </button>
+        }
+      </div>
     </div>
+  }
+
+  <div class="quick-set">
+    <mat-icon
+      class="quick-set-icon"
+      [matTooltip]="T.F.TASK.CMP.VALUE | translate"
+      >hotel_class</mat-icon
+    >
     <div
       class="quick-access"
       (keydown)="quickAccessKeydown($event)"
     >
-      @for (option of estimateShortcutOptions; track option.value) {
+      @for (level of scoreShortcutLevels; track level) {
         <button
           mat-icon-button
           tabindex="0"
-          (click)="setEstimate(option.ms)"
-          [matTooltip]="option.label"
+          (click)="setValue(level)"
+          [matTooltip]="taskValueLabels[level]"
         >
-          @if (option.ms === task.timeEstimate) {
+          @if (level === task.value) {
             <mat-icon>check</mat-icon>
           } @else {
-            <span class="quick-access-text">{{ option.label }}</span>
+            <span class="quick-access-text">{{ taskValueLabels[level] }}</span>
           }
         </button>
       }
     </div>
-  }
-
-  <div class="quick-access-label">
-    <mat-icon>hotel_class</mat-icon>
-    {{ T.F.TASK.CMP.VALUE | translate }}
-  </div>
-  <div
-    class="quick-access"
-    (keydown)="quickAccessKeydown($event)"
-  >
-    @for (level of scoreShortcutLevels; track level) {
-      <button
-        mat-icon-button
-        tabindex="0"
-        (click)="setValue(level)"
-        [matTooltip]="taskValueLabels[level]"
-      >
-        @if (level === task.value) {
-          <mat-icon>check</mat-icon>
-        } @else {
-          <span class="quick-access-text">{{ taskValueLabels[level] }}</span>
-        }
-      </button>
-    }
   </div>
 
-  <div class="quick-access-label">
-    <mat-icon>fitness_center</mat-icon>
-    {{ T.F.TASK.CMP.EFFORT | translate }}
-  </div>
-  <div
-    class="quick-access"
-    (keydown)="quickAccessKeydown($event)"
-  >
-    @for (level of scoreShortcutLevels; track level) {
-      <button
-        mat-icon-button
-        tabindex="0"
-        (click)="setEffort(level)"
-        [matTooltip]="level"
-      >
-        @if (level === task.effort) {
-          <mat-icon>check</mat-icon>
-        } @else {
-          <span class="quick-access-text">{{ level }}</span>
-        }
-      </button>
-    }
+  <div class="quick-set">
+    <mat-icon
+      class="quick-set-icon"
+      [matTooltip]="T.F.TASK.CMP.EFFORT | translate"
+      >fitness_center</mat-icon
+    >
+    <div
+      class="quick-access"
+      (keydown)="quickAccessKeydown($event)"
+    >
+      @for (level of scoreShortcutLevels; track level) {
+        <button
+          mat-icon-button
+          tabindex="0"
+          (click)="setEffort(level)"
+          [matTooltip]="level"
+        >
+          @if (level === task.effort) {
+            <mat-icon>check</mat-icon>
+          } @else {
+            <span class="quick-access-text">{{ level }}</span>
+          }
+        </button>
+      }
+    </div>
   </div>
 
   @if (
