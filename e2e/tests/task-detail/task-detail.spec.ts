@@ -13,8 +13,10 @@ test.describe('Task detail', () => {
     await workViewPage.waitForTaskList();
 
     await workViewPage.addTask('task');
-    await page.getByText(/task/).first().hover();
-    await page.getByRole('button', { name: 'Show/hide task panel' }).click();
+    // Clicking a row opens the detail panel in the redesigned list — no need
+    // to go hunting for the hover control.
+    await page.locator('task').first().locator('task-title').click();
+    await page.locator('task-detail-panel').waitFor({ state: 'visible' });
   };
 
   const addAndOpenCompleteTask = async (
@@ -23,8 +25,9 @@ test.describe('Task detail', () => {
   ): Promise<void> => {
     await addAndOpenIncompleteTask(workViewPage, page);
 
-    await page.getByText(/task/).first().hover();
-    await page.getByRole('checkbox', { name: 'Toggle completion status' }).click();
+    // The status glyph is always visible, so no hover is needed — and hovering
+    // first mounts the hover-control cluster, which then intercepts the click.
+    await page.locator('task').first().locator('.task-status').click();
   };
 
   const findDateInfo = (page: Page, infoPrefix: string): Locator =>
