@@ -402,12 +402,16 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // A selection deletes as one operation rather than N confirmations.
-    const gestureIds = this.gestureTaskIds();
-    if (gestureIds.length > 1) {
-      this._isTaskDeleteTriggered = true;
-      this._store.dispatch(TaskSharedActions.deleteTasks({ taskIds: gestureIds }));
-      this._taskSelectionService.clear();
+    // A selection deletes as one operation, behind one confirmation. The
+    // service owns that path so this and the selection bar cannot drift: it
+    // asks once for the whole set and routes through
+    // `TaskService.removeMultipleTasks`, which fills the issue and time-block
+    // sidecars the bulk-delete effect depends on.
+    if (this.gestureTaskIds().length > 1) {
+      const isDeleted = await this._taskSelectionService.delete();
+      // Only latch the guard when tasks actually went; a cancelled
+      // confirmation has to leave the menu item usable.
+      this._isTaskDeleteTriggered = isDeleted;
       return;
     }
 

@@ -1,6 +1,11 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
+import { firstValueFrom } from 'rxjs';
+import { T } from '../../t.const';
+import { DialogConfirmComponent } from '../../ui/dialog-confirm/dialog-confirm.component';
 import { TaskSharedActions } from '../../root-store/meta/task-shared.actions';
+import { GlobalConfigService } from '../config/global-config.service';
 import { TaskWithSubTasks } from './task.model';
 import { TaskService } from './task.service';
 
@@ -21,6 +26,8 @@ import { TaskService } from './task.service';
 export class TaskSelectionService {
   private readonly _store = inject(Store);
   private readonly _taskService = inject(TaskService);
+  private readonly _matDialog = inject(MatDialog);
+  private readonly _globalConfigService = inject(GlobalConfigService);
 
   private readonly _selectedIds = signal<ReadonlySet<string>>(new Set());
 
@@ -148,11 +155,50 @@ export class TaskSelectionService {
     this.clear();
   }
 
-  delete(): void {
+  /**
+   * Deletes the selection, asking once for the whole set.
+   *
+   * Two things here are load-bearing and were wrong before:
+   *
+   * Deleting many tasks confirms exactly as deleting one does. Skipping the
+   * prompt because the gesture covers several rows gets it backwards — the
+   * larger the blast radius, the more a confirmation is worth.
+   *
+   * The delete goes through `TaskService.removeMultipleTasks`, never a raw
+   * `deleteTasks` dispatch. That method fills the issue and time-block
+   * sidecars first, and `deleteIssueOnBulkTaskDelete$` reads the sidecar
+   * rather than the action payload — full Task objects are deliberately kept
+   * out of the op-log. Dispatching directly leaves linked issues and time
+   * blocks behind.
+   *
+   * Resolves true when tasks were deleted, so a caller can tell a cancelled
+   * confirmation from a completed delete.
+   */
+  async delete(): Promise<boolean> {
     const ids = [...this._selectedIds()];
-    if (!ids.length) return;
-    this._store.dispatch(TaskSharedActions.deleteTasks({ taskIds: ids }));
+    if (!ids.length) return false;
+
+    const isConfirmBeforeDelete =
+      this._globalConfigService.cfg()?.tasks?.isConfirmBeforeDelete ?? true;
+
+    if (isConfirmBeforeDelete) {
+      const isConfirm = await firstValueFrom(
+        this._matDialog
+          .open(DialogConfirmComponent, {
+            data: {
+              okTxt: T.F.TASK.D_CONFIRM_DELETE.OK,
+              message: T.F.TASK.D_CONFIRM_DELETE.MSG_MULTIPLE,
+              translateParams: { nr: ids.length },
+            },
+          })
+          .afterClosed(),
+      );
+      if (!isConfirm) return false;
+    }
+
+    this._taskService.removeMultipleTasks(ids);
     this.clear();
+    return true;
   }
 
   /** Selected tasks, resolved for actions that need the whole entity. */

@@ -1697,6 +1697,7 @@
       },
       "D_CONFIRM_DELETE": {
         "MSG": "Are you sure you want to delete the task \"{{title}}\"?",
+        "MSG_MULTIPLE": "Are you sure you want to delete {{nr}} tasks?",
         "OK": "Delete"
       },
       "D_CONFIRM_SHORT_SYNTAX_NEW_TAG": {
