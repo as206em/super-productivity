@@ -41,6 +41,7 @@ import { recordSearchNavDebug } from './util/search-nav-debug';
 import { warpAnimation, warpInAnimation } from './ui/animations/warp.ani';
 import { AddTaskBarComponent } from './features/tasks/add-task-bar/add-task-bar.component';
 import { Dir } from '@angular/cdk/bidi';
+import { CommandPaletteComponent } from './core-ui/command-palette/command-palette.component';
 import { MagicSideNavComponent } from './core-ui/magic-side-nav/magic-side-nav.component';
 import { MainHeaderComponent } from './core-ui/main-header/main-header.component';
 import { BannerComponent } from './core/banner/banner/banner.component';
@@ -123,6 +124,7 @@ export const getBackgroundImageBlur = (context: WorkContextThemeSource): number 
     Dir,
     MagicSideNavComponent,
     MainHeaderComponent,
+    CommandPaletteComponent,
     BannerComponent,
     RightPanelComponent,
     RouterOutlet,

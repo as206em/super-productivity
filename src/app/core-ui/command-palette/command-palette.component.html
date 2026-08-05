@@ -1,0 +1,69 @@
+@if (isOpen()) {
+  <div
+    class="palette-scrim"
+    (click)="close()"
+  >
+    <div
+      class="palette"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="palette__input-row">
+        <mat-icon class="palette__search-ico">search</mat-icon>
+        <input
+          #paletteInput
+          class="palette__input"
+          [value]="query()"
+          (input)="onQuery($event)"
+          placeholder="Search tasks, or type a command…"
+          type="text"
+        />
+        <!-- The hint is shown, never required — clicking the scrim closes too. -->
+        <span class="palette__keycap">esc</span>
+      </div>
+
+      <div class="palette__results">
+        @if (commands().length) {
+          <div class="palette__eyebrow">Actions</div>
+          @for (cmd of commands(); track cmd.id) {
+            <button
+              class="palette__row"
+              (click)="runCommand(cmd)"
+              type="button"
+            >
+              <mat-icon class="palette__row-ico">{{ cmd.icon }}</mat-icon>
+              <span class="palette__row-label">{{ cmd.label }}</span>
+              @if (cmd.keys) {
+                <span class="palette__row-keys">{{ cmd.keys }}</span>
+              }
+            </button>
+          }
+        }
+
+        @if (results().length) {
+          <div class="palette__eyebrow">Tasks</div>
+          @for (task of results(); track task.id) {
+            <button
+              class="palette__row"
+              (click)="openTask(task.id)"
+              type="button"
+            >
+              <mat-icon
+                class="palette__row-ico"
+                [class.isDone]="task.isDone"
+                >{{ task.statusIcon }}</mat-icon
+              >
+              @if (task.ref) {
+                <span class="palette__row-ref sp-num">{{ task.ref }}</span>
+              }
+              <span class="palette__row-label">{{ task.title }}</span>
+            </button>
+          }
+        }
+
+        @if (!commands().length && !results().length) {
+          <div class="palette__empty">Nothing matches that yet.</div>
+        }
+      </div>
+    </div>
+  </div>
+}
