@@ -52,8 +52,10 @@ $summary-point-inner-margin: var(--s);
 
 .tab-inner {
   margin: auto;
-  max-width: var(--component-max-width);
-  padding: var(--s);
+  // The summary is a reading surface — four stat cards across, then panels.
+  // 780px is what the design system's composition sits in.
+  max-width: 780px;
+  padding: var(--gutter) var(--gutter) 40px;
 
   &.full-width {
     max-width: none;

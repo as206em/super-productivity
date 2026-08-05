@@ -38,20 +38,35 @@
   }
 }
 
+// Focus mode is sunken and full-bleed, and the clock sits vertically centred
+// in it. `height: 500px` used to pin this box, so on a tall window the
+// content floated in the upper half.
 main {
-  flex-grow: 1;
+  flex: 1;
+  min-height: 0;
   display: flex;
   position: relative;
-  height: 500px;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  background: var(--surface-sunken);
 }
 
+// The chain that makes the 100% heights below resolve against something: the
+// scroll container is itself a column flex box that takes the remaining
+// height, and the active screen inside it takes the remainder in turn.
 .scroll-container {
   overflow: auto;
-  max-height: 100%;
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  > * {
+    flex: 1;
+    min-height: 0;
+  }
 }
 
 .close-btn {
