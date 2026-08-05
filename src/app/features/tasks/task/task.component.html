@@ -12,6 +12,7 @@
   <div
     (mouseenter)="isFirstLineHover = true"
     (mouseleave)="isFirstLineHover = false"
+    (click)="rowClick($event)"
     class="task-row"
   >
     <!-- The only coloured icon on the row. -->
@@ -28,16 +29,13 @@
       <span class="task-ref sp-num">{{ t.issueId }}</span>
     }
 
-    <div
-      class="task-title-cell"
-      (click)="titleBarClick($event)"
-    >
+    <div class="task-title-cell">
       @if (!isInSubTaskList() && t.parentId) {
         <span class="task-parent">{{ parentTitle() }}</span>
       }
       <task-title
         [resetToLastExternalValueTrigger]="t"
-        [style.pointer-events]="isTouchActive() && t.title.length ? 'none' : 'auto'"
+        [readonly]="!isInSubTaskList()"
         #taskTitleEditEl
         (valueEdited)="updateTaskTitleIfChanged($event)"
         [value]="t.title"

@@ -1015,6 +1015,30 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
     );
   }
 
+  /**
+   * Clicking anywhere on the row opens the detail panel — the row itself is
+   * the affordance, not a particular button on it.
+   *
+   * The controls that live in the row (status, play, due, deadline, subtask
+   * count, time, and the hover cluster) each do their own thing, so a click
+   * that started on one of them is left alone. Everything else selects.
+   *
+   * Selecting is deliberately not a toggle: clicking a row always shows that
+   * task. The panel closes from its own close button or Esc, so a stray click
+   * on the list can never dismiss it.
+   */
+  rowClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (
+      target?.closest(
+        '.task-status, .task-play, .task-due, .task-deadline, .task-subs, .task-time, .task-controls, tag-list',
+      )
+    ) {
+      return;
+    }
+    this._taskService.setSelectedId(this.task().id);
+  }
+
   titleBarClick(event: MouseEvent): void {
     const targetEl = event.target as HTMLElement;
     if (targetEl.closest('task-title')) {

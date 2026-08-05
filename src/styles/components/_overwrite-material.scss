@@ -4,7 +4,7 @@
   //--mat-fab-small-container-elevation-shadow: var(--whiteframe-shadow-4dp);
   --mat-dialog-container-small-max-width: 94vw;
   --mat-dialog-container-max-width: 85vw;
-  --mat-menu-item-label-text-size: 14px;
+  --mat-menu-item-label-text-size: 12.5px;
 
   // Tab contrast improvements - use darker shade for light theme
   --mat-tab-header-active-label-text-color: var(--palette-primary-700);
@@ -355,12 +355,63 @@ body .mat-mdc-button-base .mat-icon {
 }
 
 // MAT MENU
+// Menus are the same object as the command palette at a smaller scale: a
+// hairline-bordered surface on an elevation shadow, 30px rows, a wash on
+// hover. Nothing here is a second grey — structure is an alpha of ink.
 .mat-mdc-menu-panel {
   overflow-x: hidden !important;
+  min-width: 208px !important;
+  border: 1px solid var(--line-chip);
+  border-radius: var(--radius-2xl) !important;
+  background: var(--surface-page);
+  box-shadow: var(--shadow-rail) !important;
 }
 
 .mat-mdc-menu-content {
-  padding: 0 !important;
+  padding: var(--space-2) !important;
+}
+
+.mat-mdc-menu-item {
+  height: var(--h-nav);
+  min-height: var(--h-nav) !important;
+  padding: 0 var(--space-6) !important;
+  border-radius: var(--radius-md);
+  color: var(--text-body) !important;
+  font-size: var(--text-sm-plus) !important;
+  letter-spacing: var(--tracking-body);
+
+  &:hover:not([disabled]),
+  &.cdk-program-focused:not([disabled]),
+  &.cdk-keyboard-focused:not([disabled]) {
+    background: var(--surface-hover) !important;
+  }
+
+  // Icons in a menu are monochrome and quiet — they are there to help you
+  // find the row, not to colour it.
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+    margin-right: var(--space-7) !important;
+    color: var(--icon-meta);
+  }
+
+  // The one exception: a destructive row says so.
+  &.isDanger,
+  &.color-warn {
+    color: var(--over) !important;
+
+    .mat-icon {
+      color: var(--over);
+    }
+  }
+}
+
+// A rule between groups of menu rows, not a box around them.
+.mat-mdc-menu-panel .mat-divider {
+  margin: var(--space-2) var(--space-6);
+  border-top-color: var(--line-row);
 }
 
 .mat-mdc-menu-item.quick-access {

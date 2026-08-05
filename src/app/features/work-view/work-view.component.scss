@@ -431,6 +431,12 @@ finish-day-btn,
 // not the container.
 // =============================================================================
 
+// Cards need the page inset the list itself does not — a hairline row runs to
+// the edge, a card must not.
+.task-list-wrapper.density-cards {
+  padding: var(--space-10) var(--gutter) var(--s7);
+}
+
 // Cards: 44px, bordered, 6px sibling gaps. Cards darken their border and step
 // up one shadow on hover; they do not gain a fill.
 .task-list-wrapper.density-cards ::ng-deep task {
