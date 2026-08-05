@@ -224,8 +224,8 @@ finish-day-btn,
 .today {
   position: absolute;
   left: 0;
-  //transition: max-height, min-height 500ms ease-in-out;
-  //transition: all 500ms linear;
+  //transition: max-height, min-height var(--duration-reveal) var(--ease-standard);
+  //transition: all var(--duration-reveal) var(--ease-standard);
   width: 100%;
 
   &.isAnimatable {

@@ -35,7 +35,7 @@ mat-dialog-content {
   cursor: pointer;
   transition:
     background-color 0.15s,
-    border-color 0.15s;
+    border-color var(--duration-fast) var(--ease-standard);
 
   &:hover {
     background-color: rgba(127, 127, 127, 0.08);
@@ -76,7 +76,7 @@ mat-dialog-content {
 
 .action-item--primary {
   .action-item-icon {
-    color: #f9a825;
+    color: var(--warn);
     opacity: 1;
     font-variation-settings:
       'FILL' 1,

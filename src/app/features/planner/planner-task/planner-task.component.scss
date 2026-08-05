@@ -35,7 +35,7 @@
   z-index: 1;
   position: relative;
   transition:
-    background 150ms ease-out,
+    background var(--duration-fast) var(--ease-standard),
     box-shadow 150ms ease-out;
 }
 

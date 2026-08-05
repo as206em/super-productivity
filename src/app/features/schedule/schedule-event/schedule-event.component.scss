@@ -174,16 +174,12 @@
     border-left: 2.5px solid var(--block-provenance);
   }
 
+  // A reference calendar is read-only. The solid border and the reduced
+  // opacity carry that; the diagonal hatch that used to sit here was texture,
+  // which this system does not use.
   &.CalendarEvent.is-reference-calendar {
     border-style: solid;
     opacity: 0.55;
-    background-image: repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 4px,
-      rgba(128, 128, 128, 0.08) 4px,
-      rgba(128, 128, 128, 0.08) 8px
-    );
   }
 
   &.is-beyond-budget {
@@ -520,7 +516,7 @@
   cursor: ns-resize;
   z-index: 4;
   opacity: 0.5;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--duration-reveal) var(--ease-standard);
   pointer-events: auto;
 
   &:hover {

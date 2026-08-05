@@ -101,7 +101,7 @@ reflection-note {
     opacity: 0.85;
     text-align: center;
     cursor: help;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--duration-reveal) var(--ease-standard);
 
     &:hover {
       opacity: 1;
@@ -145,7 +145,7 @@ reflection-note {
     letter-spacing: 0.08em;
     color: var(--fg-secondary);
     cursor: help;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--duration-reveal) var(--ease-standard);
 
     &:hover {
       opacity: 0.8;
@@ -157,13 +157,13 @@ reflection-note {
     gap: var(--s);
     font-weight: 600;
     color: var(--fg-primary);
-    transition: transform 0.2s ease;
+    transition: transform var(--duration-reveal) var(--ease-standard);
   }
 
   .daily-state-icon {
     font-size: 20px;
     line-height: 1;
-    transition: transform 0.2s ease;
+    transition: transform var(--duration-reveal) var(--ease-standard);
   }
 
   .daily-state-hint {
@@ -187,7 +187,7 @@ reflection-note {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--duration-reveal) var(--ease-standard);
 
   &:focus-visible {
     outline: 2px solid var(--c-light-60);

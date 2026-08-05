@@ -2,14 +2,6 @@
 
 // TODO split up into more manageable bits
 
-@mixin btn-transition {
-  transition: var(--transition-standard);
-  opacity: 0;
-  position: relative;
-  z-index: 2;
-  margin: var(--s) 0 0 0;
-}
-
 :host {
   display: block;
   position: relative;
@@ -225,48 +217,5 @@ page-title {
 
   to {
     transform: rotate(-360deg) translateZ(0);
-  }
-}
-
-.current-task-title {
-  position: absolute;
-  right: 100%;
-  width: auto;
-  border: 2px solid var(--c-accent);
-  border-radius: 12px;
-}
-
-.sync-btn {
-  position: relative;
-}
-
-.sync-state-ico {
-  // Positioning - center within sync button
-  position: absolute !important;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-  // Icon sizing
-  font-size: 15px;
-  width: 15px;
-  height: 15px;
-  line-height: 15px;
-
-  // Solid circle background for clean outline
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--c-bg);
-  border-radius: 50%;
-  padding: 3px;
-
-  // Ensure it sits above sync icon
-  z-index: 1;
-
-  // Fallback for Windows High Contrast Mode
-  @media (forced-colors: active) {
-    outline: 2px solid CanvasText;
-    outline-offset: -2px;
   }
 }
