@@ -237,7 +237,7 @@ test.describe('Sections', () => {
 
     // Drag handle is `done-toggle` (per task-dragdrop.spec.ts).
     const task = page.locator('task').filter({ hasText: 'Movable' }).first();
-    const dragHandle = task.locator('done-toggle').first();
+    const dragHandle = task.locator('.task-status').first();
 
     await cdkDragTo(page, dragHandle, sectionTaskList);
 
@@ -276,7 +276,7 @@ test.describe('Sections', () => {
       const t = page.locator('.no-section task').filter({ hasText: name }).first();
       await cdkDragTo(
         page,
-        t.locator('done-toggle').first(),
+        t.locator('.task-status').first(),
         section.locator('task-list').first(),
       );
       await expect(section.locator('task').filter({ hasText: name })).toBeVisible({
@@ -296,7 +296,7 @@ test.describe('Sections', () => {
     // task should no longer be at index 0.
     const firstTask = section.locator('task').nth(0);
     const lastTask = section.locator('task').nth(2);
-    await cdkDragTo(page, firstTask.locator('done-toggle').first(), lastTask);
+    await cdkDragTo(page, firstTask.locator('.task-status').first(), lastTask);
 
     await expect
       .poll(async () => (await sectionTaskTitles())[0], { timeout: 5000 })
@@ -340,7 +340,7 @@ test.describe('Sections', () => {
       const t = page.locator('.no-section task').filter({ hasText: name }).first();
       await cdkDragTo(
         page,
-        t.locator('done-toggle').first(),
+        t.locator('.task-status').first(),
         target.locator('task-list').first(),
       );
       await expect(target.locator('task').filter({ hasText: name })).toBeVisible({
@@ -351,7 +351,7 @@ test.describe('Sections', () => {
     // Drag Zulu from Left onto Yankee in Right.
     const taskZulu = left.locator('task').filter({ hasText: 'Zulu' }).first();
     const taskYankee = right.locator('task').filter({ hasText: 'Yankee' }).first();
-    await cdkDragTo(page, taskZulu.locator('done-toggle').first(), taskYankee);
+    await cdkDragTo(page, taskZulu.locator('.task-status').first(), taskYankee);
 
     // Behavioral invariant: Zulu has crossed sections. Exact slot is
     // CDK-cursor dependent, so we don't pin it.
@@ -390,7 +390,7 @@ test.describe('Sections', () => {
     const noSection = page.locator('.no-section').first();
 
     const task = page.locator('task').filter({ hasText: 'Roundtrip' }).first();
-    let dragHandle = task.locator('done-toggle').first();
+    let dragHandle = task.locator('.task-status').first();
 
     // Move into section.
     await cdkDragTo(page, dragHandle, sectionTaskList);
@@ -401,7 +401,7 @@ test.describe('Sections', () => {
     await expect(taskInSection).toBeVisible();
 
     // Move back out — re-acquire handle from the new DOM location.
-    dragHandle = taskInSection.locator('done-toggle').first();
+    dragHandle = taskInSection.locator('.task-status').first();
     await cdkDragTo(page, dragHandle, noSection);
 
     await expect(noSection.locator('task').filter({ hasText: 'Roundtrip' })).toBeVisible({

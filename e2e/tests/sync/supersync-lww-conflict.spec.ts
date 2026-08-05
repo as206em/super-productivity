@@ -79,7 +79,7 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
         .locator(`task:not(.ng-animating):has-text("${taskName}")`)
         .first();
       await taskLocatorA.hover();
-      await taskLocatorA.locator('done-toggle').click();
+      await taskLocatorA.locator('.task-status').click();
       await expect(taskLocatorA).toHaveClass(/isDone/);
 
       // 4. Wait for time to advance (ensures B's timestamp will be newer)
@@ -90,7 +90,7 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
         .locator(`task:not(.ng-animating):has-text("${taskName}")`)
         .first();
       await taskLocatorB.hover();
-      await taskLocatorB.locator('done-toggle').click();
+      await taskLocatorB.locator('.task-status').click();
       await expect(taskLocatorB).toHaveClass(/isDone/);
 
       // 6. Client B syncs first (B's change goes to server)
@@ -164,7 +164,7 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
         .locator(`task:not(.ng-animating):has-text("${taskName}")`)
         .first();
       await taskLocatorA.hover();
-      await taskLocatorA.locator('done-toggle').click();
+      await taskLocatorA.locator('.task-status').click();
       // Wait for the click to propagate into store state — done-toggle dispatches
       // updateTask asynchronously (animation/focus delay). Without this, sync can
       // run as a no-op and the queued updateTask lands AFTER, flipping
@@ -176,7 +176,7 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
         .locator(`task:not(.ng-animating):has-text("${taskName}")`)
         .first();
       await taskLocatorB.hover();
-      await taskLocatorB.locator('done-toggle').click();
+      await taskLocatorB.locator('.task-status').click();
       await expect(taskLocatorB).toHaveClass(/isDone/);
 
       // 4. Client A syncs first
@@ -273,19 +273,19 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
         .locator(`task:not(.ng-animating):has-text("${taskName}")`)
         .first();
       await taskLocatorA.hover();
-      await taskLocatorA.locator('done-toggle').click();
+      await taskLocatorA.locator('.task-status').click();
 
       const taskLocatorB = clientB.page
         .locator(`task:not(.ng-animating):has-text("${taskName}")`)
         .first();
       await taskLocatorB.hover();
-      await taskLocatorB.locator('done-toggle').click();
+      await taskLocatorB.locator('.task-status').click();
 
       const taskLocatorC = clientC.page
         .locator(`task:not(.ng-animating):has-text("${taskName}")`)
         .first();
       await taskLocatorC.hover();
-      await taskLocatorC.locator('done-toggle').click();
+      await taskLocatorC.locator('.task-status').click();
 
       // 4. Sequential syncs (LWW auto-resolves conflicts)
       await clientA.sync.syncAndWait();
@@ -372,7 +372,7 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
       await taskLocatorB.waitFor({ state: 'visible', timeout: 10000 });
       await taskLocatorB.hover();
       await clientB.page.waitForTimeout(100); // Let hover state settle
-      await taskLocatorB.locator('done-toggle').click();
+      await taskLocatorB.locator('.task-status').click();
       await expect(taskLocatorB).toHaveClass(/isDone/, { timeout: 5000 });
 
       // 4. Wait for time to advance significantly
@@ -385,7 +385,7 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
       await taskLocatorA.waitFor({ state: 'visible', timeout: 10000 });
       await taskLocatorA.hover();
       await clientA.page.waitForTimeout(100); // Let hover state settle
-      await taskLocatorA.locator('done-toggle').click();
+      await taskLocatorA.locator('.task-status').click();
       await expect(taskLocatorA).toHaveClass(/isDone/, { timeout: 5000 });
 
       // 6. Client B syncs (uploads B's earlier change to server)
@@ -720,7 +720,7 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
         .locator(`task:not(.ng-animating):has-text("${titleA}")`)
         .first();
       await taskLocatorAUpdated.hover();
-      await taskLocatorAUpdated.locator('done-toggle').click();
+      await taskLocatorAUpdated.locator('.task-status').click();
       await clientA.page.waitForTimeout(300);
 
       // Change 3: Add time estimate (another field update)
@@ -760,7 +760,7 @@ test.describe('@supersync SuperSync LWW Conflict Resolution', () => {
         .locator(`task:not(.ng-animating):has-text("${titleB}")`)
         .first();
       await taskLocatorBUpdated.hover();
-      await taskLocatorBUpdated.locator('done-toggle').click();
+      await taskLocatorBUpdated.locator('.task-status').click();
       await clientB.page.waitForTimeout(300);
 
       console.log('[MultiOp] Client B made 3 changes (B has later timestamps)');

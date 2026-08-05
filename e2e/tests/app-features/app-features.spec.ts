@@ -14,6 +14,21 @@ const goToMainView = async (page: Page): Promise<void> => {
   await waitForAngularStability(page);
 };
 
+// The panel toggles and the sync button live inside the header's Display menu,
+// which renders its content only while open. Anything checked for attachment
+// there has to have the menu opened first.
+const openDisplayMenu = async (page: Page): Promise<void> => {
+  await page.locator('.e2e-display-menu-btn').click();
+  await expect(page.locator('.display-menu')).toBeVisible();
+};
+
+// Routing here is hash-based, so navigating away does not tear the overlay
+// down: an open menu leaves its CDK backdrop swallowing every later click.
+const closeDisplayMenu = async (page: Page): Promise<void> => {
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.cdk-overlay-backdrop')).toHaveCount(0);
+};
+
 test.describe('App Features', () => {
   // check simple feature toggles which effectively just hide ui elements
   [
@@ -31,18 +46,22 @@ test.describe('App Features', () => {
     },
     {
       label: 'Schedule day panel',
+      isInDisplayMenu: true,
       locator: (page: Page) => page.locator('.e2e-toggle-schedule-day-panel'),
     },
     {
       label: 'Issues panel',
+      isInDisplayMenu: true,
       locator: (page: Page) => page.locator('.e2e-toggle-issue-provider-panel'),
     },
     {
       label: 'Project notes',
+      isInDisplayMenu: true,
       locator: (page: Page) => page.locator('.e2e-toggle-notes-btn'),
     },
     {
       label: 'Sync button',
+      isInDisplayMenu: true,
       locator: (page: Page) => page.locator('.sync-btn'),
     },
   ].forEach((feature) => {
@@ -77,9 +96,15 @@ test.describe('App Features', () => {
 
       // Navigate to main view
       await goToMainView(page);
+      if (feature.isInDisplayMenu) {
+        await openDisplayMenu(page);
+      }
 
       // Feature's element should not be present when disabled
       await expect(featureElement).not.toBeAttached();
+      if (feature.isInDisplayMenu) {
+        await closeDisplayMenu(page);
+      }
 
       // Re-enable the feature
       await goToConfig(page);
@@ -94,6 +119,9 @@ test.describe('App Features', () => {
 
       // Go back to main view and expect feature's element to be visible
       await goToMainView(page);
+      if (feature.isInDisplayMenu) {
+        await openDisplayMenu(page);
+      }
       await expect(featureElement).toBeAttached();
     });
   });

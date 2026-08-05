@@ -46,7 +46,7 @@
       <!-- Display holds everything the header used to spell out as a row of
            circular icon buttons. Nothing was deleted; it moved here. -->
       <button
-        class="ghost-btn"
+        class="ghost-btn e2e-display-menu-btn"
         [matMenuTriggerFor]="displayMenu"
         type="button"
       >
@@ -76,6 +76,7 @@
 
         @if (isSyncIconEnabled()) {
           <button
+            class="sync-btn"
             (click)="syncIsEnabledAndReady() ? sync() : setupSync()"
             mat-menu-item
           >

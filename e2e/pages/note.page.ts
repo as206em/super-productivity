@@ -57,6 +57,13 @@ export class NotePage extends BasePage {
       return;
     }
 
+    // The panel toggles live in the header's Display menu, which renders its
+    // content only while open. Open it first so the toggle exists to click.
+    const displayMenuBtn = this.page.locator('.e2e-display-menu-btn');
+    if (await displayMenuBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await displayMenuBtn.click();
+    }
+
     // Toggle notes panel via header button
     const isToggleBtnVisible = await this.toggleNotesBtn
       .isVisible({ timeout: 3000 })

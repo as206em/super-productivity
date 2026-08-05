@@ -193,7 +193,7 @@ test.describe('@webdav Rapid Sync (Single Client)', () => {
       // Step 1: Mark task done, immediately sync
       const task = page.locator(`task:has-text("${taskName}")`).first();
       await task.hover();
-      await task.locator('done-toggle').click();
+      await task.locator('.task-status').click();
       await expect(task).toHaveClass(/isDone/);
 
       await syncPage.triggerSync();

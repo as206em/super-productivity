@@ -97,10 +97,10 @@ test.describe('@supersync Daily Summary Sync', () => {
 
       // Mark both done
       await taskALocator.hover();
-      await taskALocator.locator('done-toggle').click();
+      await taskALocator.locator('.task-status').click();
 
       await taskBLocator.hover();
-      await taskBLocator.locator('done-toggle').click();
+      await taskBLocator.locator('.task-status').click();
 
       // Archive Tasks (Finish Day)
       const finishDayBtn = clientA.page.locator('.e2e-finish-day');
@@ -220,7 +220,7 @@ test.describe('@supersync Daily Summary Sync', () => {
       for (const taskName of tasks) {
         const taskLocator = client.page.locator(`task:has-text("${taskName}")`);
         await taskLocator.hover();
-        await taskLocator.locator('done-toggle').click();
+        await taskLocator.locator('.task-status').click();
       }
 
       // Click finish day - wait for button to be visible and stable

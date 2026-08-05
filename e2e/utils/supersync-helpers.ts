@@ -539,7 +539,7 @@ export const markTaskDone = async (
 ): Promise<void> => {
   const task = getTaskElement(client, taskName);
   await task.hover();
-  await task.locator('done-toggle').click();
+  await task.locator('.task-status').click();
   await expect(getDoneTaskElement(client, taskName).first()).toBeVisible({
     timeout: UI_VISIBLE_TIMEOUT,
   });
@@ -561,7 +561,7 @@ export const markSubtaskDone = async (
 ): Promise<void> => {
   const subtask = getSubtaskElement(client, subtaskName);
   await subtask.hover();
-  await subtask.locator('done-toggle').click();
+  await subtask.locator('.task-status').click();
   await expect(getDoneSubtaskElement(client, subtaskName).first()).toBeVisible({
     timeout: UI_VISIBLE_TIMEOUT,
   });

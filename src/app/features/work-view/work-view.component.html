@@ -94,9 +94,11 @@
               }
             </div>
 
-            <!-- The one primary action in the view. -->
+            <!-- The one primary action in the view. `tour-addBtn` is the hook
+                 the onboarding hint and the e2e suite target; it moved here
+                 from the old header button, which this replaces. -->
             <button
-              class="new-task-btn"
+              class="new-task-btn tour-addBtn"
               (click)="layoutService.showAddTaskBar()"
               type="button"
             >
