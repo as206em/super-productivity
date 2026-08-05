@@ -72,7 +72,7 @@ import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
 import { TaskHoverControlsComponent } from './task-hover-controls/task-hover-controls.component';
 import { ProgressBarComponent } from '../../../ui/progress-bar/progress-bar.component';
 import { TaskListComponent } from '../task-list/task-list.component';
-import { MsToStringPipe } from '../../../ui/duration/ms-to-string.pipe';
+import { MsToStringPipe, msToString } from '../../../ui/duration/ms-to-string.pipe';
 import { ShortPlannedAtPipe } from '../../../ui/pipes/short-planned-at.pipe';
 import { LocalDateStrPipe } from '../../../ui/pipes/local-date-str.pipe';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -287,6 +287,58 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
   hasDeadline = computed(() => {
     const t = this.task();
     return !!(t.deadlineDay || t.deadlineWithTime);
+  });
+
+  // ---------------------------------------------------------------------------
+  // TaskRow columns. Fixed order: status · ref · title · subtasks · tag · due ·
+  // time · play. Absent fields collapse; only `time` always holds its column.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * The three-state status glyph. This is the only place status colour appears
+   * in the product, and the only coloured icon on the row.
+   */
+  readonly statusIcon = computed<'check_circle' | 'timelapse' | 'radio_button_unchecked'>(
+    () => {
+      if (this.task().isDone) {
+        return 'check_circle';
+      }
+      return this.isCurrent() ? 'timelapse' : 'radio_button_unchecked';
+    },
+  );
+
+  /** `2/3` over a `checklist` glyph. Subtasks live in the detail panel now. */
+  readonly subTaskProgress = computed<string | null>(() => {
+    const subTasks = this.task().subTasks;
+    if (!subTasks?.length) {
+      return null;
+    }
+    return `${subTasks.filter((st) => st.isDone).length}/${subTasks.length}`;
+  });
+
+  /**
+   * Tracked over estimate in human form — `47m / 1h 30m`, or just the estimate
+   * when nothing has been tracked yet. Never decimal hours, never a clock.
+   * A task with subtasks reports their sum rather than its own timer.
+   */
+  readonly timeLabel = computed<string>(() => {
+    const t = this.task();
+    const subTasks = t.subTasks;
+    const spent = subTasks?.length
+      ? subTasks.reduce((acc, st) => acc + (st.timeSpent || 0), 0)
+      : t.timeSpent;
+    const estimate = msToString(t.timeEstimate, false, true);
+    if (!spent) {
+      return estimate;
+    }
+    const spentStr = msToString(spent, false, true);
+    return estimate ? `${spentStr} / ${estimate}` : spentStr;
+  });
+
+  /** True once tracked time passes the estimate — a soft flag, not an error. */
+  readonly isOverEstimate = computed<boolean>(() => {
+    const t = this.task();
+    return !!t.timeEstimate && t.timeSpent > t.timeEstimate;
   });
 
   T: typeof T = T;

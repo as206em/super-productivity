@@ -6,327 +6,172 @@
   (swipeRightTriggered)="onSwipeRightTriggered($event)"
   (swipeLeft)="openContextMenu()"
 >
-  <div class="inner-wrapper">
-    <div class="box"></div>
+  <!-- TaskRow. Fixed column order: status · ref · title · subtasks · tag ·
+       due · time · play. Absent fields collapse; `time` always holds its
+       76px column so the numbers line up down the whole list. -->
+  <div
+    (mouseenter)="isFirstLineHover = true"
+    (mouseleave)="isFirstLineHover = false"
+    class="task-row"
+  >
+    <!-- The only coloured icon on the row. -->
+    <button
+      class="task-status"
+      (click)="toggleTaskDone()"
+      [attr.aria-label]="T.F.TASK.CMP.TOGGLE_DONE | translate"
+      type="button"
+    >
+      <mat-icon>{{ statusIcon() }}</mat-icon>
+    </button>
+
+    @if (t.issueId) {
+      <span class="task-ref sp-num">{{ t.issueId }}</span>
+    }
 
     <div
-      (mouseenter)="isFirstLineHover = true"
-      (mouseleave)="isFirstLineHover = false"
-      class="first-line"
+      class="task-title-cell"
+      (click)="titleBarClick($event)"
     >
-      <div
-        class="title-and-left-btns-wrapper"
-        (click)="titleBarClick($event)"
-      >
-        <done-toggle
-          [isDone]="t.isDone"
-          [isCurrent]="isCurrent()"
-          [showDoneAnimation]="showDoneAnimation()"
-          [showUndoneAnimation]="showUndoneAnimation()"
-          (toggled)="toggleTaskDone()"
-          [attr.aria-label]="T.F.TASK.CMP.TOGGLE_DONE | translate"
-        ></done-toggle>
-
-        <div class="title-and-tags-wrapper">
-          @if (!isInSubTaskList() && t.parentId) {
-            <div class="parent-title">
-              <div class="title">{{ parentTitle() }}</div>
-            </div>
-          }
-
-          <task-title
-            [resetToLastExternalValueTrigger]="t"
-            [style.pointer-events]="isTouchActive() && t.title.length ? 'none' : 'auto'"
-            #taskTitleEditEl
-            (valueEdited)="updateTaskTitleIfChanged($event)"
-            [value]="t.title"
-            class="task-title"
-          ></task-title>
-
-          @if (
-            !isInSubTaskList() ||
-            t.tagIds?.length ||
-            t.projectId ||
-            t.repeatCfgId ||
-            t.issueId
-          ) {
-            <tag-list
-              [task]="t"
-              [isShowProjectTagAlways]="!isInSubTaskList()"
-              [isShowProjectTagNever]="isInSubTaskList()"
-              [isShowSectionTag]="!isInSubTaskList()"
-              [isShowSprintTag]="!isInSubTaskList()"
-            ></tag-list>
-          }
-          @if (t.value || t.effort) {
-            <div class="score-badges">
-              @if (t.value) {
-                <span
-                  class="score-badge"
-                  [title]="T.F.TASK.CMP.VALUE | translate"
-                  >V {{ taskValueLabels[t.value] }}</span
-                >
-              }
-              @if (t.effort) {
-                <span
-                  class="score-badge"
-                  [title]="T.F.TASK.CMP.EFFORT | translate"
-                  >E {{ taskEffortLabels[t.effort] }}</span
-                >
-              }
-              @if (taskScoreResult(); as scoreResult) {
-                <span
-                  class="score-badge score-badge-score"
-                  [matTooltip]="taskScoreTooltip()"
-                  matTooltipPosition="above"
-                  >S {{ scoreResult.score }}</span
-                >
-              }
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="all-controls-wrapper">
-        <div
-          (click)="estimateTime()"
-          [class.hasNoTimeSpentOrEstimate]="!t.timeSpent && !t.timeEstimate"
-          [class.isEditable]="!t.subTasks?.length"
-          class="time-wrapper"
-        >
-          @if (!t.subTasks?.length) {
-            <div class="time">
-              @if (t.timeSpent) {
-                <div class="time-val">
-                  <span [innerHTML]="t.timeSpent | msToString"></span>
-                </div>
-                <div class="separator">/</div>
-              }
-              <div
-                [innerHTML]="t.timeEstimate | msToString"
-                class="time-val"
-              ></div>
-            </div>
-          }
-          @if (t.subTasks?.length) {
-            @let subTaskTimeSpent = t.subTasks | subTaskTotalTimeSpent;
-            @if (t.timeEstimate || subTaskTimeSpent) {
-              <div class="time">
-                <div class="time-val">
-                  <mat-icon
-                    inline="true"
-                    style="margin-top: -6px"
-                    >functions
-                  </mat-icon>
-                  <span [innerHTML]="subTaskTimeSpent | msToString"></span>
-                </div>
-                <div class="separator">/</div>
-                <div class="time-val">
-                  <mat-icon inline="true">hourglass_empty</mat-icon>
-                  {{ t.timeEstimate | msToString }}
-                </div>
-              </div>
-            }
-          }
-        </div>
-
-        <div class="controls">
-          @if (isFirstLineHover && !isTouchActive()) {
-            <task-hover-controls
-              [isShowAddToToday]="isShowAddToToday()"
-              [isShowRemoveFromToday]="isShowRemoveFromToday()"
-              [task]="t"
-              [isCurrent]="isCurrent()"
-              [isSelected]="isSelected()"
-              class="hover-controls"
-            ></task-hover-controls>
-          }
-          @if (t.attachments?.length || t.issueAttachmentNr) {
-            <button
-              (click)="toggleShowAttachments()"
-              [title]="T.F.TASK.CMP.TOGGLE_ATTACHMENTS | translate"
-              class="ico-btn attachment-btn"
-              color=""
-              mat-icon-button
-            >
-              <mat-icon>attach_file</mat-icon>
-            </button>
-          }
-          @if (t.remindAt) {
-            <button
-              (click)="scheduleTask()"
-              [title]="T.F.TASK.CMP.EDIT_SCHEDULED | translate"
-              [matTooltip]="
-                hasTimeConflict() ? (T.F.TASK.CMP.TIME_CONFLICT | translate) : ''
-              "
-              matTooltipPosition="above"
-              [attr.aria-label]="
-                hasTimeConflict()
-                  ? (T.F.TASK.CMP.TIME_CONFLICT | translate)
-                  : (T.F.TASK.CMP.EDIT_SCHEDULED | translate)
-              "
-              class="ico-btn schedule-btn"
-              [color]="isOverdue() ? 'warn' : ''"
-              mat-icon-button
-            >
-              <mat-icon>alarm</mat-icon>
-              <div
-                class="time-badge"
-                [innerHTML]="t.dueWithTime | shortPlannedAt"
-              ></div>
-            </button>
-          } @else if (t.dueWithTime) {
-            <button
-              (click)="scheduleTask()"
-              [title]="T.F.TASK.CMP.EDIT_SCHEDULED | translate"
-              [matTooltip]="
-                hasTimeConflict() ? (T.F.TASK.CMP.TIME_CONFLICT | translate) : ''
-              "
-              matTooltipPosition="above"
-              [attr.aria-label]="
-                hasTimeConflict()
-                  ? (T.F.TASK.CMP.TIME_CONFLICT | translate)
-                  : (T.F.TASK.CMP.EDIT_SCHEDULED | translate)
-              "
-              class="ico-btn schedule-btn"
-              [color]="isOverdue() ? 'warn' : ''"
-              mat-icon-button
-            >
-              @if (isScheduledToday()) {
-                <mat-icon>wb_sunny</mat-icon>
-              } @else {
-                <mat-icon>schedule</mat-icon>
-              }
-              <div
-                class="time-badge"
-                [innerHTML]="t.dueWithTime | shortPlannedAt"
-              ></div>
-            </button>
-          } @else if (isShowDueDayBtn()) {
-            <button
-              (click)="scheduleTask()"
-              [title]="T.F.TASK.CMP.EDIT_SCHEDULED | translate"
-              [matTooltip]="
-                hasTimeConflict() ? (T.F.TASK.CMP.TIME_CONFLICT | translate) : ''
-              "
-              matTooltipPosition="above"
-              [attr.aria-label]="
-                hasTimeConflict()
-                  ? (T.F.TASK.CMP.TIME_CONFLICT | translate)
-                  : (T.F.TASK.CMP.EDIT_SCHEDULED | translate)
-              "
-              class="ico-btn schedule-btn"
-              [color]="isOverdue() ? 'warn' : ''"
-              mat-icon-button
-            >
-              @if (isScheduledToday()) {
-                <mat-icon>wb_sunny</mat-icon>
-              } @else {
-                <mat-icon>today</mat-icon>
-              }
-              <div class="time-badge">
-                {{
-                  t.dueDay | localDateStr: globalTrackingIntervalService.todayDateStr()
-                }}
-              </div>
-            </button>
-          }
-          @if (hasDeadline()) {
-            <button
-              (click)="openDeadlineDialog()"
-              [title]="T.F.TASK.ADDITIONAL_INFO.DEADLINE | translate"
-              class="ico-btn deadline-btn"
-              [color]="
-                isDeadlineOverdue() ? 'warn' : isDeadlineApproaching() ? 'accent' : ''
-              "
-              mat-icon-button
-            >
-              <mat-icon>flag</mat-icon>
-              <div class="time-badge">
-                @if (t.deadlineWithTime) {
-                  {{ t.deadlineWithTime | shortPlannedAt }}
-                } @else if (t.deadlineDay) {
-                  {{
-                    t.deadlineDay
-                      | localDateStr: globalTrackingIntervalService.todayDateStr()
-                  }}
-                }
-              </div>
-            </button>
-          }
-
-          <div>
-            @if (isShowToggleButton()) {
-              <button
-                (click)="toggleShowDetailPanel()"
-                title="{{ T.F.TASK.CMP.TOGGLE_DETAIL_PANEL | translate }}  {{
-                  kb.taskToggleDetailPanelOpen
-                    ? '[' + kb.taskToggleDetailPanelOpen + ']'
-                    : ''
-                }}"
-                class="ico-btn show-additional-info-btn"
-                color=""
-                mat-icon-button
-              >
-                <mat-icon
-                  [class.updated-icon]="toggleButtonIcon() === 'update'"
-                  [color]="toggleButtonIcon() === 'update' ? 'accent' : ''"
-                >
-                  {{ toggleButtonIcon() }}
-                </mat-icon>
-              </button>
-            }
-          </div>
-        </div>
-      </div>
+      @if (!isInSubTaskList() && t.parentId) {
+        <span class="task-parent">{{ parentTitle() }}</span>
+      }
+      <task-title
+        [resetToLastExternalValueTrigger]="t"
+        [style.pointer-events]="isTouchActive() && t.title.length ? 'none' : 'auto'"
+        #taskTitleEditEl
+        (valueEdited)="updateTaskTitleIfChanged($event)"
+        [value]="t.title"
+        class="task-title"
+      ></task-title>
     </div>
 
-    @if (isCurrent()) {
-      <progress-bar
-        [cssClass]="'bg-accent'"
-        [progress]="progress()"
-      ></progress-bar>
+    <!-- Subtasks do not nest in the list any more; the parent reports a count
+         and the subtasks themselves live in the detail panel. -->
+    @if (subTaskProgress(); as subs) {
+      <button
+        class="task-subs sp-num"
+        (click)="toggleShowDetailPanel($event)"
+        [title]="T.F.TASK.CMP.TOGGLE_SUB_TASK_VISIBILITY | translate"
+        type="button"
+      >
+        <mat-icon>checklist</mat-icon>{{ subs }}
+      </button>
     }
-    @if (t.subTasks?.length) {
-      <div class="sub-tasks">
-        <button
-          (click)="toggleSubTaskMode()"
-          [title]="T.F.TASK.CMP.TOGGLE_SUB_TASK_VISIBILITY | translate"
-          class="toggle-sub-tasks-btn ico-btn mat-elevation-z2"
-          color=""
-          mat-mini-fab
-        >
-          @if (t._hideSubTasksMode === ShowSubTasksMode.HideAll) {
-            <mat-icon>add</mat-icon>
-          } @else {
-            <mat-icon
-              [class.isHideDoneTasks]="t._hideSubTasksMode === ShowSubTasksMode.HideDone"
-              >remove
-            </mat-icon>
-          }
-        </button>
-        <task-list
-          [@expandInOnly]
-          [isHideAll]="!!t._hideSubTasksMode"
-          [isHideDone]="t._hideSubTasksMode === ShowSubTasksMode.HideDone"
-          [isSubTaskList]="true"
-          [listModelId]="t.id"
-          [parentId]="t.id"
-          [tasks]="t.subTasks"
-          listId="SUB"
-        ></task-list>
-      </div>
-    }
-    @if (isDragOver) {
-      <div class="bgc-accent drag-over-msg">
-        <mat-icon>add</mat-icon>
-        {{ T.F.TASK.CMP.DROP_ATTACHMENT | translate: { title: t.title } }}
-      </div>
-    }
-  </div>
-</swipe-block>
 
-<!--*ngIf="isShowContextMenu"-->
+    @if (
+      !isInSubTaskList() || t.tagIds?.length || t.projectId || t.repeatCfgId || t.issueId
+    ) {
+      <tag-list
+        [task]="t"
+        [isShowProjectTagAlways]="!isInSubTaskList()"
+        [isShowProjectTagNever]="isInSubTaskList()"
+        [isShowSectionTag]="!isInSubTaskList()"
+        [isShowSprintTag]="!isInSubTaskList()"
+        class="task-tags"
+      ></tag-list>
+    }
+
+    @if (t.dueWithTime || t.dueDay) {
+      <button
+        class="task-due sp-num"
+        [class.isOverdue]="isOverdue()"
+        (click)="scheduleTask()"
+        [title]="T.F.TASK.CMP.EDIT_SCHEDULED | translate"
+        [matTooltip]="hasTimeConflict() ? (T.F.TASK.CMP.TIME_CONFLICT | translate) : ''"
+        matTooltipPosition="above"
+        type="button"
+      >
+        <mat-icon>event</mat-icon>
+        @if (t.dueWithTime) {
+          {{ t.dueWithTime | shortPlannedAt }}
+        } @else {
+          {{ t.dueDay | localDateStr: globalTrackingIntervalService.todayDateStr() }}
+        }
+      </button>
+    }
+
+    @if (hasDeadline()) {
+      <button
+        (click)="openDeadlineDialog()"
+        [title]="T.F.TASK.ADDITIONAL_INFO.DEADLINE | translate"
+        class="task-deadline sp-num"
+        [class.isOverdue]="isDeadlineOverdue()"
+        [class.isApproaching]="isDeadlineApproaching()"
+        type="button"
+      >
+        <mat-icon>flag</mat-icon>
+        @if (t.deadlineWithTime) {
+          {{ t.deadlineWithTime | shortPlannedAt }}
+        } @else if (t.deadlineDay) {
+          {{ t.deadlineDay | localDateStr: globalTrackingIntervalService.todayDateStr() }}
+        }
+      </button>
+    }
+
+    <!-- Actions that used to live in a permanent per-row cluster. They surface
+         on hover and are all reachable from the row's context menu too. -->
+    <div class="task-controls">
+      @if (isFirstLineHover && !isTouchActive()) {
+        <task-hover-controls
+          [isShowAddToToday]="isShowAddToToday()"
+          [isShowRemoveFromToday]="isShowRemoveFromToday()"
+          [task]="t"
+          [isCurrent]="isCurrent()"
+          [isSelected]="isSelected()"
+          class="hover-controls"
+        ></task-hover-controls>
+      }
+      @if (t.attachments?.length || t.issueAttachmentNr) {
+        <button
+          (click)="toggleShowAttachments()"
+          [title]="T.F.TASK.CMP.TOGGLE_ATTACHMENTS | translate"
+          class="task-icon-btn"
+          type="button"
+        >
+          <mat-icon>attach_file</mat-icon>
+        </button>
+      }
+      @if (isShowToggleButton()) {
+        <button
+          (click)="toggleShowDetailPanel()"
+          title="{{ T.F.TASK.CMP.TOGGLE_DETAIL_PANEL | translate }}  {{
+            kb.taskToggleDetailPanelOpen ? '[' + kb.taskToggleDetailPanelOpen + ']' : ''
+          }}"
+          class="task-icon-btn"
+          type="button"
+        >
+          <mat-icon>{{ toggleButtonIcon() }}</mat-icon>
+        </button>
+      }
+    </div>
+
+    <!-- Always holds its column, right-aligned and tabular, so the numbers
+         line up whether or not a row has anything else in it. -->
+    <span
+      class="task-time sp-num"
+      [class.isOverEstimate]="isOverEstimate()"
+      (click)="estimateTime()"
+      >{{ timeLabel() }}</span
+    >
+
+    <button
+      class="task-play"
+      [class.isCurrent]="isCurrent()"
+      (click)="togglePlayPause()"
+      [title]="T.F.TASK.CMP.TOGGLE_START | translate"
+      type="button"
+    >
+      <mat-icon>{{ isCurrent() ? 'stop' : 'play_arrow' }}</mat-icon>
+    </button>
+  </div>
+
+  @if (isDragOver) {
+    <div class="drag-over-msg">
+      <mat-icon>add</mat-icon>
+      {{ T.F.TASK.CMP.DROP_ATTACHMENT | translate: { title: t.title } }}
+    </div>
+  }
+</swipe-block>
 
 @if (isContextMenuLoaded()) {
   <task-context-menu
