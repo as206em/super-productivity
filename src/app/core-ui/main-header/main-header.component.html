@@ -2,136 +2,118 @@
   @if (isDataLoaded()) {
     <page-title></page-title>
 
+    <!-- TimerPill. Renders only while something is actually being tracked and
+         disappears completely when idle — there is no zeroed or placeholder
+         state. Pink here means one thing: the timer is running. -->
+    @if (isTimeTrackingEnabled() && currentTask(); as task) {
+      <button
+        class="timer-pill"
+        (click)="stopTracking()"
+        [matTooltip]="T.MH.TOGGLE_TRACK_TIME | translate"
+        type="button"
+      >
+        <span class="timer-pill__dot sp-pulse-dot"></span>
+        <span class="timer-pill__title">{{ task.title }}</span>
+        <span class="timer-pill__elapsed sp-num">{{ task.timeSpent | msToString }}</span>
+        <span class="timer-pill__stop"><mat-icon>stop</mat-icon></span>
+      </button>
+    }
+
     <nav class="action-nav-right">
-      <div class="counters-action-group">
-        @if (isTimeTrackingEnabled()) {
-          <play-button
-            [currentTask]="currentTask()"
-            [currentTaskId]="currentTaskId()"
-            [currentTaskContext]="currentTaskContext()"
-            [hasTrackableTasks]="hasTrackableTasks()"
-          ></play-button>
-        }
-
-        <!-- Focus button: always inline on desktop; on mobile only while a
-             session/break is active, so the running countdown stays reachable. -->
-        @if (isFocusButtonVisible()) {
-          <focus-button></focus-button>
-        }
-        @if (showDesktopButtons()) {
-          @for (
-            simpleCounter of enabledSimpleCounters();
-            track trackById($index, simpleCounter)
-          ) {
-            @if (!simpleCounter.isHideButton) {
-              <simple-counter-button
-                [matTooltip]="simpleCounter.title"
-                [simpleCounter]="simpleCounter"
-              ></simple-counter-button>
-            }
-          }
-        }
-      </div>
-
-      <!-- Desktop: Secondary action group -->
-      @if (showDesktopButtons()) {
+      @if (isFocusModeEnabled()) {
         <button
-          (click)="layoutService.showAddTaskBar()"
-          matTooltip="{{ T.MH.ADD_NEW_TASK | translate }} {{
-            kb.addNewTask ? '[' + kb.addNewTask + ']' : ''
-          }}"
-          class="tour-addBtn"
-          mat-icon-button
+          class="ghost-btn"
+          (click)="enableFocusMode()"
+          [matTooltip]="T.MH.TOGGLE_FOCUS_MODE | translate"
+          type="button"
         >
-          <mat-icon>add</mat-icon>
+          <mat-icon>center_focus_strong</mat-icon>{{ T.MH.FOCUS | translate }}
         </button>
       }
 
-      @if (isSyncIconEnabled()) {
+      @if (isTaskViewCustomizerPage()) {
         <button
-          class="sync-btn"
-          matTooltip="{{ T.MH.TRIGGER_SYNC | translate }}"
-          (click)="syncIsEnabledAndReady() ? sync() : setupSync()"
-          (longPress)="setupSync()"
-          (contextmenu)="$event.preventDefault(); setupSync()"
-          mat-icon-button
+          class="ghost-btn"
+          [class.isCustomized]="taskViewCustomizerService.isCustomized()"
+          [matMenuTriggerFor]="customizerPanel.menu"
+          type="button"
         >
-          @if (syncIsEnabledAndReady()) {
-            @if (isOnline()) {
-              @if (syncState() === 'ERROR') {
-                <mat-icon>sync_problem</mat-icon>
-              } @else {
-                <mat-icon [class.spin]="isSyncInProgress()">sync</mat-icon>
-              }
-              @if (hasNoPendingOps()) {
-                @if (superSyncIsConfirmedInSync()) {
-                  <mat-icon class="sync-state-ico">done_all</mat-icon>
-                } @else {
-                  <mat-icon class="sync-state-ico">check</mat-icon>
-                }
-              }
-            } @else {
-              <mat-icon>wifi_off</mat-icon>
-            }
-          } @else {
-            <mat-icon>sync_disabled</mat-icon>
-          }
+          <mat-icon>filter_list</mat-icon>{{ T.MH.FILTER | translate }}
         </button>
+        <task-view-customizer-panel #customizerPanel></task-view-customizer-panel>
       }
 
-      <plugin-work-context-header-btns></plugin-work-context-header-btns>
-      <plugin-header-btns></plugin-header-btns>
+      <!-- Display holds everything the header used to spell out as a row of
+           circular icon buttons. Nothing was deleted; it moved here. -->
+      <button
+        class="ghost-btn"
+        [matMenuTriggerFor]="displayMenu"
+        type="button"
+      >
+        <mat-icon>tune</mat-icon>{{ T.MH.DISPLAY | translate }}
+      </button>
 
       @if (isUserProfilesEnabled()) {
         <user-profile-button></user-profile-button>
       }
+    </nav>
 
-      <!-- Desktop: Show all buttons inline -->
-      @if (showDesktopButtons()) {
-        <plugin-side-panel-btns></plugin-side-panel-btns>
+    <mat-menu
+      #displayMenu="matMenu"
+      class="display-menu"
+    >
+      <ng-template matMenuContent>
+        <button
+          (click)="layoutService.showAddTaskBar()"
+          mat-menu-item
+        >
+          <mat-icon>add</mat-icon>
+          <span
+            >{{ T.MH.ADD_NEW_TASK | translate
+            }}{{ kb.addNewTask ? ' · ' + kb.addNewTask : '' }}</span
+          >
+        </button>
 
-        <desktop-panel-buttons
-          [kb]="kb"
-          [isRouteWithSidePanel]="isRouteWithSidePanel()"
-          [isShowScheduleDayPanel]="isShowScheduleDayPanel()"
-          [isShowIssuePanel]="isShowIssuePanel()"
-          [isShowNotes]="isShowNotes()"
-        ></desktop-panel-buttons>
-      }
+        @if (isSyncIconEnabled()) {
+          <button
+            (click)="syncIsEnabledAndReady() ? sync() : setupSync()"
+            mat-menu-item
+          >
+            <mat-icon [class.spin]="isSyncInProgress()">{{ syncGlyph() }}</mat-icon>
+            <span>{{ T.MH.TRIGGER_SYNC | translate }}</span>
+          </button>
+        }
 
-      <!-- Simple Counter Dropdown (mobile only) -->
-      @if (isXs()) {
+        <div class="display-menu__section">
+          <plugin-work-context-header-btns></plugin-work-context-header-btns>
+          <plugin-header-btns></plugin-header-btns>
+          <plugin-side-panel-btns></plugin-side-panel-btns>
+
+          <desktop-panel-buttons
+            [kb]="kb"
+            [isRouteWithSidePanel]="isRouteWithSidePanel()"
+            [isShowScheduleDayPanel]="isShowScheduleDayPanel()"
+            [isShowIssuePanel]="isShowIssuePanel()"
+            [isShowNotes]="isShowNotes()"
+          ></desktop-panel-buttons>
+        </div>
+
         @if (enabledSimpleCounters().length) {
-          <div class="mobile-dropdown-wrapper">
-            <button
-              (click)="
-                isShowSimpleCounterBtnsDropdown.set(!isShowSimpleCounterBtnsDropdown())
-              "
-              [color]="isCounterRunning(enabledSimpleCounters()) ? 'accent' : ''"
-              mat-icon-button
-            >
-              <mat-icon>{{
-                isShowSimpleCounterBtnsDropdown() ? 'close' : 'timer'
-              }}</mat-icon>
-            </button>
-            <div
-              class="mobile-dropdown"
-              [class.isVisible]="isShowSimpleCounterBtnsDropdown()"
-            >
-              @for (
-                simpleCounter of enabledSimpleCounters();
-                track trackById($index, simpleCounter)
-              ) {
-                @if (!simpleCounter.isHideButton) {
-                  <simple-counter-button
-                    [simpleCounter]="simpleCounter"
-                  ></simple-counter-button>
-                }
+          <div class="display-menu__section">
+            @for (
+              simpleCounter of enabledSimpleCounters();
+              track trackById($index, simpleCounter)
+            ) {
+              @if (!simpleCounter.isHideButton) {
+                <simple-counter-button
+                  [matTooltip]="simpleCounter.title"
+                  [simpleCounter]="simpleCounter"
+                ></simple-counter-button>
               }
-            </div>
+            }
           </div>
         }
-      }
-    </nav>
+      </ng-template>
+    </mat-menu>
   }
 </div>

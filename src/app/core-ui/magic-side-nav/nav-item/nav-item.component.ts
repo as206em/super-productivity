@@ -184,6 +184,33 @@ export class NavItemComponent {
     return wc.theme?.primary || null;
   });
 
+  /**
+   * A project or tag carries its accent as a square, never as the colour of a
+   * glyph — colour is never text in this system. Projects get a 9px rounded
+   * square, tags a smaller 6px one, so shape says which kind of thing it is
+   * and colour says which one. Returns null when the row should keep a glyph:
+   * My day and Inbox are views, and a context whose owner picked their own
+   * icon keeps it.
+   */
+  readonly accentSwatch = computed<'project' | 'tag' | null>(() => {
+    if (this.mode() !== 'work') {
+      return null;
+    }
+    const wc = this.workContext();
+    const wcType = this.type();
+    if (!wc || !wcType) {
+      return null;
+    }
+    const defaultIcon = this.defaultIcon();
+    if (defaultIcon === 'today' || defaultIcon === 'inbox') {
+      return null;
+    }
+    if (wc.icon) {
+      return null;
+    }
+    return wcType === WorkContextType.TAG ? 'tag' : 'project';
+  });
+
   // Emoji detection for presentational icons
   isPresentationalEmojiIcon = computed<boolean>(() => {
     const iconValue = this.icon();

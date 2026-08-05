@@ -1,11 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
-import { MatRipple } from '@angular/material/core';
 import { MatTooltip } from '@angular/material/tooltip';
-import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { MatMenu, MatMenuContent, MatMenuTrigger } from '@angular/material/menu';
-import { WorkContextMenuComponent } from '../../work-context-menu/work-context-menu.component';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { T } from '../../../t.const';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -13,106 +9,40 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
 import { WorkContextService } from '../../../features/work-context/work-context.service';
 import { TaskViewCustomizerService } from '../../../features/task-view-customizer/task-view-customizer.service';
-import { TaskViewCustomizerPanelComponent } from '../../../features/task-view-customizer/task-view-customizer-panel/task-view-customizer-panel.component';
 import { GlobalConfigService } from '../../../features/config/global-config.service';
 import { KeyboardConfig } from '../../../features/config/keyboard-config.model';
 import { ProjectService } from '../../../features/project/project.service';
-import { LocalDateStrPipe } from '../../../ui/pipes/local-date-str.pipe';
-import { TASK_VALUE_LABELS } from '../../../features/tasks/util/task-score.util';
 import { isTaskViewCustomizerRoute } from '../../../features/task-view-customizer/is-task-view-customizer-route.util';
+import { TODAY_TAG } from '../../../features/tag/tag.const';
+import { INBOX_PROJECT } from '../../../features/project/project.const';
+import { WorkContextType } from '../../../features/work-context/work-context.model';
+import { DateService } from '../../../core/date/date.service';
 
 @Component({
   selector: 'page-title',
   standalone: true,
-  imports: [
-    RouterLink,
-    MatRipple,
-    MatTooltip,
-    MatIconButton,
-    MatIcon,
-    MatMenu,
-    MatMenuContent,
-    MatMenuTrigger,
-    WorkContextMenuComponent,
-    TaskViewCustomizerPanelComponent,
-    TranslatePipe,
-    LocalDateStrPipe,
-  ],
+  imports: [RouterLink, MatTooltip, MatIcon, TranslatePipe],
   template: `
-    @if (activeWorkContextTypeAndId()) {
-      <div
-        [matTooltip]="T.MH.GO_TO_TASK_LIST | translate"
-        class="page-title"
-        mat-ripple
-        routerLink="/active/tasks"
-      >
-        {{ displayTitle() }}
-      </div>
-      @if (activeProjectMeta(); as meta) {
-        @if (meta.deadlineDay || meta.value) {
-          <div class="page-title-meta">
-            @if (meta.deadlineDay) {
-              <span
-                class="page-title-meta-item"
-                [matTooltip]="T.F.PROJECT.FORM_BASIC.L_DEADLINE | translate"
-              >
-                <mat-icon>event</mat-icon>
-                {{ meta.deadlineDay | localDateStr }}
-              </span>
-            }
-            @if (meta.value) {
-              <span
-                class="page-title-meta-item"
-                [matTooltip]="T.F.PROJECT.FORM_BASIC.L_VALUE | translate"
-              >
-                <mat-icon>hotel_class</mat-icon>
-                {{ taskValueLabels[meta.value] }}
-              </span>
-            }
-          </div>
+    @if (activeWorkContextTypeAndId() || isSpecialSection()) {
+      <!-- Breadcrumb: icon · bold title · slash · quiet tail. Exactly two
+           levels, and the tail is the part that truncates first. -->
+      <div class="breadcrumb">
+        <mat-icon class="breadcrumb-icon">{{ breadcrumbIcon() }}</mat-icon>
+        <a
+          class="breadcrumb-title"
+          [matTooltip]="T.MH.GO_TO_TASK_LIST | translate"
+          routerLink="/active/tasks"
+          >{{ displayTitle() }}</a
+        >
+        @if (breadcrumbTail(); as tail) {
+          <span
+            aria-hidden="true"
+            class="breadcrumb-sep"
+            >/</span
+          >
+          <span class="breadcrumb-tail">{{ tail }}</span>
         }
-      }
-      @if (!isXxxs() && (!isSpecialSection() || isTaskViewCustomizerPage())) {
-        <div class="page-title-actions">
-          @if (!isSpecialSection()) {
-            <button
-              [mat-menu-trigger-for]="activeWorkContextMenu"
-              [matTooltip]="T.MH.PROJECT_MENU | translate"
-              class="project-settings-btn"
-              mat-icon-button
-            >
-              <mat-icon>more_vert</mat-icon>
-            </button>
-          }
-          @if (isTaskViewCustomizerPage()) {
-            <button
-              class="task-filter-btn"
-              [class.isCustomized]="taskViewCustomizerService.isCustomized()"
-              [matMenuTriggerFor]="customizerPanel.menu"
-              mat-icon-button
-              matTooltip="{{
-                T.GCF.KEYBOARD.TOGGLE_TASK_VIEW_CUSTOMIZER_PANEL | translate
-              }} {{
-                kb.toggleTaskViewCustomizerPanel
-                  ? '[' + kb.toggleTaskViewCustomizerPanel + ']'
-                  : ''
-              }}"
-            >
-              <mat-icon>filter_list</mat-icon>
-            </button>
-
-            <task-view-customizer-panel #customizerPanel></task-view-customizer-panel>
-          }
-        </div>
-      }
-      <mat-menu #activeWorkContextMenu="matMenu">
-        <ng-template matMenuContent>
-          <work-context-menu
-            [contextId]="activeWorkContextTypeAndId()!.activeId"
-            [contextType]="activeWorkContextTypeAndId()!.activeType"
-          ></work-context-menu>
-        </ng-template>
-      </mat-menu>
+      </div>
     }
   `,
   styles: [
@@ -121,99 +51,48 @@ import { isTaskViewCustomizerRoute } from '../../../features/task-view-customize
         display: contents;
       }
 
-      .page-title {
-        font-size: 18px;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: var(--space-5);
+        min-width: 0;
+        flex: 1;
         white-space: nowrap;
-        max-width: 100%;
-        cursor: pointer;
-        border-radius: var(--card-border-radius);
-        padding: var(--s) var(--s2) var(--s) var(--s);
+        overflow: hidden;
+      }
 
-        @media (min-width: 600px) {
-          padding-left: 0;
-          padding-right: var(--s);
-        }
+      .breadcrumb-icon {
+        flex: 0 0 17px;
+        width: 17px;
+        height: 17px;
+        font-size: 17px;
+        line-height: 1;
+        color: var(--icon-meta);
+      }
+
+      .breadcrumb-title {
+        font-weight: var(--weight-semibold);
+        font-size: var(--text-base);
+        color: var(--text-title);
+        text-decoration: none;
+        flex: 0 0 auto;
 
         &:focus {
           outline: none;
         }
       }
 
-      .page-title-actions {
-        display: flex;
-        align-items: center;
-        gap: var(--s-quarter);
-        margin-left: calc(-1 * var(--s));
-        margin-right: var(--s2);
+      .breadcrumb-sep {
+        color: var(--neutral-200);
+        flex: 0 0 auto;
       }
 
-      .page-title-meta {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s);
-        color: var(--text-color-muted);
-        font-size: 12px;
-        white-space: nowrap;
-        margin-right: var(--s);
-      }
-
-      .page-title-meta-item {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s-half);
-      }
-
-      .page-title-meta-item mat-icon {
-        width: 16px;
-        height: 16px;
-        font-size: 16px;
-      }
-
-      .project-settings-btn {
-        opacity: 1;
-
-        /*display: none;*/
-        /*@media (min-width: 600px) {*/
-        /*  display: block;*/
-        /*  transition: var(--transition-standard);*/
-        /*  opacity: 0;*/
-        /*  position: relative;*/
-        /*  z-index: 1;*/
-        /*}*/
-
-        /*&:hover,*/
-        /*.page-title:hover + .page-title-actions &,*/
-        /*.page-title-actions:hover & {*/
-        /*  opacity: 1;*/
-        /*}*/
-      }
-
-      .task-filter-btn {
-        position: relative;
-        transition: all 0.2s ease;
-        overflow: visible !important;
-
-        .mat-icon {
-          transition: transform 0.2s ease;
-          display: block;
-        }
-
-        &.isCustomized {
-          color: var(--c-accent);
-          box-shadow: none;
-        }
-
-        &:hover:not(.isCustomized):not(:disabled) {
-          background-color: var(--hover-color, rgba(0, 0, 0, 0.04));
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          background: transparent !important;
-        }
+      /* The tail gives up its space first — the title always survives. */
+      .breadcrumb-tail {
+        color: var(--text-meta);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     `,
   ],
@@ -227,9 +106,9 @@ export class PageTitleComponent {
   readonly taskViewCustomizerService = inject(TaskViewCustomizerService);
   private readonly _configService = inject(GlobalConfigService);
   private _translateService = inject(TranslateService);
+  private _dateService = inject(DateService);
 
   readonly T = T;
-  readonly taskValueLabels = TASK_VALUE_LABELS;
 
   // Get data directly from services instead of inputs
   activeWorkContextTitle = toSignal(this._workContextService.activeWorkContextTitle$);
@@ -278,6 +157,70 @@ export class PageTitleComponent {
   displayTitle = computed(() => {
     const key = this._routeTitleKey();
     return key ? this._translateService.instant(key) : this.activeWorkContextTitle();
+  });
+
+  // The design system's standing icon vocabulary, keyed by route. Anything not
+  // listed falls back to the work-context glyph below.
+  private static readonly _ROUTE_ICONS: ReadonlyArray<readonly [RegExp, string]> = [
+    [/schedule$/, 'schedule'],
+    [/planner$/, 'edit_calendar'],
+    [/priority$/, 'hotel_class'],
+    [/boards$/, 'view_kanban'],
+    [/habits$/, 'favorite'],
+    [/search$/, 'search'],
+    [/sprint\/current$/, 'flag'],
+    [/sprint\/next$/, 'outlined_flag'],
+    [/scheduled-list$/, 'list'],
+    [/donate$/, 'volunteer_activism'],
+    [/config$/, 'settings'],
+    [/archived-projects$/, 'inventory_2'],
+  ];
+
+  readonly breadcrumbIcon = computed(() => {
+    const routeIcon = PageTitleComponent._ROUTE_ICONS.find(([re]) =>
+      re.test(this._url()),
+    )?.[1];
+    if (routeIcon) {
+      return routeIcon;
+    }
+    const ctx = this.activeWorkContextTypeAndId();
+    if (ctx?.activeId === TODAY_TAG.id) {
+      return 'wb_sunny';
+    }
+    if (ctx?.activeId === INBOX_PROJECT.id) {
+      return 'inbox';
+    }
+    return ctx?.activeType === WorkContextType.TAG ? 'label' : 'radio_button_checked';
+  });
+
+  /**
+   * The breadcrumb's second level. Only rendered when there is something true
+   * to say — an absent tail collapses the slash with it rather than showing an
+   * em dash or a blank.
+   */
+  readonly breadcrumbTail = computed(() => {
+    if (this.isSpecialSection()) {
+      return null;
+    }
+    const ctx = this.activeWorkContextTypeAndId();
+    if (!ctx) {
+      return null;
+    }
+    if (ctx.activeId === TODAY_TAG.id) {
+      // My day is the one view that is genuinely about a date, so it says which.
+      // Recomputed from the logical today so it rolls over with the app's own
+      // day boundary rather than midnight.
+      return new Date(this._dateService.todayStr()).toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      });
+    }
+    const project = this._activeProject();
+    if (project?.isArchived) {
+      return this._translateService.instant(T.MH.ARCHIVED_PROJECTS);
+    }
+    return null;
   });
 
   activeProjectMeta = computed(() => {

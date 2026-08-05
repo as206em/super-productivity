@@ -15,7 +15,10 @@ export const WORKLOG_EXPORT_DEFAULTS: WorklogExportSettings = {
 
 export const DEFAULT_PROJECT_COLOR = '#29a1aa';
 export const DEFAULT_TAG_COLOR = '#a05db1';
-export const DEFAULT_TODAY_TAG_COLOR = '#6495ED';
+// Brand purple. Seeds the generated Material palette, so it is what `--brand`
+// resolves to for anyone who has not picked a theme. Matches the design
+// system's `--brand` and the default entry in validated-color-palettes.
+export const DEFAULT_TODAY_TAG_COLOR = '#8b4a9d';
 export const DEFAULT_BACKGROUND_IMAGE_BLUR = 0;
 export const MAX_BACKGROUND_IMAGE_BLUR = 20;
 

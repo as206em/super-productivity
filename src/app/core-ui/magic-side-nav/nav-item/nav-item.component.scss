@@ -281,6 +281,30 @@ button.nav-link.mat-mdc-menu-item {
   }
 }
 
+// Project and tag accents. The square occupies the same 18px slot the glyph
+// would, so nothing shifts between a row that has an icon and one that does
+// not. Projects 9px, tags 6px — shape reads as kind, colour as instance.
+.nav-swatch-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  // Falls back to the idle icon tone when a context has no colour set, so the
+  // row still reads as a row rather than losing its leading mark.
+  background: var(--icon-idle);
+
+  &.nav-swatch--tag {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-dot);
+  }
+}
+
 // Navigation icon. 18px in an 18px box, pulled 1px left so the glyph's optical
 // centre lands on the centre of the 52px collapsed rail.
 .nav-icon {

@@ -2626,7 +2626,11 @@
     "TRIGGER_SYNC": "Sync!",
     "UNPLAN_ALL_TASKS": "Unplan all tasks",
     "WORKLOG": "Worklog",
-    "ARCHIVED_PROJECTS": "Archived Projects"
+    "ARCHIVED_PROJECTS": "Archived Projects",
+    "FOCUS": "Focus",
+    "FILTER": "Filter",
+    "DISPLAY": "Display",
+    "TOGGLE_FOCUS_MODE": "Enter focus mode"
   },
   "MIGRATE": {
     "C_DOWNLOAD_BACKUP": "Do you want to download a backup of your legacy data (can be used with older versions of Super Productivity)?",
