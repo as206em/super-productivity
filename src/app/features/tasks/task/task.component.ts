@@ -87,6 +87,7 @@ import { GlobalTrackingIntervalService } from '../../../core/global-tracking-int
 import { TaskLog } from '../../../core/log';
 import { LayoutService } from '../../../core-ui/layout/layout.service';
 import { TaskFocusService } from '../task-focus.service';
+import { TaskSelectionService } from '../task-selection.service';
 import { selectTimeConflictTaskIds } from '../store/task.selectors';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TASK_EFFORT_LABELS, TASK_VALUE_LABELS } from '../util/task-score.util';
@@ -106,6 +107,7 @@ import { TaskScoreService } from '../util/task-score.service';
     '[class.isDone]': 'task().isDone',
     '[class.isCurrent]': 'isCurrent()',
     '[class.isSelected]': 'isSelected()',
+    '[class.isMultiSelected]': 'isMultiSelected()',
     '[class.hasNoSubTasks]': 'task().subTaskIds.length === 0',
     '[class.isDragReady]': 'isDragReady()',
     '[class.hasTimeConflict]': 'hasTimeConflict()',
@@ -151,6 +153,7 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
   private readonly _taskScoreService = inject(TaskScoreService);
 
   readonly workContextService = inject(WorkContextService);
+  readonly taskSelectionService = inject(TaskSelectionService);
   readonly layoutService = inject(LayoutService);
   readonly globalTrackingIntervalService = inject(GlobalTrackingIntervalService);
   private readonly _timeConflictTaskIds = toSignal(
@@ -167,6 +170,9 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
   // Use shared signals from services to avoid creating 600+ subscriptions on initial render
   isCurrent = computed(() => this._taskService.currentTaskId() === this.task().id);
   isSelected = computed(() => this._taskService.selectedTaskId() === this.task().id);
+  readonly isMultiSelected = computed(() =>
+    this.taskSelectionService.selectedIds().has(this.task().id),
+  );
   isShowCloseButton = computed(() => {
     // Only show close button when task is selected AND not on mobile (bottom panel)
     return this.isSelected() && !this.layoutService.isXs();
@@ -1031,12 +1037,59 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
     const target = event.target as HTMLElement | null;
     if (
       target?.closest(
-        '.task-status, .task-play, .task-due, .task-deadline, .task-subs, .task-time, .task-controls, tag-list',
+        '.task-select, .task-status, .task-play, .task-due, .task-deadline, .task-subs, .task-time, .task-controls, tag-list',
       )
     ) {
       return;
     }
-    this._taskService.setSelectedId(this.task().id);
+
+    const id = this.task().id;
+
+    // Cmd/Ctrl-click adds or removes one row; shift-click takes the range from
+    // the last one touched. Both are accelerators — the checkbox that appears
+    // on hover does the same thing with the mouse alone.
+    if (event.metaKey || event.ctrlKey) {
+      event.preventDefault();
+      this.taskSelectionService.toggle(id);
+      return;
+    }
+    if (event.shiftKey) {
+      event.preventDefault();
+      window.getSelection()?.removeAllRanges();
+      this.taskSelectionService.selectRange(id, this._siblingTaskIds());
+      return;
+    }
+
+    // A plain click is the ordinary case: drop any multi-selection and show
+    // this one task.
+    this.taskSelectionService.clear();
+    this._taskService.setSelectedId(id);
+  }
+
+  /** Toggles this row in the multi-selection from the hover checkbox. */
+  toggleMultiSelect(event: MouseEvent): void {
+    event.stopPropagation();
+    const id = this.task().id;
+    if (event.shiftKey) {
+      this.taskSelectionService.selectRange(id, this._siblingTaskIds());
+      return;
+    }
+    this.taskSelectionService.toggle(id);
+  }
+
+  /**
+   * The ids of every task rendered in this row's list, in visual order. A
+   * shift-click range has to follow what the user can actually see, so it is
+   * read off the DOM rather than any underlying ordering.
+   */
+  private _siblingTaskIds(): string[] {
+    const list = (this._elementRef.nativeElement as HTMLElement).closest('task-list');
+    if (!list) {
+      return [this.task().id];
+    }
+    return Array.from(list.querySelectorAll('task[data-task-id]'))
+      .map((el) => el.getAttribute('data-task-id'))
+      .filter((v): v is string => !!v);
   }
 
   titleBarClick(event: MouseEvent): void {

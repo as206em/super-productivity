@@ -21,6 +21,14 @@
     (focus)="focusFirstBtn($event)"
   ></div>
 
+  @if (gestureCount() > 1) {
+    <!-- Says out loud how many rows the next click will hit, so a bulk
+         delete is never a surprise. -->
+    <div class="menu-selection-count">
+      {{ T.WW.N_SELECTED | translate: { nr: gestureCount() } }}
+    </div>
+  }
+
   <div
     class="quick-access"
     (keydown)="quickAccessKeydown($event)"

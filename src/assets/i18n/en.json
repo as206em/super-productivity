@@ -1692,7 +1692,8 @@
         "TRACK_TIME_STOP": "Pause tracking time",
         "UNSCHEDULE_TASK": "Unschedule task",
         "UPDATE_ISSUE_DATA": "Update issue data",
-        "VALUE": "Value"
+        "VALUE": "Value",
+        "SELECT": "Select task"
       },
       "D_CONFIRM_DELETE": {
         "MSG": "Are you sure you want to delete the task \"{{title}}\"?",
@@ -2938,6 +2939,13 @@
     "DENSITY_ROWS": "Rows",
     "DENSITY_CARDS": "Cards",
     "DENSITY_COMPACT": "Compact",
-    "NEW_TASK": "New task"
+    "NEW_TASK": "New task",
+    "N_SELECTED": "{{nr}} selected",
+    "SELECTION_ADD_TODAY": "Add to today",
+    "SELECTION_DELETE": "Delete",
+    "SELECTION_DONE": "Done",
+    "SELECTION_REMOVE_TODAY": "Remove from today",
+    "SELECTION_CLEAR": "Clear",
+    "SELECTION_MOVE_TO_PROJECT": "Move to project"
   }
 }

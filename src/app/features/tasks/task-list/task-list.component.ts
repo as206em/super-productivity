@@ -20,6 +20,8 @@ import { CdkDrag, CdkDragDrop, CdkDragStart, CdkDropList } from '@angular/cdk/dr
 import { WorkContextType } from '../../work-context/work-context.model';
 import { moveTaskInTodayList } from '../../work-context/store/work-context-meta.actions';
 import { getAnchorFromDragDrop } from '../../work-context/store/work-context-meta.helper';
+import { TaskSelectionService } from '../task-selection.service';
+import { insertDraggedBlock } from './insert-dragged-block';
 import {
   moveProjectTaskInBacklogList,
   moveProjectTaskToBacklogList,
@@ -115,6 +117,7 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
   private _dateService = inject(DateService);
   dropListService = inject(DropListService);
   private _layoutService = inject(LayoutService);
+  private _taskSelectionService = inject(TaskSelectionService);
   protected readonly dragDelayForTouch = dragDelayForTouch;
   // Lock Y-axis on small screens only — on wider screens the task list may sit
   // beside a side-nav or other drop targets that require horizontal dragging.
@@ -342,14 +345,42 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
     });
 
     this.dropListService.blockAniTrigger$.next();
-    this._move(
-      draggedTask.id,
-      srcListData.listModelId,
-      targetListData.listModelId,
-      srcListData.listId,
-      targetListData.listId,
-      newIds.map((p) => p.id),
-    );
+
+    // Dragging a row that belongs to a multi-selection drags the whole
+    // selection. The extra tasks are pulled out of the order and re-inserted
+    // directly behind the row the user actually grabbed, so the block lands
+    // contiguously and in its original relative order. Each one then moves
+    // against the same final order, anchored on the task ahead of it.
+    const orderedIds = newIds.map((p) => p.id);
+    const alsoDraggedIds = this._taskSelectionService
+      .idsForGesture(draggedTask.id)
+      .filter((id) => id !== draggedTask.id && srcFilteredTasks.some((t) => t.id === id));
+
+    const finalOrderedIds = alsoDraggedIds.length
+      ? insertDraggedBlock(
+          orderedIds,
+          draggedTask.id,
+          // Keep the visual order of the source list, not Set insertion order.
+          srcFilteredTasks.map((t) => t.id).filter((id) => alsoDraggedIds.includes(id)),
+        )
+      : orderedIds;
+
+    for (const id of [draggedTask.id, ...alsoDraggedIds]) {
+      this._move(
+        id,
+        srcListData.listModelId,
+        targetListData.listModelId,
+        srcListData.listId,
+        targetListData.listId,
+        finalOrderedIds,
+      );
+    }
+    if (alsoDraggedIds.length) {
+      // Drain the queue after a run of dispatches — see
+      // docs/sync-and-op-log/contributor-sync-model.md.
+      await new Promise((r) => setTimeout(r, 0));
+      this._taskSelectionService.clear();
+    }
 
     this._taskViewCustomizerService.setSort(DEFAULT_OPTIONS.sort);
   }

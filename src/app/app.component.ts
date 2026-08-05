@@ -42,6 +42,7 @@ import { warpAnimation, warpInAnimation } from './ui/animations/warp.ani';
 import { AddTaskBarComponent } from './features/tasks/add-task-bar/add-task-bar.component';
 import { Dir } from '@angular/cdk/bidi';
 import { CommandPaletteComponent } from './core-ui/command-palette/command-palette.component';
+import { TaskSelectionService } from './features/tasks/task-selection.service';
 import { MagicSideNavComponent } from './core-ui/magic-side-nav/magic-side-nav.component';
 import { MainHeaderComponent } from './core-ui/main-header/main-header.component';
 import { BannerComponent } from './core/banner/banner/banner.component';
@@ -140,6 +141,8 @@ export const getBackgroundImageBlur = (context: WorkContextThemeSource): number 
   ],
 })
 export class AppComponent implements OnDestroy, AfterViewInit {
+  private readonly _taskSelectionService = inject(TaskSelectionService);
+
   private _globalConfigService = inject(GlobalConfigService);
   private _shortcutService = inject(ShortcutService);
   private _bannerService = inject(BannerService);
@@ -232,7 +235,25 @@ export class AppComponent implements OnDestroy, AfterViewInit {
 
   private _subs: Subscription = new Subscription();
 
+  /**
+   * Escape clears a multi-selection from anywhere. Marked on the body so every
+   * row can show its select handle while a selection is live — otherwise the
+   * feature only exists on whichever row happens to be hovered.
+   */
+  @HostListener('document:keydown.escape')
+  onEscapeClearSelection(): void {
+    this._taskSelectionService.clear();
+  }
+
   constructor() {
+    effect(() => {
+      const count = this._taskSelectionService.count();
+      document.body.classList.toggle('has-multi-selection', count > 1);
+      // A quoted string, because the drag preview renders it through
+      // `content: var(...)` — CSS cannot read an attribute off an ancestor.
+      document.body.style.setProperty('--selection-count-label', `"${count}"`);
+    });
+
     this._startupService.init();
     void this._materialIconsLoaderService.ensureFontReady();
 

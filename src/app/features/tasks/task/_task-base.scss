@@ -48,6 +48,13 @@
   background: var(--wash-4);
 }
 
+// Multi-selected is the stronger wash — the same one active nav uses, because
+// it means the same thing: these are the ones you are acting on.
+:host(.isMultiSelected),
+:host(.isMultiSelected):hover {
+  background: var(--wash-7);
+}
+
 .task-row {
   display: flex;
   align-items: center;
@@ -56,6 +63,51 @@
   padding: 0 var(--gutter);
   cursor: pointer;
   white-space: nowrap;
+}
+
+// --- multi-select handle -----------------------------------------------------
+// Hidden until the row is hovered or something is selected, so it costs the
+// row nothing in the ordinary case but never has to be discovered by guessing.
+.task-select {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--icon-idle);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+  }
+
+  &.isOn {
+    opacity: 1;
+    color: var(--brand);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+  }
+
+  :host(:hover) & {
+    opacity: 1;
+  }
+}
+
+// Once a multi-selection exists every row shows its handle, so the list reads
+// as a set of choices rather than one row behaving differently.
+:host-context(.has-multi-selection) .task-select {
+  opacity: 1;
 }
 
 // --- status ------------------------------------------------------------------

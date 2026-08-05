@@ -15,44 +15,97 @@
       @if (!pluginEmbedId()) {
         <!-- Sticky list toolbar. Rows scroll under it, so it carries a blur
              and a hairline rather than an opaque band. -->
-        <header class="list-toolbar">
-          <div class="list-toolbar__headline">
-            <span class="list-toolbar__title">{{
-              workContextService.activeWorkContextTitle$ | async
+        <!-- Selection bar. Replaces the toolbar's contents while a
+             multi-selection is live, so the actions land where the user is
+             already looking instead of in a floating overlay. -->
+        @if (taskSelectionService.isMultiSelectActive()) {
+          <header class="list-toolbar list-toolbar--selection">
+            <span class="selection-count">{{
+              T.WW.N_SELECTED | translate: { nr: taskSelectionService.count() }
             }}</span>
-            @if (listMeta(); as meta) {
-              <span class="list-toolbar__meta">{{ meta }}</span>
-            }
-          </div>
 
-          <!-- SegmentedControl: an inset track, the active segment raised. -->
-          <div
-            class="density-switch"
-            role="group"
-          >
-            @for (opt of densityOptions; track opt.id) {
+            <div class="selection-actions">
               <button
-                class="density-switch__seg"
-                [class.isActive]="density() === opt.id"
-                (click)="setDensity(opt.id)"
+                class="selection-btn"
+                (click)="taskSelectionService.markDone()"
                 type="button"
               >
-                {{ opt.label | translate }}
+                <mat-icon>check_circle</mat-icon>{{ T.WW.SELECTION_DONE | translate }}
               </button>
-            }
-          </div>
+              <button
+                class="selection-btn"
+                (click)="taskSelectionService.addToToday()"
+                type="button"
+              >
+                <mat-icon>wb_sunny</mat-icon>{{ T.WW.SELECTION_ADD_TODAY | translate }}
+              </button>
+              @if (isOnTodayList()) {
+                <button
+                  class="selection-btn"
+                  (click)="taskSelectionService.removeFromToday()"
+                  type="button"
+                >
+                  <mat-icon>wb_twilight</mat-icon
+                  >{{ T.WW.SELECTION_REMOVE_TODAY | translate }}
+                </button>
+              }
+              <button
+                class="selection-btn selection-btn--danger"
+                (click)="taskSelectionService.delete()"
+                type="button"
+              >
+                <mat-icon>delete</mat-icon>{{ T.WW.SELECTION_DELETE | translate }}
+              </button>
+            </div>
 
-          <!-- The one primary action in the view. -->
-          <button
-            class="new-task-btn"
-            (click)="layoutService.showAddTaskBar()"
-            type="button"
-          >
-            <mat-icon>add</mat-icon>{{ T.WW.NEW_TASK | translate }}
-          </button>
+            <button
+              class="selection-clear"
+              (click)="taskSelectionService.clear()"
+              type="button"
+            >
+              {{ T.WW.SELECTION_CLEAR | translate }}
+            </button>
+          </header>
+        } @else {
+          <header class="list-toolbar">
+            <div class="list-toolbar__headline">
+              <span class="list-toolbar__title">{{
+                workContextService.activeWorkContextTitle$ | async
+              }}</span>
+              @if (listMeta(); as meta) {
+                <span class="list-toolbar__meta">{{ meta }}</span>
+              }
+            </div>
 
-          <ng-content select="[workViewHeaderAction]"></ng-content>
-        </header>
+            <!-- SegmentedControl: an inset track, the active segment raised. -->
+            <div
+              class="density-switch"
+              role="group"
+            >
+              @for (opt of densityOptions; track opt.id) {
+                <button
+                  class="density-switch__seg"
+                  [class.isActive]="density() === opt.id"
+                  (click)="setDensity(opt.id)"
+                  type="button"
+                >
+                  {{ opt.label | translate }}
+                </button>
+              }
+            </div>
+
+            <!-- The one primary action in the view. -->
+            <button
+              class="new-task-btn"
+              (click)="layoutService.showAddTaskBar()"
+              type="button"
+            >
+              <mat-icon>add</mat-icon>{{ T.WW.NEW_TASK | translate }}
+            </button>
+
+            <ng-content select="[workViewHeaderAction]"></ng-content>
+          </header>
+        }
       }
 
       @if (pluginEmbedId(); as embedId) {

@@ -70,6 +70,7 @@ import { showFocusOverlay } from '../../../focus-mode/store/focus-mode.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TagService } from '../../../tag/tag.service';
 import { DialogPromptComponent } from '../../../../ui/dialog-prompt/dialog-prompt.component';
+import { TaskSelectionService } from '../../task-selection.service';
 import { TaskSharedActions } from '../../../../root-store/meta/task-shared.actions';
 import { selectTodayTaskIds } from '../../../work-context/store/work-context.selectors';
 import { DateService } from '../../../../core/date/date.service';
@@ -108,6 +109,7 @@ import { TASK_SCORE_LEVELS, TASK_VALUE_LABELS } from '../../util/task-score.util
 export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   private readonly _datePipe = inject(LocaleDatePipe);
   private readonly _taskService = inject(TaskService);
+  private readonly _taskSelectionService = inject(TaskSelectionService);
   private readonly _taskRepeatCfgService = inject(TaskRepeatCfgService);
   private readonly _matDialog = inject(MatDialog);
   private readonly _issueService = inject(IssueService);
@@ -400,6 +402,15 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    // A selection deletes as one operation rather than N confirmations.
+    const gestureIds = this.gestureTaskIds();
+    if (gestureIds.length > 1) {
+      this._isTaskDeleteTriggered = true;
+      this._store.dispatch(TaskSharedActions.deleteTasks({ taskIds: gestureIds }));
+      this._taskSelectionService.clear();
+      return;
+    }
+
     const isConfirmBeforeDelete =
       this._globalConfigService.cfg()?.tasks?.isConfirmBeforeDelete ?? true;
 
@@ -524,6 +535,20 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   }
 
   toggleTaskDone(): void {
+    const ids = this.gestureTaskIds();
+    if (ids.length > 1) {
+      this._store.dispatch(
+        TaskSharedActions.updateTasks({
+          tasks: ids.map((id) => ({ id, changes: { isDone: !this.task.isDone } })),
+        }),
+      );
+      this._taskSelectionService.clear();
+      return;
+    }
+    this._toggleTaskDoneSingle();
+  }
+
+  private _toggleTaskDoneSingle(): void {
     if (this.task.isDone) {
       this._taskService.setUnDone(this.task.id);
     } else {
@@ -532,15 +557,33 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
   }
 
   addToMyDay(): void {
+    // Right-clicking a row inside a multi-selection acts on the whole
+    // selection; right-clicking outside it acts on that row alone.
+    const taskIds = this.gestureTaskIds();
     this._store.dispatch(
       TaskSharedActions.planTasksForToday({
-        taskIds: [this.task.id],
+        taskIds,
         today: this._dateService.todayStr(),
         startOfNextDayDiffMs: this._dateService.getStartOfNextDayDiffMs(),
         parentTaskMap: { [this.task.id]: this.task.parentId },
         isShowSnack: true,
       }),
     );
+    this._taskSelectionService.clear();
+  }
+
+  /** The ids this menu's actions apply to. */
+  gestureTaskIds(): string[] {
+    return this._taskSelectionService.idsForGesture(this.task.id);
+  }
+
+  /**
+   * How many tasks the menu is acting on, for the header. A plain method, not
+   * a `computed`: `task` is a property rather than a signal, so a computed
+   * would cache whatever `task` happened to be on first read.
+   */
+  gestureCount(): number {
+    return this.gestureTaskIds().length;
   }
 
   unschedule(): void {

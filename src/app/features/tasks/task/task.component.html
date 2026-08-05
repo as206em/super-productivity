@@ -15,6 +15,23 @@
     (click)="rowClick($event)"
     class="task-row"
   >
+    <!-- Multi-select handle. Sits in front of the status glyph, appears on
+         hover, and stays put once anything is selected — so the whole feature
+         is reachable with the mouse alone. Cmd/shift-click on the row does the
+         same thing faster. -->
+    <button
+      class="task-select"
+      [class.isOn]="isMultiSelected()"
+      (click)="toggleMultiSelect($event)"
+      [attr.aria-label]="T.F.TASK.CMP.SELECT | translate"
+      [attr.aria-pressed]="isMultiSelected()"
+      type="button"
+    >
+      <mat-icon>{{
+        isMultiSelected() ? 'check_box' : 'check_box_outline_blank'
+      }}</mat-icon>
+    </button>
+
     <!-- The only coloured icon on the row. -->
     <button
       class="task-status"

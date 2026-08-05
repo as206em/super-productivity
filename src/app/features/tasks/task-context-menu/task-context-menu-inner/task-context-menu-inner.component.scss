@@ -2,6 +2,12 @@
 @use '../task-context-menu-touch-fix.scss';
 @use '../../shared-tag-project-styles';
 
+.menu-selection-count {
+  padding: var(--space-4) var(--space-9) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-meta);
+}
 // Keycap. A hint, never a requirement.
 .key-i {
   opacity: 1;

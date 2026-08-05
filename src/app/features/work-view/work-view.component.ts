@@ -18,6 +18,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 
 import { TaskService } from '../tasks/task.service';
+import { TaskSelectionService } from '../tasks/task-selection.service';
 import { DialogConfirmComponent } from '../../ui/dialog-confirm/dialog-confirm.component';
 import { DialogPromptComponent } from '../../ui/dialog-prompt/dialog-prompt.component';
 import { expandAnimation, expandFadeAnimation } from '../../ui/animations/expand.ani';
@@ -145,6 +146,7 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   layoutService = inject(LayoutService);
   sectionService = inject(SectionService);
   customizerService = inject(TaskViewCustomizerService);
+  readonly taskSelectionService = inject(TaskSelectionService);
   workContextService = inject(WorkContextService);
   private _activatedRoute = inject(ActivatedRoute);
   private _projectService = inject(ProjectService);

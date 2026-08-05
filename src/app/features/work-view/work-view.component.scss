@@ -104,6 +104,81 @@ h2 {
   }
 }
 
+// Selection bar. Same shell as the toolbar it replaces so the row does not
+// jump when a selection starts.
+.list-toolbar--selection {
+  gap: var(--space-9);
+}
+
+.selection-count {
+  font-size: var(--text-sm-plus);
+  font-weight: var(--weight-medium);
+  color: var(--text-title);
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.selection-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--h-control);
+  padding: 0 var(--space-6);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: var(--wash-5);
+    color: var(--text-title);
+  }
+
+  // The destructive one says so in text colour, not a red fill.
+  &--danger {
+    color: var(--over);
+  }
+}
+
+.selection-clear {
+  height: var(--h-control);
+  padding: 0 var(--space-8);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  &:hover {
+    background: var(--wash-4);
+  }
+}
+
 // The single dark-ink primary action in the view.
 .new-task-btn {
   display: flex;
