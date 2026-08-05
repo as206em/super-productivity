@@ -173,7 +173,9 @@
       class="task-play"
       [class.isCurrent]="isCurrent()"
       (click)="togglePlayPause()"
-      [title]="T.F.TASK.CMP.TOGGLE_START | translate"
+      [title]="
+        (isCurrent() ? T.F.TASK.CMP.TRACK_TIME_STOP : T.F.TASK.CMP.TRACK_TIME) | translate
+      "
       type="button"
     >
       <mat-icon>{{ isCurrent() ? 'stop' : 'play_arrow' }}</mat-icon>
