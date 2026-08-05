@@ -86,12 +86,71 @@ body.isNativeMobile .mat-mdc-menu-panel {
 
 // DIALOGS
 // ----------
+// A dialog is the command palette at a different size: a hairline-bordered
+// surface on `--shadow-overlay`, over a blurred scrim. Same object, same
+// rules — which is why they share the 11px radius.
+.cdk-overlay-dark-backdrop {
+  background: var(--overlay-scrim);
+  backdrop-filter: var(--blur-scrim);
+}
+
+body .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: var(--surface-page);
+  --mdc-dialog-container-shape: var(--radius-3xl);
+  --mdc-dialog-subhead-color: var(--text-title);
+  --mdc-dialog-subhead-size: var(--text-md);
+  --mdc-dialog-subhead-weight: var(--weight-semibold);
+  --mdc-dialog-subhead-tracking: var(--tracking-title);
+  --mdc-dialog-supporting-text-color: var(--text-body);
+  --mdc-dialog-supporting-text-size: var(--text-base);
+  --mdc-dialog-supporting-text-line-height: var(--leading-body);
+  --mdc-dialog-supporting-text-tracking: var(--tracking-body);
+  --mat-dialog-with-actions-content-padding: var(--space-11) var(--gutter);
+  --mat-dialog-headline-padding: var(--space-11) var(--gutter) var(--space-6);
+  --mat-dialog-actions-padding: var(--space-6) var(--gutter) var(--space-11);
+}
+
+body .mat-mdc-dialog-surface {
+  border: 1px solid var(--line-chip);
+  border-radius: var(--radius-3xl);
+  box-shadow: var(--shadow-overlay);
+  background: var(--surface-page);
+}
+
+// Actions sit on a hairline so the dialog reads as head / body / foot rather
+// than one undifferentiated block.
+body .mat-mdc-dialog-actions {
+  border-top: 1px solid var(--line-row);
+  gap: var(--space-4);
+  min-height: 0;
+}
+
 .mat-mdc-dialog-title.mat-mdc-dialog-title,
 .mdc-dialog__title.mdc-dialog__title {
   margin-bottom: 0;
-  margin-top: 8px;
+  margin-top: 0;
   display: flex;
   align-items: center;
+  gap: var(--space-6);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-title);
+  color: var(--text-title);
+  line-height: var(--leading-tight);
+
+  &::before {
+    // Material reserves a line-box above the title that pushes it off centre.
+    display: none;
+  }
+
+  mat-icon,
+  .mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    line-height: 1;
+    color: var(--icon-meta);
+  }
 }
 
 .cdk-overlay-pane.mat-mdc-dialog-panel {
@@ -162,8 +221,109 @@ body .mat-mdc-dialog-surface {
 
 // FORMS
 // --------
+// The Material `fill` appearance ships a grey tub with a coloured underline.
+// This system has neither: a field is a hairline box on the page surface that
+// darkens its border on focus, exactly like a card.
 .mat-mdc-form-field {
-  margin-bottom: var(--s2);
+  margin-bottom: var(--space-9);
+  --mat-form-field-container-height: var(--h-group);
+  --mat-form-field-container-vertical-padding: var(--space-3);
+  --mat-form-field-filled-with-label-container-padding-top: var(--space-3);
+  --mat-form-field-filled-with-label-container-padding-bottom: var(--space-3);
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-body);
+
+  .mat-mdc-text-field-wrapper {
+    background: var(--surface-page);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    transition: border-color var(--duration-fast) var(--ease-standard);
+  }
+
+  // The underline is Material's focus signal. Ours is the border.
+  .mdc-line-ripple {
+    display: none;
+  }
+
+  &.mat-focused .mat-mdc-text-field-wrapper {
+    border-color: var(--brand);
+  }
+
+  &.mat-form-field-invalid .mat-mdc-text-field-wrapper {
+    border-color: var(--over);
+  }
+
+  .mat-mdc-form-field-infix {
+    min-height: 0;
+  }
+
+  .mat-mdc-floating-label,
+  .mdc-floating-label {
+    font-size: var(--text-sm);
+    color: var(--text-meta);
+  }
+
+  .mat-mdc-form-field-subscript-wrapper {
+    font-size: var(--text-xs);
+  }
+
+  input,
+  textarea,
+  .mat-mdc-select-value {
+    color: var(--text-title);
+    font-size: var(--text-base);
+  }
+}
+
+// Selects and autocompletes are menus, so they get the menu's surface.
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+  border: 1px solid var(--line-chip);
+  border-radius: var(--radius-2xl) !important;
+  background: var(--surface-page) !important;
+  box-shadow: var(--shadow-rail) !important;
+  padding: var(--space-2) !important;
+}
+
+.mat-mdc-option {
+  min-height: var(--h-nav) !important;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm-plus) !important;
+  color: var(--text-body);
+
+  &:hover:not(.mdc-list-item--disabled),
+  &.mat-mdc-option-active {
+    background: var(--surface-hover) !important;
+  }
+}
+
+// CHIPS
+// -----
+// A chip is a hairline pill. The accent on it is a 6px square, never the
+// chip's own fill — a filled chip would read as a second accent.
+.mat-mdc-chip.mat-mdc-standard-chip,
+.mat-mdc-chip {
+  --mdc-chip-container-height: var(--h-chip);
+  --mdc-chip-container-shape-radius: var(--radius-sm);
+  --mdc-chip-label-text-size: var(--text-xs);
+  --mdc-chip-label-text-color: var(--text-secondary);
+  --mdc-chip-elevated-container-color: transparent;
+
+  border: 1px solid var(--line-chip);
+  background: transparent;
+
+  .mat-mdc-chip-action-label {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-body);
+  }
+
+  .mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1;
+    color: var(--icon-meta);
+  }
 }
 
 // needs to be global cause of cdk overlay
@@ -177,29 +337,157 @@ mat-option.isDone {
 
 // BUTTONS
 // -----------
+// Three variants and three heights, matching the page buttons the redesign
+// already ships: a dark-ink primary, a hairline secondary, a borderless
+// ghost. Material's pill radius and 36px height are both off the scale.
+.mat-mdc-button-base:not(.mat-mdc-icon-button):not(.mat-mdc-fab):not(.mat-mdc-mini-fab) {
+  --mdc-text-button-container-shape: var(--radius-md);
+  --mdc-outlined-button-container-shape: var(--radius-md);
+  --mdc-filled-button-container-shape: var(--radius-md);
+  --mdc-protected-button-container-shape: var(--radius-md);
+  --mdc-text-button-container-height: var(--h-group);
+  --mdc-outlined-button-container-height: var(--h-group);
+  --mdc-filled-button-container-height: var(--h-group);
+  --mdc-protected-button-container-height: var(--h-group);
+  --mdc-outlined-button-outline-width: 1px;
+
+  height: var(--h-group);
+  min-height: var(--h-group);
+  padding: 0 var(--space-10);
+  font-size: var(--text-sm-plus);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-body);
+}
+
+// The one primary action in a view is dark ink, not a brand fill.
+//
+// Material reads its fill from MDC custom properties, and its `color="primary"`
+// theme rule sets those same properties — so overriding `background` alone
+// does nothing. These have to be the tokens, and the `[color]` variants have
+// to be listed or the theme rule wins.
+// `.mat-primary` / `.mat-accent` are the classes Material actually paints
+// `background-color` from — the MDC container-colour variable alone is not
+// enough, which is why both are set here.
+.mat-mdc-raised-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-unelevated-button.mat-accent {
+  background-color: var(--ink-fill);
+  --mdc-protected-button-container-color: var(--ink-fill);
+  --mdc-protected-button-label-text-color: var(--text-on-dark);
+  --mdc-filled-button-container-color: var(--ink-fill);
+  --mdc-filled-button-label-text-color: var(--text-on-dark);
+  // Shadows carry elevation; a button sitting on the page is not elevated.
+  --mdc-protected-button-container-elevation-shadow: none;
+  --mdc-protected-button-hover-container-elevation-shadow: none;
+
+  color: var(--text-on-dark);
+  box-shadow: none;
+
+  .mat-icon {
+    color: var(--text-on-dark);
+  }
+
+  &:hover:not(:disabled) {
+    --mdc-protected-button-container-color: var(--ink-fill-hover);
+    --mdc-filled-button-container-color: var(--ink-fill-hover);
+
+    background-color: var(--ink-fill-hover);
+    box-shadow: none;
+  }
+}
+
+// A destructive confirm keeps the dark-ink shape but says what it is.
+.mat-mdc-raised-button.mat-warn,
+.mat-mdc-unelevated-button.mat-warn {
+  background-color: var(--over);
+  --mdc-protected-button-container-color: var(--over);
+  --mdc-filled-button-container-color: var(--over);
+  --mdc-protected-button-label-text-color: var(--text-on-accent);
+  --mdc-filled-button-label-text-color: var(--text-on-accent);
+
+  color: var(--text-on-accent);
+
+  .mat-icon {
+    color: var(--text-on-accent);
+  }
+}
+
+.mat-mdc-outlined-button.mat-mdc-outlined-button {
+  border-color: var(--line-strong);
+  color: var(--text-body);
+
+  &:hover:not(:disabled) {
+    background: var(--wash-4);
+  }
+}
+
+.mat-mdc-button.mat-mdc-button:hover:not(:disabled) {
+  background: var(--wash-4);
+}
+
+// A dialog gets exactly one primary action and it is dark ink.
+//
+// `color="primary"` is NOT the signal — this app puts it on Cancel buttons
+// too. The element variant is: filled (raised/flat) is the confirm, stroked
+// is a secondary, plain `mat-button` is a ghost. Filled is already dark ink
+// from the rule above; this promotes the handful of dialogs whose confirm is
+// a stroked button, while leaving ghost Cancels alone.
+.mat-mdc-dialog-actions {
+  .mat-mdc-outlined-button[color='primary'] {
+    --mdc-outlined-button-label-text-color: var(--text-on-dark);
+    --mdc-outlined-button-outline-color: transparent;
+
+    background: var(--ink-fill);
+    color: var(--text-on-dark);
+    border-color: transparent;
+    box-shadow: none;
+
+    .mat-icon {
+      color: var(--text-on-dark);
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--ink-fill-hover);
+    }
+  }
+
+  // Everything beside it is a hairline secondary, including the destructive
+  // one — which says what it is in text colour, not in a red fill.
+  .mat-mdc-button-base[color='warn']:not(.mat-mdc-icon-button) {
+    color: var(--over);
+
+    .mat-icon {
+      color: var(--over);
+    }
+  }
+}
+
 // Ensure proper contrast for text and stroked buttons on standard backgrounds
 // Text buttons use theme colors directly on background, so we need good contrast
 .mat-mdc-button,
 .mat-mdc-outlined-button {
   &[color='primary'] {
     // Use primary color - validated palettes ensure WCAG AA compliance
-    --mdc-text-button-label-text-color: var(--palette-primary-500);
-    --mdc-outlined-button-label-text-color: var(--palette-primary-500);
-    --mdc-outlined-button-outline-color: var(--palette-primary-500);
+    --mdc-text-button-label-text-color: var(--brand);
+    --mdc-outlined-button-label-text-color: var(--brand);
+    --mdc-outlined-button-outline-color: var(--line-strong);
   }
 
   &[color='accent'] {
     // Use accent color - validated palettes ensure WCAG AA compliance
-    --mdc-text-button-label-text-color: var(--palette-accent-500);
-    --mdc-outlined-button-label-text-color: var(--palette-accent-500);
-    --mdc-outlined-button-outline-color: var(--palette-accent-500);
+    --mdc-text-button-label-text-color: var(--brand);
+    --mdc-outlined-button-label-text-color: var(--brand);
+    --mdc-outlined-button-outline-color: var(--line-strong);
   }
 
   &[color='warn'] {
     // Use warn color - validated palettes ensure WCAG AA compliance
-    --mdc-text-button-label-text-color: var(--palette-warn-500);
-    --mdc-outlined-button-label-text-color: var(--palette-warn-500);
-    --mdc-outlined-button-outline-color: var(--palette-warn-500);
+    --mdc-text-button-label-text-color: var(--over);
+    --mdc-outlined-button-label-text-color: var(--over);
+    --mdc-outlined-button-outline-color: var(--over);
   }
 }
 
@@ -461,4 +749,54 @@ body.isVerticalActionBar .cdk-overlay-pane.mat-mdc-tooltip-panel {
 
 .mat-expansion-panel-header {
   --mat-expansion-header-expanded-state-height: 48px;
+}
+
+// ---------------------------------------------------------------------------
+// Material button shape and fill, forced.
+//
+// Angular Material re-declares these from its own generated theme at a
+// specificity this file cannot outrank from a plain class selector, and it
+// paints `background-color` rather than reading the MDC container-colour
+// variable. `!important` here is deliberate and narrow: four properties on the
+// filled variants, so the one primary action per view is dark ink at the
+// system's radius instead of a brand fill at Material's 4px.
+// ---------------------------------------------------------------------------
+.mat-mdc-raised-button:not(:disabled),
+.mat-mdc-unelevated-button:not(:disabled) {
+  background-color: var(--ink-fill) !important;
+  color: var(--text-on-dark) !important;
+
+  .mat-icon {
+    color: var(--text-on-dark) !important;
+  }
+
+  &:hover {
+    background-color: var(--ink-fill-hover) !important;
+  }
+}
+
+// A destructive confirm keeps the shape and says what it is.
+.mat-mdc-raised-button.mat-warn:not(:disabled),
+.mat-mdc-unelevated-button.mat-warn:not(:disabled) {
+  background-color: var(--over) !important;
+
+  &:hover {
+    background-color: var(--over) !important;
+  }
+}
+
+// One radius for every text button. Material's default is 4px, off the ladder.
+.mat-mdc-button-base:not(.mat-mdc-icon-button):not(.mat-mdc-fab):not(.mat-mdc-mini-fab) {
+  border-radius: var(--radius-md) !important;
+}
+
+// A stroked confirm inside dialog actions is still the primary action.
+.mat-mdc-dialog-actions .mat-mdc-outlined-button[color='primary']:not(:disabled) {
+  background-color: var(--ink-fill) !important;
+  border-color: transparent !important;
+  color: var(--text-on-dark) !important;
+
+  .mat-icon {
+    color: var(--text-on-dark) !important;
+  }
 }
