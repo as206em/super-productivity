@@ -19,12 +19,13 @@ test.describe('Work View Features', () => {
     // Wait for work view to be ready
     await workViewPage.waitForTaskList();
 
-    // Verify undone task list is visible
-    await expect(page.locator(UNDONE_TASK_LIST)).toBeVisible({ timeout: 8000 });
-
-    // Create tasks
+    // Create tasks. An empty work view shows its empty state rather than an
+    // empty list, so the undone list is asserted once it has something in it.
     await workViewPage.addTask('Task 1');
     await page.locator(TASK).first().waitFor({ state: 'visible', timeout: 5000 });
+
+    // Verify undone task list is visible
+    await expect(page.locator(UNDONE_TASK_LIST)).toBeVisible({ timeout: 8000 });
 
     await workViewPage.addTask('Task 2');
     await expect(page.locator(TASK)).toHaveCount(2, { timeout: 5000 });

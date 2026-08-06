@@ -339,6 +339,20 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
     return estimate ? `${spentStr} / ${estimate}` : spentStr;
   });
 
+  /**
+   * The play button only makes sense when time tracking is on, the task is not
+   * already done, and it has no subtasks doing the tracking for it — the same
+   * three conditions the old hover cluster used.
+   */
+  readonly isShowPlayBtn = computed<boolean>(() => {
+    const t = this.task();
+    return (
+      !!this._configService.appFeatures()?.isTimeTrackingEnabled &&
+      !t.isDone &&
+      !t.subTasks?.length
+    );
+  });
+
   /** True once tracked time passes the estimate — a soft flag, not an error. */
   readonly isOverEstimate = computed<boolean>(() => {
     const t = this.task();

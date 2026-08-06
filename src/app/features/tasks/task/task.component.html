@@ -162,17 +162,20 @@
       >{{ timeLabel() }}</span
     >
 
-    <button
-      class="task-play play-btn tour-playBtn"
-      [class.isCurrent]="isCurrent()"
-      (click)="togglePlayPause()"
-      [title]="
-        (isCurrent() ? T.F.TASK.CMP.TRACK_TIME_STOP : T.F.TASK.CMP.TRACK_TIME) | translate
-      "
-      type="button"
-    >
-      <mat-icon>{{ isCurrent() ? 'stop' : 'play_arrow' }}</mat-icon>
-    </button>
+    @if (isShowPlayBtn()) {
+      <button
+        class="task-play play-btn tour-playBtn"
+        [class.isCurrent]="isCurrent()"
+        (click)="togglePlayPause()"
+        [title]="
+          (isCurrent() ? T.F.TASK.CMP.TRACK_TIME_STOP : T.F.TASK.CMP.TRACK_TIME)
+            | translate
+        "
+        type="button"
+      >
+        <mat-icon>{{ isCurrent() ? 'stop' : 'play_arrow' }}</mat-icon>
+      </button>
+    }
   </div>
 
   <!-- Subtasks nest under their parent again. The row's `2/3` chip is a
