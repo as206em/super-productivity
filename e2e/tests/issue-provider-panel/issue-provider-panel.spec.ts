@@ -8,6 +8,9 @@ test.describe('Issue Provider Panel', () => {
     // Wait for work view to be ready
     await workViewPage.waitForTaskList();
 
+    // The panel toggles live in the header's Display menu, which renders its
+    // content only while open.
+    await page.locator('.e2e-display-menu-btn').click();
     await page.waitForSelector(PANEL_BTN, { state: 'visible' });
     await page.click(PANEL_BTN);
     await page.waitForSelector('mat-tab-group', { state: 'visible' });

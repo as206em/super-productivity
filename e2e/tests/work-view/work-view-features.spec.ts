@@ -3,7 +3,9 @@ import { test, expect } from '../../fixtures/test.fixture';
 const TASK = 'task';
 const TASK_TITLE = 'task task-title';
 const FIRST_TASK = 'task:first-of-type';
-const UNDONE_TASK_LIST = 'task-list[listmodelid="UNDONE"]';
+// The undone list binds `[listModelId]`, so no attribute is reflected —
+// unlike the DONE list, which sets it statically. Target it by content.
+const UNDONE_TASK_LIST = 'task-list:has(task:not(.isDone))';
 const DONE_TASK_LIST = 'task-list[listmodelid="DONE"]';
 const DONE_TASKS_SECTION = '.tour-doneList';
 const TOGGLE_DONE_TASKS_BTN = '.tour-doneList .mat-expansion-indicator';
