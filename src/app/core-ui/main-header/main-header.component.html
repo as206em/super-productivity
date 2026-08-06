@@ -21,14 +21,11 @@
 
     <nav class="action-nav-right">
       @if (isFocusModeEnabled()) {
-        <button
-          class="ghost-btn"
-          (click)="enableFocusMode()"
-          [matTooltip]="T.MH.TOGGLE_FOCUS_MODE | translate"
-          type="button"
-        >
-          <mat-icon>center_focus_strong</mat-icon>{{ T.MH.FOCUS | translate }}
-        </button>
+        <!-- The component, not a plain button: it carries the running session
+             countdown and cycle number, which a bare Focus button drops — so
+             with the overlay closed there was nothing showing a session was
+             still running. -->
+        <focus-button></focus-button>
       }
 
       @if (isTaskViewCustomizerPage()) {

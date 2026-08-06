@@ -39,6 +39,7 @@ import { PluginWorkContextHeaderBtnsComponent } from '../../plugins/ui/plugin-wo
 import { PluginSidePanelBtnsComponent } from '../../plugins/ui/plugin-side-panel-btns.component';
 import { PageTitleComponent } from './page-title/page-title.component';
 import { DesktopPanelButtonsComponent } from './desktop-panel-buttons/desktop-panel-buttons.component';
+import { FocusButtonComponent } from './focus-button/focus-button.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MetricService } from '../../features/metric/metric.service';
 import { DateService } from '../../core/date/date.service';
@@ -72,6 +73,7 @@ import { isTaskViewCustomizerRoute } from '../../features/task-view-customizer/i
     PluginSidePanelBtnsComponent,
     PageTitleComponent,
     DesktopPanelButtonsComponent,
+    FocusButtonComponent,
     UserProfileButtonComponent,
     MatMenu,
     MatMenuContent,
