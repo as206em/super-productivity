@@ -1060,8 +1060,18 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
 
     // A plain click is the ordinary case: drop any multi-selection and show
     // this one task.
+    //
+    // `setSelectedId` toggles, and the row's own `focusin` handler has already
+    // claimed the selection by the time this runs — selecting again would
+    // invert the toggle and close the panel instead of switching to this task.
+    // That is the same trap as #7694, which the focus handler guards against
+    // for the old detail-panel button. Selecting is not a toggle here:
+    // clicking a row always shows that task, and the panel closes from its own
+    // close button or Esc.
     this.taskSelectionService.clear();
-    this._taskService.setSelectedId(id);
+    if (this._taskService.selectedTaskId() !== id) {
+      this._taskService.setSelectedId(id);
+    }
   }
 
   /** Toggles this row in the multi-selection from the hover checkbox. */

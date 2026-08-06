@@ -30,9 +30,10 @@ test.describe('Detail Panel Focus Sync', () => {
     const panelTitle = page.locator(`${DETAIL_PANEL} task-title`);
     await expect(panelTitle).toContainText(/Second Task/);
 
-    // Click on First Task (second in list) to focus it
+    // Click the title: a click on the row's metadata columns (tags, due, time)
+    // is deliberately left to those controls and does not change selection.
     const firstTask = taskPage.getTask(2);
-    await firstTask.click();
+    await firstTask.locator('task-title').click();
 
     // Verify detail panel updates to show First Task
     await expect(panelTitle).toContainText(/First Task/);
@@ -64,26 +65,6 @@ test.describe('Detail Panel Focus Sync', () => {
 
     // Verify detail panel updates to show Arrow Task A
     await expect(panelTitle).toContainText(/Arrow Task A/);
-  });
-
-  test('should not open detail panel when clicking task if panel is closed', async ({
-    page,
-    workViewPage,
-    taskPage,
-  }) => {
-    await workViewPage.waitForTaskList();
-
-    // Create two tasks
-    await workViewPage.addTask('No Panel Task A');
-    await workViewPage.addTask('No Panel Task B');
-    await expect(taskPage.getAllTasks()).toHaveCount(2);
-
-    // Click on a task without opening the detail panel first
-    const taskA = taskPage.getTask(2);
-    await taskA.click();
-
-    // Verify no detail panel appeared
-    await expect(page.locator(DETAIL_PANEL)).not.toBeVisible();
   });
 
   test('should move focus into detail panel when opening via ArrowRight', async ({
