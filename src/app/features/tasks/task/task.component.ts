@@ -69,7 +69,6 @@ import { ICAL_TYPE } from '../../issue/issue.const';
 import { TaskTitleComponent } from '../../../ui/task-title/task-title.component';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
-import { TaskHoverControlsComponent } from './task-hover-controls/task-hover-controls.component';
 import { ProgressBarComponent } from '../../../ui/progress-bar/progress-bar.component';
 import { TaskListComponent } from '../task-list/task-list.component';
 import { MsToStringPipe, msToString } from '../../../ui/duration/ms-to-string.pipe';
@@ -118,7 +117,6 @@ import { TaskScoreService } from '../util/task-score.service';
     MatMenuTrigger,
     MatIconButton,
     TaskTitleComponent,
-    TaskHoverControlsComponent,
     ProgressBarComponent,
     MatMiniFabButton,
     forwardRef(() => TaskListComponent),

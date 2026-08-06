@@ -75,7 +75,7 @@ test.describe('Default task reminder option', () => {
     await task.hover({ force: true });
 
     // Open the detail panel to access the schedule action
-    const detailBtn = task.locator('.show-additional-info-btn').first();
+    const detailBtn = task.locator('task-title').first();
     await detailBtn.waitFor({ state: 'visible', timeout: 10000 });
     await detailBtn.click();
 

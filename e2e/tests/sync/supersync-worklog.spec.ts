@@ -146,7 +146,7 @@ test.describe('@supersync Worklog Sync', () => {
       // Track time using helper functions (need to add imports)
       const task = clientA.page.locator(`task:has-text("${taskName}")`);
       await task.hover();
-      await task.locator('.start-task-btn').click();
+      await task.locator('.task-play').click();
       await clientA.page.waitForTimeout(3000);
       await task.hover();
       const pauseBtn = task.locator('button:has(mat-icon:has-text("pause"))');

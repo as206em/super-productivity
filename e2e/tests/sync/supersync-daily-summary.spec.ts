@@ -61,7 +61,7 @@ test.describe('@supersync Daily Summary Sync', () => {
       // Manually set time via Detail Panel -> Time Estimate Dialog
       // 1. Open detail panel
       await taskALocator.hover();
-      const detailBtn = taskALocator.locator('.show-additional-info-btn');
+      const detailBtn = taskALocator.locator('task-title');
       await detailBtn.click();
 
       const panel = clientA.page.locator('task-detail-panel');

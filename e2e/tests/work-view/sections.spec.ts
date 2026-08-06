@@ -24,18 +24,16 @@ test.describe('Sections', () => {
   };
 
   /**
-   * Open the work-context menu via the page-title's `.project-settings-btn`
-   * (the more_vert icon next to the project title in the main header).
-   * This is the same menu the side-nav `additional-btn` opens, but the
-   * header trigger is always visible without hover and isn't sensitive to
-   * the tree's expand/collapse state.
+   * Open the work-context menu from the side-nav item for the active project.
+   * The page title no longer carries a `.project-settings-btn` — the menu now
+   * lives only on the nav item, reached by right-clicking its row.
    */
   const openProjectContextMenu = async (
     page: import('@playwright/test').Page,
   ): Promise<void> => {
-    const trigger = page.locator('.project-settings-btn');
-    await trigger.waitFor({ state: 'visible', timeout: 10000 });
-    await trigger.click();
+    const activeNavItem = page.locator('nav-item:has(.nav-link.active)').first();
+    await activeNavItem.waitFor({ state: 'visible', timeout: 10000 });
+    await activeNavItem.locator('.nav-link').click({ button: 'right' });
     await page
       .locator('work-context-menu')
       .first()

@@ -67,7 +67,7 @@ const captureDarkScenes = async (
   const firstTask = page.locator('task').first();
   await firstTask.waitFor({ state: 'visible' });
   await firstTask.hover();
-  const playOnTask = firstTask.locator('.start-task-btn');
+  const playOnTask = firstTask.locator('.task-play');
   await playOnTask.waitFor({ state: 'visible', timeout: 5_000 });
   await playOnTask.click();
   await page.waitForTimeout(200);

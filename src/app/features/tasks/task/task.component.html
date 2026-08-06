@@ -123,19 +123,12 @@
       </button>
     }
 
-    <!-- Actions that used to live in a permanent per-row cluster. They surface
-         on hover and are all reachable from the row's context menu too. -->
+    <!-- The old floating hover cluster is gone. Every action it carried has a
+         home in this row already: play/pause is the play button, add-to-today
+         and unschedule are in the context menu, and the detail panel opens by
+         clicking the row. It anchored itself over the trailing columns, so
+         keeping it only meant it swallowed clicks meant for the play button. -->
     <div class="task-controls">
-      @if (isFirstLineHover && !isTouchActive()) {
-        <task-hover-controls
-          [isShowAddToToday]="isShowAddToToday()"
-          [isShowRemoveFromToday]="isShowRemoveFromToday()"
-          [task]="t"
-          [isCurrent]="isCurrent()"
-          [isSelected]="isSelected()"
-          class="hover-controls"
-        ></task-hover-controls>
-      }
       @if (t.attachments?.length || t.issueAttachmentNr) {
         <button
           (click)="toggleShowAttachments()"
