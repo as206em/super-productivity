@@ -4,8 +4,7 @@ import { fillTimeInput } from './time-input-helper';
 
 // Selectors for scheduling
 const DETAIL_PANEL_SELECTOR = 'dialog-task-detail-panel, task-detail-panel';
-const DETAIL_PANEL_SCHEDULE_ITEM =
-  '.meta-row:has(mat-icon:text("event"))';
+const DETAIL_PANEL_SCHEDULE_ITEM = '.meta-row:has(mat-icon:text("event"))';
 const RIGHT_PANEL = '.right-panel';
 const DIALOG_CONTAINER = 'mat-dialog-container';
 const DIALOG_SUBMIT = 'mat-dialog-actions button[color="primary"]';

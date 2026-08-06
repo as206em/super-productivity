@@ -69,9 +69,7 @@ test.describe('@supersync Daily Summary Sync', () => {
 
       // 2. Click time item to open dialog
       // Look for the item with the time-estimate icon
-      const timeItem = panel.locator(
-        '.meta-row:has(mat-icon:text("hourglass_empty"))',
-      );
+      const timeItem = panel.locator('.meta-row:has(mat-icon:text("hourglass_empty"))');
       await timeItem.click();
 
       // 3. Wait for dialog

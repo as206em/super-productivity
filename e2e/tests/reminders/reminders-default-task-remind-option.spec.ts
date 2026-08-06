@@ -80,11 +80,7 @@ test.describe('Default task reminder option', () => {
     await detailBtn.click();
 
     // Click on the schedule item in the detail panel
-    const scheduleItem = page
-      .locator(
-        '.meta-row:has(mat-icon:text("event"))',
-      )
-      .first();
+    const scheduleItem = page.locator('.meta-row:has(mat-icon:text("event"))').first();
     await scheduleItem.waitFor({ state: 'visible', timeout: 10000 });
     await scheduleItem.click();
 
@@ -171,11 +167,7 @@ test.describe('Default task reminder option', () => {
     await scheduleEvent.click();
 
     // Click on the schedule item in the detail panel (using icon-based selector for robustness)
-    const scheduleItem = page
-      .locator(
-        '.meta-row:has(mat-icon:text("event"))',
-      )
-      .first();
+    const scheduleItem = page.locator('.meta-row:has(mat-icon:text("event"))').first();
     await scheduleItem.waitFor({ state: 'visible', timeout: 10000 });
     await scheduleItem.click();
 

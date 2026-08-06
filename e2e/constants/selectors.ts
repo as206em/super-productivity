@@ -130,8 +130,7 @@ export const cssSelectors = {
   RIGHT_PANEL: '.right-panel',
   DETAIL_PANEL: 'dialog-task-detail-panel, task-detail-panel',
   DETAIL_PANEL_BTN: 'task task-title',
-  SCHEDULE_TASK_ITEM:
-    '.meta-row:has(mat-icon:text("event"))',
+  SCHEDULE_TASK_ITEM: '.meta-row:has(mat-icon:text("event"))',
   TASK_SCHEDULE_BTN: '.ico-btn.schedule-btn',
 } as const;
 
