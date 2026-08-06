@@ -31,6 +31,16 @@ test.describe('Sections', () => {
   const openProjectContextMenu = async (
     page: import('@playwright/test').Page,
   ): Promise<void> => {
+    // The group can be collapsed, in which case the project's row is not
+    // rendered at all — expand it before reaching for the row.
+    const projectsHeader = page.getByRole('menuitem', { name: 'Projects' }).first();
+    if (await projectsHeader.isVisible().catch(() => false)) {
+      const activeLink = page.locator('.nav-link.active');
+      if ((await activeLink.count()) === 0) {
+        await projectsHeader.click();
+      }
+    }
+
     const activeNavItem = page.locator('nav-item:has(.nav-link.active)').first();
     await activeNavItem.waitFor({ state: 'visible', timeout: 10000 });
     await activeNavItem.locator('.nav-link').click({ button: 'right' });

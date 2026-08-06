@@ -338,6 +338,17 @@
   }
 }
 
+// --- nested subtasks ---------------------------------------------------------
+// Indented to the title column so a subtask reads as belonging to the row
+// above it, and hairlined like any other row.
+.sub-tasks {
+  padding-left: var(--space-11);
+
+  ::ng-deep task:last-child {
+    border-bottom: none;
+  }
+}
+
 .drag-over-msg {
   display: flex;
   align-items: center;
