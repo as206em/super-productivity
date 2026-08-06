@@ -74,5 +74,14 @@ export class WorkViewPage extends BasePage {
     // Use fill() instead of type() for more reliable text input
     await textarea.fill(subTaskName);
     await this.page.keyboard.press('Enter');
+
+    // Enter commits and opens a fresh input for the next subtask. Leave edit
+    // mode before returning: while any title is still a textbox, the row
+    // renders no text and every later text-based locator misses it.
+    await this.page.keyboard.press('Escape');
+    await this.page
+      .locator('textarea:focus, input[type="text"]:focus')
+      .waitFor({ state: 'detached', timeout: 5000 })
+      .catch(() => undefined);
   }
 }

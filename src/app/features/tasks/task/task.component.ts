@@ -1086,6 +1086,15 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
     if (this._taskService.selectedTaskId() !== id) {
       this._taskService.setSelectedId(id);
     }
+
+    // A clicked row is the one the keyboard is aimed at, so the task shortcuts
+    // have a target. Only claim focus when nothing inside the row already has
+    // it: clicking an editable subtask title focuses its textarea, and pulling
+    // focus back to the host would drop the caret the user just placed.
+    const el = this._elementRef.nativeElement as HTMLElement;
+    if (!el.contains(document.activeElement)) {
+      this.focusSelf();
+    }
   }
 
   /** Toggles this row in the multi-selection from the hover checkbox. */
