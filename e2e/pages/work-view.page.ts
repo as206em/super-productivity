@@ -71,8 +71,15 @@ export class WorkViewPage extends BasePage {
     await textarea.click();
     await textarea.fill('');
 
-    // Use fill() instead of type() for more reliable text input
-    await textarea.fill(subTaskName);
+    // Adding a subtask re-renders the parent row (count chip) and the nested
+    // list around this very input, and a re-render landing mid-fill scrambles
+    // the value. Confirm it took before committing.
+    for (let i = 0; i < 3; i++) {
+      await textarea.fill(subTaskName);
+      if ((await textarea.inputValue()) === subTaskName) {
+        break;
+      }
+    }
     await this.page.keyboard.press('Enter');
 
     // Enter commits and opens a fresh input for the next subtask. Leave edit
