@@ -27,15 +27,11 @@ test.describe('Recurring Task - Future Start Date (#6856)', () => {
     await expect(task).toBeVisible({ timeout: 10000 });
 
     // 2. Open task detail and click on recur to open the repeat dialog
-    await task.hover();
-    const detailBtn = page.getByRole('button', {
-      name: 'Show/hide task panel',
-    });
-    await expect(detailBtn).toBeVisible({ timeout: 5000 });
-    await detailBtn.click();
+    // Clicking the row opens the detail panel; the old hover button is gone.
+    await task.locator('task-title').first().click();
 
     const recurItem = page
-      .locator('task-detail-item')
+      .locator('.meta-row')
       .filter({ has: page.locator('mat-icon', { hasText: /^repeat$/ }) });
     await expect(recurItem).toBeVisible({ timeout: 5000 });
     await recurItem.click();

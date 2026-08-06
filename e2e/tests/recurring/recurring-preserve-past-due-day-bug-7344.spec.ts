@@ -52,7 +52,7 @@ test.describe('Recurring Task - preserve past dueDay (#7344)', () => {
     const reopenedTask = taskPage.getTaskByText(taskTitle).first();
     await taskPage.openTaskDetail(reopenedTask);
     const recurItem = page
-      .locator('task-detail-item')
+      .locator('.meta-row')
       .filter({ has: page.locator('mat-icon', { hasText: /^repeat$/ }) });
     await expect(recurItem).toBeVisible({ timeout: 5000 });
     await recurItem.click();

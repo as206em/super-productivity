@@ -212,11 +212,8 @@ export class TaskPage extends BasePage {
    * Toggle task detail panel
    */
   async toggleTaskDetail(task: Locator): Promise<void> {
-    await task.hover();
-    const toggleBtn = this.page.getByRole('button', {
-      name: 'Show/hide task panel',
-    });
-    await toggleBtn.click();
+    // Clicking the row opens the detail panel; the old hover button is gone.
+    await task.locator('task-title').first().click();
     await this.page.waitForTimeout(300);
   }
 

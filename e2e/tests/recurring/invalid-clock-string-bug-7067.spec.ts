@@ -32,7 +32,7 @@ test('should not crash when a repeat config has an invalid startTime in the stor
 
   await taskPage.openTaskDetail(task);
   await page
-    .locator('task-detail-item')
+    .locator('.meta-row')
     .filter({ has: page.locator('mat-icon', { hasText: /^repeat$/ }) })
     .click();
 
