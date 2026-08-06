@@ -85,7 +85,7 @@ const addTaskWithoutWaitingForTodayList = async (
     .isVisible()
     .catch(() => false);
   if (!isInputVisible) {
-    await page.locator('.tour-addBtn').click();
+    await page.locator('.tour-addBtn').first().click();
   }
 
   const input = inputEl.first();

@@ -162,6 +162,9 @@ export class ProjectPage extends BasePage {
 
     // Wait for the nav to be fully loaded
     await this.sidenav.waitFor({ state: 'visible', timeout: 5000 });
+    // The rail is collapsed until pointed at; hover keeps it revealed so the
+    // project rows are laid out at full width while we click one.
+    await this.sidenav.hover().catch(() => undefined);
 
     // Get the Projects nav-list-tree container
     const projectsTree = this.page
@@ -208,9 +211,19 @@ export class ProjectPage extends BasePage {
       try {
         await projectBtn.click({ timeout: 5000 });
 
-        // Wait for navigation to complete - wait for URL to change to project route
-        const navigated = await this.page
+        // Wait for navigation to complete. The URL pattern alone is not enough:
+        // going from one project to another already matches it, so a click
+        // that never landed would look like a successful navigation. Verify we
+        // arrived at *this* project instead.
+        await this.page
           .waitForURL(/\/#\/project\//, { timeout: 5000 })
+          .catch(() => undefined);
+
+        const navigated = await this.page
+          .locator('main')
+          .filter({ hasText: fullProjectName })
+          .first()
+          .waitFor({ state: 'visible', timeout: 5000 })
           .then(() => true)
           .catch(() => false);
 
@@ -237,7 +250,12 @@ export class ProjectPage extends BasePage {
         .first()
         .waitFor({ state: 'visible', timeout: 15000 });
     } catch {
-      // If verification fails, continue anyway - the test will catch real issues
+      // Failing loudly here beats letting the test run on in the wrong project:
+      // the downstream assertion would be about task visibility and give no
+      // hint that the navigation never happened.
+      throw new Error(
+        `navigateToProjectByName: never landed on "${fullProjectName}" (url: ${this.page.url()})`,
+      );
     }
   }
 

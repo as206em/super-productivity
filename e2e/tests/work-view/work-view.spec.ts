@@ -67,7 +67,9 @@ test.describe('Work View', () => {
     await workViewPage.waitForTaskList();
 
     // Click the add button in the header to open global add task input
-    const headerAddBtn = page.locator('.tour-addBtn');
+    // The button lives in the work view, so a route change can briefly leave
+    // two in the DOM while the outgoing view is torn down.
+    const headerAddBtn = page.locator('.tour-addBtn').first();
     await headerAddBtn.waitFor({ state: 'visible', timeout: 10000 });
     await headerAddBtn.click();
 

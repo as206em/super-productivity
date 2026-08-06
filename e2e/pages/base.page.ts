@@ -153,7 +153,7 @@ export abstract class BasePage {
       .isVisible()
       .catch(() => false);
     if (!isInputVisible) {
-      const addBtn = this.page.locator('.tour-addBtn');
+      const addBtn = this.page.locator('.tour-addBtn').first();
       // Wait for add button with longer timeout - it depends on config loading
       await addBtn.waitFor({ state: 'visible', timeout: 20000 });
       await addBtn.click();
