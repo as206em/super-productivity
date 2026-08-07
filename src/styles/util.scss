@@ -139,3 +139,47 @@ body.isDarkTheme .show-light-only {
     outline-offset: var(--focus-ring-offset);
   }
 }
+
+// =============================================================================
+// Design-system utilities
+// =============================================================================
+
+// Any number that can change while you look at it. Pair with a fixed-width,
+// right-aligned column so digits line up down the whole list.
+.sp-num {
+  font-variant-numeric: tabular-nums;
+}
+
+// A Material Symbols ligature glyph. Icons are monochrome and inherit their
+// colour; the three status glyphs are the only coloured icons in the product.
+.sp-icon {
+  font-family: var(--font-icon);
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+// The only looping animation in the product: the live timer dot.
+@keyframes sp-pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.sp-pulse-dot {
+  animation: sp-pulse-dot var(--duration-pulse) var(--ease-standard) infinite;
+}

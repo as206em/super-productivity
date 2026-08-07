@@ -39,7 +39,7 @@
   ::ng-deep .mdc-evolution-chip__cell--trailing {
     opacity: 0.05;
     margin-left: -4px;
-    transition: opacity 0.2s;
+    transition: opacity var(--duration-reveal) var(--ease-standard);
   }
 }
 

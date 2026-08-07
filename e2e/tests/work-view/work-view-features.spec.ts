@@ -3,7 +3,9 @@ import { test, expect } from '../../fixtures/test.fixture';
 const TASK = 'task';
 const TASK_TITLE = 'task task-title';
 const FIRST_TASK = 'task:first-of-type';
-const UNDONE_TASK_LIST = 'task-list[listmodelid="UNDONE"]';
+// The undone list binds `[listModelId]`, so no attribute is reflected —
+// unlike the DONE list, which sets it statically. Target it by content.
+const UNDONE_TASK_LIST = 'task-list:has(task:not(.isDone))';
 const DONE_TASK_LIST = 'task-list[listmodelid="DONE"]';
 const DONE_TASKS_SECTION = '.tour-doneList';
 const TOGGLE_DONE_TASKS_BTN = '.tour-doneList .mat-expansion-indicator';
@@ -19,12 +21,13 @@ test.describe('Work View Features', () => {
     // Wait for work view to be ready
     await workViewPage.waitForTaskList();
 
-    // Verify undone task list is visible
-    await expect(page.locator(UNDONE_TASK_LIST)).toBeVisible({ timeout: 8000 });
-
-    // Create tasks
+    // Create tasks. An empty work view shows its empty state rather than an
+    // empty list, so the undone list is asserted once it has something in it.
     await workViewPage.addTask('Task 1');
     await page.locator(TASK).first().waitFor({ state: 'visible', timeout: 5000 });
+
+    // Verify undone task list is visible
+    await expect(page.locator(UNDONE_TASK_LIST)).toBeVisible({ timeout: 8000 });
 
     await workViewPage.addTask('Task 2');
     await expect(page.locator(TASK)).toHaveCount(2, { timeout: 5000 });
@@ -37,7 +40,7 @@ test.describe('Work View Features', () => {
     await firstTask.hover();
 
     // Click the done button
-    const doneBtn = firstTask.locator('done-toggle');
+    const doneBtn = firstTask.locator('.task-status');
     await doneBtn.waitFor({ state: 'visible' });
     await doneBtn.click();
 

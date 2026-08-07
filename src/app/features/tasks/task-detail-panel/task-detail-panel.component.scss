@@ -27,25 +27,209 @@ progress-bar {
   }
 }
 
-.task-title-wrapper {
-  min-height: var(--bar-height);
+// 38px ref bar — the ref, then overflow and close. A hairline under it, and
+// nothing else competing with the title below.
+.detail-ref-bar {
   display: flex;
   align-items: center;
-  z-index: var(--z-right-panel);
-  border-radius: var(--card-border-radius);
-  margin: var(--s);
-  border-bottom: 2px solid var(--c-primary) !important;
+  gap: var(--space-4);
+  height: var(--h-panel-bar);
+  padding: 0 var(--space-6) 0 var(--space-10);
+  border-bottom: 1px solid var(--line-hair);
+}
 
-  ::ng-deep textarea {
-    border: 2px solid red;
-    font-weight: 600 !important;
+.detail-ref {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--text-sm);
+  color: var(--text-meta);
+}
+
+.detail-bar-btn {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--icon-meta);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
   }
 
-  task-title {
-    padding-top: var(--s-half);
-    padding-bottom: var(--s-half);
-    margin-top: 0;
-    color: var(--text-color);
+  &:hover {
+    background: var(--wash-5);
+  }
+}
+
+.detail-head {
+  padding: var(--space-10);
+  // The MetaRows already end on a hairline, so the sections below continue
+  // straight on without a gap.
+  padding-bottom: 0;
+}
+
+// The accordion sections share the head's inset so their label column lines
+// up with the MetaRows above rather than starting at the panel edge.
+task-detail-item {
+  display: block;
+  padding: 0 var(--space-10);
+}
+
+.detail-title {
+  display: block;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-title);
+  line-height: var(--leading-tight);
+  color: var(--text-title);
+  text-wrap: pretty;
+}
+
+.detail-notes {
+  margin-top: var(--space-6);
+  font-size: var(--text-sm);
+  line-height: var(--leading-prose);
+  color: var(--text-secondary);
+  text-wrap: pretty;
+
+  // The inline editor inherits the prose treatment rather than bringing its
+  // own, so reading and editing notes look like the same thing.
+  ::ng-deep .markdown-wrapper,
+  ::ng-deep .markdown-unparsed,
+  ::ng-deep textarea {
+    font-size: var(--text-sm);
+    line-height: var(--leading-prose);
+    color: inherit;
+  }
+
+  // An unset value is written as words, never an em dash or a blank.
+  &.isEmpty {
+    color: var(--text-quiet);
+  }
+}
+
+.detail-actions {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-10);
+}
+
+.detail-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  height: var(--h-nav);
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+  }
+}
+
+.detail-action--primary {
+  flex: 1;
+  border: none;
+  background: var(--ink-fill);
+  color: var(--text-on-dark);
+  font-weight: var(--weight-medium);
+
+  &:hover {
+    background: var(--ink-fill-hover);
+  }
+}
+
+.detail-action--secondary {
+  padding: 0 var(--space-9);
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--text-body);
+
+  &:hover {
+    background: var(--wash-4);
+  }
+}
+
+// MetaRows. The label column is a fixed 96px, which is the whole reason the
+// values line up.
+.detail-meta {
+  margin-top: var(--space-11);
+  display: flex;
+  flex-direction: column;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  width: 100%;
+  min-height: var(--h-nav);
+  padding: 0;
+  border: none;
+  border-top: 1px solid var(--line-row);
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
+  cursor: default;
+
+  // Only the rows with a dialog behind them offer a hover.
+  &.isEditable {
+    cursor: pointer;
+
+    &:hover .meta-row__value {
+      color: var(--text-title);
+    }
+  }
+}
+
+.meta-row__label {
+  flex: 0 0 96px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-xs-plus);
+  color: var(--text-meta);
+
+  .mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    line-height: 1;
+  }
+}
+
+.meta-row__value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--text-body);
+
+  &.isQuiet {
+    color: var(--text-meta);
   }
 }
 

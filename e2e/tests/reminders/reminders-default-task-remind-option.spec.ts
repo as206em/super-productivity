@@ -75,18 +75,12 @@ test.describe('Default task reminder option', () => {
     await task.hover({ force: true });
 
     // Open the detail panel to access the schedule action
-    const detailBtn = task.locator('.show-additional-info-btn').first();
+    const detailBtn = task.locator('task-title').first();
     await detailBtn.waitFor({ state: 'visible', timeout: 10000 });
     await detailBtn.click();
 
     // Click on the schedule item in the detail panel
-    const scheduleItem = page
-      .locator(
-        'task-detail-item:has(mat-icon:text("alarm")), ' +
-          'task-detail-item:has(mat-icon:text("today")), ' +
-          'task-detail-item:has(mat-icon:text("schedule"))',
-      )
-      .first();
+    const scheduleItem = page.locator('.meta-row:has(mat-icon:text("event"))').first();
     await scheduleItem.waitFor({ state: 'visible', timeout: 10000 });
     await scheduleItem.click();
 
@@ -122,7 +116,7 @@ test.describe('Default task reminder option', () => {
     const addTaskInput = page.locator('add-task-bar.global input');
     const inputCount = await addTaskInput.count();
     if (inputCount === 0) {
-      const addBtn = page.locator('.tour-addBtn');
+      const addBtn = page.locator('.tour-addBtn').first();
       await addBtn.waitFor({ state: 'visible', timeout: 10000 });
       await addBtn.click();
     }
@@ -173,13 +167,7 @@ test.describe('Default task reminder option', () => {
     await scheduleEvent.click();
 
     // Click on the schedule item in the detail panel (using icon-based selector for robustness)
-    const scheduleItem = page
-      .locator(
-        'task-detail-item:has(mat-icon:text("alarm")), ' +
-          'task-detail-item:has(mat-icon:text("today")), ' +
-          'task-detail-item:has(mat-icon:text("schedule"))',
-      )
-      .first();
+    const scheduleItem = page.locator('.meta-row:has(mat-icon:text("event"))').first();
     await scheduleItem.waitFor({ state: 'visible', timeout: 10000 });
     await scheduleItem.click();
 

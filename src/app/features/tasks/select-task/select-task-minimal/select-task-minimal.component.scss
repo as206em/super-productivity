@@ -15,7 +15,7 @@ input {
   background: transparent;
   color: inherit;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--duration-reveal) var(--ease-standard);
 
   @include mq(xs, max) {
     padding: 6px var(--s);

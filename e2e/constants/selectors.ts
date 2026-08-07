@@ -39,7 +39,7 @@ export const cssSelectors = {
   FIRST_TASK: 'task:first-child',
   SECOND_TASK: 'task:nth-child(2)',
   TASK_TITLE: 'task task-title',
-  TASK_DONE_BTN: 'done-toggle',
+  TASK_DONE_BTN: '.task-status',
   TASK_LIST: 'task-list',
   TASK_TEXTAREA: 'task textarea',
   SUB_TASKS_CONTAINER: '.sub-tasks',
@@ -129,9 +129,8 @@ export const cssSelectors = {
   // ============================================================================
   RIGHT_PANEL: '.right-panel',
   DETAIL_PANEL: 'dialog-task-detail-panel, task-detail-panel',
-  DETAIL_PANEL_BTN: '.show-additional-info-btn',
-  SCHEDULE_TASK_ITEM:
-    'task-detail-item:has(mat-icon:text("alarm")), task-detail-item:has(mat-icon:text("today")), task-detail-item:has(mat-icon:text("schedule"))',
+  DETAIL_PANEL_BTN: 'task task-title',
+  SCHEDULE_TASK_ITEM: '.meta-row:has(mat-icon:text("event"))',
   TASK_SCHEDULE_BTN: '.ico-btn.schedule-btn',
 } as const;
 

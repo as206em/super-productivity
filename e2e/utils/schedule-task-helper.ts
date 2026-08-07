@@ -3,12 +3,8 @@ import type { WorkViewPage } from '../pages/work-view.page';
 import { fillTimeInput } from './time-input-helper';
 
 // Selectors for scheduling
-const DETAIL_PANEL_BTN = '.show-additional-info-btn';
 const DETAIL_PANEL_SELECTOR = 'dialog-task-detail-panel, task-detail-panel';
-const DETAIL_PANEL_SCHEDULE_ITEM =
-  'task-detail-item:has(mat-icon:text("alarm")), ' +
-  'task-detail-item:has(mat-icon:text("today")), ' +
-  'task-detail-item:has(mat-icon:text("schedule"))';
+const DETAIL_PANEL_SCHEDULE_ITEM = '.meta-row:has(mat-icon:text("event"))';
 const RIGHT_PANEL = '.right-panel';
 const DIALOG_CONTAINER = 'mat-dialog-container';
 const DIALOG_SUBMIT = 'mat-dialog-actions button[color="primary"]';
@@ -34,11 +30,10 @@ export const closeDetailPanelIfOpen = async (page: Page): Promise<void> => {
 export const openTaskDetailPanel = async (page: Page, task: Locator): Promise<void> => {
   await task.waitFor({ state: 'visible' });
   await task.scrollIntoViewIfNeeded();
-  await task.hover();
 
-  const detailBtn = task.locator(DETAIL_PANEL_BTN).first();
-  await detailBtn.waitFor({ state: 'visible', timeout: 5000 });
-  await detailBtn.click();
+  // Clicking the row opens the detail panel in the redesigned list. The old
+  // floating hover cluster that carried this button is gone.
+  await task.locator('task-title').first().click();
 
   // Wait for detail panel to be visible
   await page

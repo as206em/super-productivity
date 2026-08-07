@@ -31,7 +31,7 @@ const FIXED_TODAY = new Date('2026-05-01T10:00:00');
 
 const openRecurDialog = async (page: Page): Promise<Locator> => {
   const recurItem = page
-    .locator('task-detail-item')
+    .locator('.meta-row')
     .filter({ has: page.locator('mat-icon', { hasText: /^repeat$/ }) });
   await expect(recurItem).toBeVisible({ timeout: 5000 });
   await recurItem.click();
@@ -132,10 +132,10 @@ test.describe('Recurring Task - Move Start Date Earlier With No Live Instance (#
     await page.goto('/#/planner');
     await page.waitForLoadState('networkidle');
 
-    for (const date of [/^2\/5$/, /^3\/5$/, /^4\/5$/, /^5\/5$/]) {
-      const day = page
-        .locator('planner-day')
-        .filter({ has: page.locator('.date', { hasText: date }) });
+    // The day header no longer prints a `d/M` string; the host's `data-day`
+    // carries the unambiguous ISO date.
+    for (const date of ['2026-05-02', '2026-05-03', '2026-05-04', '2026-05-05']) {
+      const day = page.locator(`planner-day[data-day="${date}"]`);
       await expect(
         day.locator('planner-repeat-projection').filter({ hasText: taskTitle }),
       ).toHaveCount(1, { timeout: 15000 });

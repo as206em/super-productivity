@@ -97,13 +97,11 @@ export class TaskPage extends BasePage {
    */
   async openTaskDetail(task: Locator): Promise<void> {
     await task.waitFor({ state: 'visible' });
-    await task.hover();
-    const showDetailBtn = this.page.getByRole('button', {
-      name: 'Show/hide task panel',
-    });
-    await showDetailBtn.waitFor({ state: 'visible', timeout: 3000 });
-    await showDetailBtn.click();
-    await this.page.waitForTimeout(300);
+    // Clicking the row opens the detail panel in the redesigned list.
+    await task.locator('task-title').first().click();
+    await this.page
+      .locator('task-detail-panel')
+      .waitFor({ state: 'visible', timeout: 5000 });
   }
 
   /**
@@ -214,11 +212,8 @@ export class TaskPage extends BasePage {
    * Toggle task detail panel
    */
   async toggleTaskDetail(task: Locator): Promise<void> {
-    await task.hover();
-    const toggleBtn = this.page.getByRole('button', {
-      name: 'Show/hide task panel',
-    });
-    await toggleBtn.click();
+    // Clicking the row opens the detail panel; the old hover button is gone.
+    await task.locator('task-title').first().click();
     await this.page.waitForTimeout(300);
   }
 

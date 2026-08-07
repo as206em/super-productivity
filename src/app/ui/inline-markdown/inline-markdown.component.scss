@@ -33,7 +33,7 @@
 
 .markdown-unparsed,
 .markdown-parsed {
-  //transition: height 1.3s;
+  //transition: height var(--duration-reveal) var(--ease-standard);
   border: 0;
   padding: var(--s) var(--s2);
   margin: 0;

@@ -17,7 +17,7 @@
 }
 
 .success-icon {
-  color: var(--palette-green-500, #4caf50);
+  color: var(--done);
   font-size: 32px;
   width: 32px;
   height: 32px;
@@ -32,7 +32,7 @@
   padding: 1rem;
 
   mat-icon {
-    color: var(--palette-red-500, #f44336);
+    color: var(--over);
     font-size: 48px;
     width: 48px;
     height: 48px;
@@ -40,6 +40,6 @@
 }
 
 .error-message {
-  color: var(--palette-red-700, #d32f2f);
+  color: var(--over);
   line-height: 1.5;
 }

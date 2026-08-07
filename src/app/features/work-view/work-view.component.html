@@ -13,72 +13,101 @@
       cdkScrollable
     >
       @if (!pluginEmbedId()) {
-        <header class="work-view-header">
-          @if (!isStandaloneTaskList() && (estimateRemainingToday() || workingToday())) {
-            <div
-              @fade
-              class="status-bar"
-            >
-              <div
-                class="item"
-                matTooltip="{{ T.WW.TODAY_REMAINING | translate }} ~{{
-                  todayRemainingInProject() | msToString
-                }}"
-                [matTooltipDisabled]="
-                  !(workContextService.isActiveWorkContextProject$ | async)
-                "
-                matTooltipPosition="above"
+        <!-- Sticky list toolbar. Rows scroll under it, so it carries a blur
+             and a hairline rather than an opaque band. -->
+        <!-- Selection bar. Replaces the toolbar's contents while a
+             multi-selection is live, so the actions land where the user is
+             already looking instead of in a floating overlay. -->
+        @if (taskSelectionService.isMultiSelectActive()) {
+          <header class="list-toolbar list-toolbar--selection">
+            <span class="selection-count">{{
+              T.WW.N_SELECTED | translate: { nr: taskSelectionService.count() }
+            }}</span>
+
+            <div class="selection-actions">
+              <button
+                class="selection-btn"
+                (click)="taskSelectionService.markDone()"
+                type="button"
               >
-                <span class="label">{{ T.WW.ESTIMATE_REMAINING | translate }}</span>
-                <span class="no-wrap">
-                  ~<strong class="time-val">{{
-                    estimateRemainingToday() | msToString
-                  }}</strong>
-                  <mat-icon style="margin-left: 2px">hourglass_empty</mat-icon>
-                </span>
-              </div>
-              <div class="item">
-                <span class="label">{{ T.WW.WORKING_TODAY | translate }}</span>
-                <span class="no-wrap">
-                  <strong class="time-val">{{ workingToday() | msToString }}</strong>
-                  @if (
-                    workContextService.workingTodayArchived$ | async;
-                    as workingTodayArchived
-                  ) {
-                    <span [matTooltip]="T.WW.WORKING_TODAY_ARCHIVED | translate"
-                      >(+{{ workingTodayArchived | msToString }})</span
-                    >
-                  }
-                  <mat-icon>timelapse</mat-icon>
-                </span>
-              </div>
-              @if (isShowTimeWorkedWithoutBreak) {
-                <div class="item hide-xs">
-                  <span class="label">{{ T.WW.WITHOUT_BREAK | translate }} </span>
-                  <span class="no-wrap">
-                    <strong class="time-val">{{
-                      takeABreakService.timeWorkingWithoutABreak$ | async | msToString
-                    }}</strong
-                    ><mat-icon>timer</mat-icon>
-                  </span>
-                  <div
-                    [matTooltip]="T.WW.RESET_BREAK_TIMER | translate"
-                    class="take-a-break-reset-btn"
-                  >
-                    <button
-                      (click)="resetBreakTimer()"
-                      color="lighter"
-                      mat-mini-fab
-                    >
-                      <mat-icon>timer_off</mat-icon>
-                    </button>
-                  </div>
-                </div>
+                <mat-icon>check_circle</mat-icon>{{ T.WW.SELECTION_DONE | translate }}
+              </button>
+              <button
+                class="selection-btn"
+                (click)="taskSelectionService.addToToday()"
+                type="button"
+              >
+                <mat-icon>wb_sunny</mat-icon>{{ T.WW.SELECTION_ADD_TODAY | translate }}
+              </button>
+              @if (isOnTodayList()) {
+                <button
+                  class="selection-btn"
+                  (click)="taskSelectionService.removeFromToday()"
+                  type="button"
+                >
+                  <mat-icon>wb_twilight</mat-icon
+                  >{{ T.WW.SELECTION_REMOVE_TODAY | translate }}
+                </button>
+              }
+              <button
+                class="selection-btn selection-btn--danger"
+                (click)="taskSelectionService.delete()"
+                type="button"
+              >
+                <mat-icon>delete</mat-icon>{{ T.WW.SELECTION_DELETE | translate }}
+              </button>
+            </div>
+
+            <button
+              class="selection-clear"
+              (click)="taskSelectionService.clear()"
+              type="button"
+            >
+              {{ T.WW.SELECTION_CLEAR | translate }}
+            </button>
+          </header>
+        } @else {
+          <header class="list-toolbar">
+            <div class="list-toolbar__headline">
+              <span class="list-toolbar__title">{{
+                workContextService.activeWorkContextTitle$ | async
+              }}</span>
+              @if (listMeta(); as meta) {
+                <span class="list-toolbar__meta">{{ meta }}</span>
               }
             </div>
-          }
-          <ng-content select="[workViewHeaderAction]"></ng-content>
-        </header>
+
+            <!-- SegmentedControl: an inset track, the active segment raised. -->
+            <div
+              class="density-switch"
+              role="group"
+            >
+              @for (opt of densityOptions; track opt.id) {
+                <button
+                  class="density-switch__seg"
+                  [class.isActive]="density() === opt.id"
+                  (click)="setDensity(opt.id)"
+                  type="button"
+                >
+                  {{ opt.label | translate }}
+                </button>
+              }
+            </div>
+
+            <!-- The one primary action in the view. `tour-addBtn` is the hook
+                 the onboarding hint and the e2e suite target; it moved here
+                 from the old header button, which this replaces. -->
+            <button
+              class="new-task-btn tour-addBtn"
+              (click)="layoutService.showAddTaskBar()"
+              type="button"
+            >
+              <mat-icon>add</mat-icon>{{ T.WW.NEW_TASK | translate }}
+            </button>
+
+            <ng-content select="[workViewHeaderAction]"></ng-content>
+          </header>
+        }
       }
 
       @if (pluginEmbedId(); as embedId) {
@@ -88,7 +117,12 @@
           [skipCleanupOnDestroy]="true"
         ></plugin-index>
       } @else {
-        <div class="task-list-wrapper">
+        <div
+          class="task-list-wrapper"
+          [class.density-rows]="density() === 'rows'"
+          [class.density-cards]="density() === 'cards'"
+          [class.density-compact]="density() === 'compact'"
+        >
           @if (!isHasTasksToWorkOn()) {
             <div
               @expandFade

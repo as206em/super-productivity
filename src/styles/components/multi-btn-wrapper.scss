@@ -6,11 +6,17 @@
   align-items: stretch;
   justify-content: stretch;
 
+  // Row height comes from an inherited variable so an ancestor with its own
+  // scale can set it — the side rail's rows are 30px. The `!important` is
+  // load-bearing against Angular Material's menu-item sizing, which means no
+  // override can win on specificity; it has to arrive through the variable.
+  // Deliberately NOT declared on `.g-multi-btn-wrapper` itself: that would be
+  // the nearest ancestor and would shadow every outer scope.
   a,
   button {
-    height: 44px !important;
-    line-height: 44px !important;
-    min-height: 44px !important;
+    height: var(--multi-btn-height, 44px) !important;
+    line-height: var(--multi-btn-height, 44px) !important;
+    min-height: var(--multi-btn-height, 44px) !important;
   }
 
   button:first-of-type {

@@ -165,7 +165,9 @@
 
   @media (min-height: 600px) and (min-width: 600px) {
     --clock-face-size: 282px;
-    --clock-time-size: 68px;
+    // The focus clock is one of exactly two display sizes in the system and
+    // is used exactly once — here.
+    --clock-time-size: var(--text-clock);
     --control-offset: 20px;
   }
 
@@ -226,13 +228,15 @@ breathing-dot {
     stroke: var(--c-primary);
     stroke-width: 2;
     stroke-linecap: round;
-    transition: stroke-dasharray 0.3s ease;
+    transition: stroke-dasharray var(--duration-reveal) var(--ease-standard);
   }
 }
 
 .clock-time {
   font-size: var(--clock-time-size, 52px);
-  font-weight: bold;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-clock);
+  color: var(--text-title);
   // Locked line-height + tabular digits so the ticking countdown doesn't
   // shift width or vertical metrics mid-session.
   line-height: 1;

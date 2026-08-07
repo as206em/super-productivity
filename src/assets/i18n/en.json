@@ -897,7 +897,8 @@
       "NO_TASKS": "No tasks",
       "PLAN_VIEW": {
         "NO_DEADLINES": "No deadlines",
-        "NO_SCHEDULED_ITEMS": "No scheduled items"
+        "NO_SCHEDULED_ITEMS": "No scheduled items",
+        "SCHEDULED": "Scheduled"
       },
       "S": {
         "REMOVED_PLAN_DATE": "Removed plan date for task \"{{taskTitle}}\"",
@@ -1639,7 +1640,8 @@
         "SCHEDULE_TASK": "Schedule Task",
         "SUB_TASKS": "Subtasks ({{nr}})",
         "TIME": "Duration",
-        "TITLE_PLACEHOLDER": "Enter a title"
+        "TITLE_PLACEHOLDER": "Enter a title",
+        "TAGS": "Tags"
       },
       "B": {
         "ADD_ALL_TO_TODAY": "Add all to today",
@@ -1690,10 +1692,12 @@
         "TRACK_TIME_STOP": "Pause tracking time",
         "UNSCHEDULE_TASK": "Unschedule task",
         "UPDATE_ISSUE_DATA": "Update issue data",
-        "VALUE": "Value"
+        "VALUE": "Value",
+        "SELECT": "Select task"
       },
       "D_CONFIRM_DELETE": {
         "MSG": "Are you sure you want to delete the task \"{{title}}\"?",
+        "MSG_MULTIPLE": "Are you sure you want to delete {{nr}} tasks?",
         "OK": "Delete"
       },
       "D_CONFIRM_SHORT_SYNTAX_NEW_TAG": {
@@ -2626,7 +2630,11 @@
     "TRIGGER_SYNC": "Sync!",
     "UNPLAN_ALL_TASKS": "Unplan all tasks",
     "WORKLOG": "Worklog",
-    "ARCHIVED_PROJECTS": "Archived Projects"
+    "ARCHIVED_PROJECTS": "Archived Projects",
+    "FOCUS": "Focus",
+    "FILTER": "Filter",
+    "DISPLAY": "Display",
+    "TOGGLE_FOCUS_MODE": "Enter focus mode"
   },
   "MIGRATE": {
     "C_DOWNLOAD_BACKUP": "Do you want to download a backup of your legacy data (can be used with older versions of Super Productivity)?",
@@ -2928,6 +2936,17 @@
     "TODAY_REMAINING": "Today remaining:",
     "WITHOUT_BREAK": "Without break:",
     "WORKING_TODAY": "Working today:",
-    "WORKING_TODAY_ARCHIVED": "Time worked today on archived tasks"
+    "WORKING_TODAY_ARCHIVED": "Time worked today on archived tasks",
+    "DENSITY_ROWS": "Rows",
+    "DENSITY_CARDS": "Cards",
+    "DENSITY_COMPACT": "Compact",
+    "NEW_TASK": "New task",
+    "N_SELECTED": "{{nr}} selected",
+    "SELECTION_ADD_TODAY": "Add to today",
+    "SELECTION_DELETE": "Delete",
+    "SELECTION_DONE": "Done",
+    "SELECTION_REMOVE_TODAY": "Remove from today",
+    "SELECTION_CLEAR": "Clear",
+    "SELECTION_MOVE_TO_PROJECT": "Move to project"
   }
 }

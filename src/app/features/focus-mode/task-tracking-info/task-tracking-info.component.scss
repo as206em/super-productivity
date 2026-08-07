@@ -5,7 +5,7 @@
   color: var(--text-color-muted);
   cursor: pointer;
   transition:
-    background-color 0.2s ease,
+    background-color var(--duration-reveal) var(--ease-standard),
     transform 0.1s ease;
 
   &:hover {

@@ -28,35 +28,185 @@ h2 {
   }
 }
 
-.work-view-header {
-  padding: var(--s-half);
-
-  position: relative;
-  min-height: var(--bar-height-small);
+// Sticky list toolbar. One of exactly two transparency uses in the system:
+// rows scroll under it, so it is a blurred wash over a hairline, not an
+// opaque band.
+.list-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
-  justify-content: center;
   align-items: center;
-  @include mq(xs) {
-    padding: var(--s2) 0;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--gutter);
+  background: var(--sticky-toolbar-bg);
+  backdrop-filter: var(--blur-sticky);
+  border-bottom: 1px solid var(--line-hair);
+}
+
+.list-toolbar__headline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-6);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+// 15px is the largest heading in the entire app.
+.list-toolbar__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-heading);
+  color: var(--text-title);
+  flex: 0 0 auto;
+}
+
+.list-toolbar__meta {
+  font-size: var(--text-sm);
+  color: var(--text-meta);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// SegmentedControl — inset track, raised active segment.
+.density-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-lg);
+  background: var(--surface-track);
+  flex: 0 0 auto;
+}
+
+.density-switch__seg {
+  height: var(--h-chip);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-7);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-meta);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  &.isActive {
+    background: var(--surface-page);
+    color: var(--text-title);
+    box-shadow: var(--shadow-card);
+  }
+}
+
+// Selection bar. Same shell as the toolbar it replaces so the row does not
+// jump when a selection starts.
+.list-toolbar--selection {
+  gap: var(--space-9);
+}
+
+.selection-count {
+  font-size: var(--text-sm-plus);
+  font-weight: var(--weight-medium);
+  color: var(--text-title);
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.selection-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--h-control);
+  padding: 0 var(--space-6);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
   }
 
-  @include smallMainContainer() {
-    .label {
-      display: none;
-    }
-
-    p {
-      margin: 0;
-    }
+  &:hover {
+    background: var(--wash-5);
+    color: var(--text-title);
   }
 
-  @include mq(xs, max) {
-    .label {
-      display: none;
-    }
-    p {
-      margin: 0;
-    }
+  // The destructive one says so in text colour, not a red fill.
+  &--danger {
+    color: var(--over);
+  }
+}
+
+.selection-clear {
+  height: var(--h-control);
+  padding: 0 var(--space-8);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  &:hover {
+    background: var(--wash-4);
+  }
+}
+
+// The single dark-ink primary action in the view.
+.new-task-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--h-control);
+  padding: 0 var(--space-8) 0 var(--space-6);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--ink-fill);
+  color: var(--text-on-dark);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: var(--ink-fill-hover);
   }
 }
 
@@ -149,8 +299,8 @@ finish-day-btn,
 .today {
   position: absolute;
   left: 0;
-  //transition: max-height, min-height 500ms ease-in-out;
-  //transition: all 500ms linear;
+  //transition: max-height, min-height var(--duration-reveal) var(--ease-standard);
+  //transition: all var(--duration-reveal) var(--ease-standard);
   width: 100%;
 
   &.isAnimatable {
@@ -251,23 +401,25 @@ finish-day-btn,
   }
 }
 
+// GroupHeader — a 32px sunken band that opens and closes a group. Empty
+// groups are not rendered at all (the template already guards each one).
 :host ::ng-deep .collapsible-header {
-  font-size: 16px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-title);
   margin-top: 0;
-  min-height: var(--bar-height);
-  padding: 0 var(--s);
+  height: var(--h-group);
+  min-height: var(--h-group);
+  padding: 0 var(--gutter);
   justify-content: flex-start;
-  border-bottom: 2px solid transparent;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--line-row);
 
   .collapsible-title {
     flex-grow: 1;
-    opacity: 0.8;
+    opacity: 1;
     text-align: left;
   }
-}
-
-:host collapsible.isExpanded ::ng-deep .collapsible-header {
-  @include extraBorder('-bottom');
 }
 
 .overdue-tasks {
@@ -342,5 +494,64 @@ finish-day-btn,
     width: 16px;
     height: 16px;
     font-size: 16px;
+  }
+}
+
+// =============================================================================
+// Density treatments
+//
+// Three renderings of the same data. The row's own styles are the `rows`
+// default; the other two adjust it from here so the task component keeps one
+// set of rules. Adding a fourth treatment is a smell — change the data shown,
+// not the container.
+// =============================================================================
+
+// Cards need the page inset the list itself does not — a hairline row runs to
+// the edge, a card must not.
+.task-list-wrapper.density-cards {
+  padding: var(--space-10) var(--gutter) var(--s7);
+}
+
+// Cards: 44px, bordered, 6px sibling gaps. Cards darken their border and step
+// up one shadow on hover; they do not gain a fill.
+.task-list-wrapper.density-cards ::ng-deep task {
+  border-bottom: none;
+  border: 1px solid var(--line-card);
+  border-radius: var(--radius-xl);
+  background: var(--surface-page);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-4);
+
+  &:hover {
+    background: var(--surface-page);
+    border-color: rgba(var(--ink-channel), 0.16);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .task-row {
+    height: auto;
+    min-height: var(--h-header);
+    padding: 0 var(--space-9);
+  }
+}
+
+// Compact: 28px, and the tag reduces to a bare square.
+.task-list-wrapper.density-compact ::ng-deep task {
+  .task-row {
+    height: var(--h-row-compact);
+    gap: var(--space-4);
+  }
+
+  .task-title {
+    font-size: var(--text-sm);
+  }
+
+  // Compact drops the ref, the due date and the play control — the row is
+  // there to be scanned, not operated.
+  .task-ref,
+  .task-due,
+  .task-deadline,
+  .task-play {
+    display: none;
   }
 }

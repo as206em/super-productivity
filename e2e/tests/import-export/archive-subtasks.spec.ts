@@ -22,7 +22,7 @@ import * as fs from 'fs';
 
 // Selectors
 const TASK_SEL = 'task';
-const TASK_DONE_BTN = 'done-toggle';
+const TASK_DONE_BTN = '.task-status';
 const FINISH_DAY_BTN = '.e2e-finish-day';
 const SAVE_AND_GO_HOME_BTN = 'button[mat-flat-button][color="primary"]:last-of-type';
 
@@ -74,13 +74,9 @@ const markAllTasksDone = async (page: Page): Promise<void> => {
 
     // Get the first undone task using Playwright locator
     const firstUndone = undoneLocator.first();
-    // Must hover over .first-line to trigger hover controls
-    // Use .first() because parent tasks contain nested subtask .first-lines
-    const firstLine = firstUndone.locator('.first-line').first();
-    await firstLine.hover();
-
-    // Wait for the done button to become visible after hover
-    // Use .first() for same reason - parent has nested subtask done buttons
+    // The row is `.task-row` now, and the status glyph is always visible — no
+    // hover needed. `.first()` still matters: a parent contains its subtasks'
+    // rows too.
     const doneBtn = firstUndone.locator(TASK_DONE_BTN).first();
     await doneBtn.waitFor({ state: 'visible', timeout: 2000 });
 

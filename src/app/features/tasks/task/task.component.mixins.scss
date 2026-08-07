@@ -33,10 +33,3 @@
 %standardTaskOpacityChange {
   @include standardTaskOpacityChange;
 }
-
-%standardTaskZoom {
-  &:hover,
-  &:focus {
-    transform: scale(1.2);
-  }
-}

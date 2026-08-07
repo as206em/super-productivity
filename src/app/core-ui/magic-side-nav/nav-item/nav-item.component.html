@@ -13,13 +13,25 @@
     mat-menu-item
     (click)="clicked.emit()"
   >
-    <mat-icon
-      class="nav-icon"
-      [style.color]="workContextIconColor() ?? null"
-      [class.nav-icon-emoji]="isWorkContextEmojiIcon()"
-      [class.drag-handle]="defaultIcon() !== 'today' && defaultIcon() !== 'inbox'"
-      >{{ workContext()!.icon || defaultIcon() }}
-    </mat-icon>
+    @if (accentSwatch(); as swatch) {
+      <span
+        class="nav-icon nav-swatch-slot drag-handle"
+        aria-hidden="true"
+      >
+        <span
+          class="nav-swatch"
+          [class.nav-swatch--tag]="swatch === 'tag'"
+          [style.background]="workContextIconColor() ?? null"
+        ></span>
+      </span>
+    } @else {
+      <mat-icon
+        class="nav-icon"
+        [class.nav-icon-emoji]="isWorkContextEmojiIcon()"
+        [class.drag-handle]="defaultIcon() !== 'today' && defaultIcon() !== 'inbox'"
+        >{{ workContext()!.icon || defaultIcon() }}
+      </mat-icon>
+    }
 
     <span
       class="nav-label"

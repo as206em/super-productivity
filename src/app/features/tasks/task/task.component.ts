@@ -69,10 +69,9 @@ import { ICAL_TYPE } from '../../issue/issue.const';
 import { TaskTitleComponent } from '../../../ui/task-title/task-title.component';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
-import { TaskHoverControlsComponent } from './task-hover-controls/task-hover-controls.component';
 import { ProgressBarComponent } from '../../../ui/progress-bar/progress-bar.component';
 import { TaskListComponent } from '../task-list/task-list.component';
-import { MsToStringPipe } from '../../../ui/duration/ms-to-string.pipe';
+import { MsToStringPipe, msToString } from '../../../ui/duration/ms-to-string.pipe';
 import { ShortPlannedAtPipe } from '../../../ui/pipes/short-planned-at.pipe';
 import { LocalDateStrPipe } from '../../../ui/pipes/local-date-str.pipe';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -87,6 +86,7 @@ import { GlobalTrackingIntervalService } from '../../../core/global-tracking-int
 import { TaskLog } from '../../../core/log';
 import { LayoutService } from '../../../core-ui/layout/layout.service';
 import { TaskFocusService } from '../task-focus.service';
+import { TaskSelectionService } from '../task-selection.service';
 import { selectTimeConflictTaskIds } from '../store/task.selectors';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TASK_EFFORT_LABELS, TASK_VALUE_LABELS } from '../util/task-score.util';
@@ -106,6 +106,7 @@ import { TaskScoreService } from '../util/task-score.service';
     '[class.isDone]': 'task().isDone',
     '[class.isCurrent]': 'isCurrent()',
     '[class.isSelected]': 'isSelected()',
+    '[class.isMultiSelected]': 'isMultiSelected()',
     '[class.hasNoSubTasks]': 'task().subTaskIds.length === 0',
     '[class.isDragReady]': 'isDragReady()',
     '[class.hasTimeConflict]': 'hasTimeConflict()',
@@ -116,7 +117,6 @@ import { TaskScoreService } from '../util/task-score.service';
     MatMenuTrigger,
     MatIconButton,
     TaskTitleComponent,
-    TaskHoverControlsComponent,
     ProgressBarComponent,
     MatMiniFabButton,
     forwardRef(() => TaskListComponent),
@@ -151,6 +151,7 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
   private readonly _taskScoreService = inject(TaskScoreService);
 
   readonly workContextService = inject(WorkContextService);
+  readonly taskSelectionService = inject(TaskSelectionService);
   readonly layoutService = inject(LayoutService);
   readonly globalTrackingIntervalService = inject(GlobalTrackingIntervalService);
   private readonly _timeConflictTaskIds = toSignal(
@@ -167,6 +168,9 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
   // Use shared signals from services to avoid creating 600+ subscriptions on initial render
   isCurrent = computed(() => this._taskService.currentTaskId() === this.task().id);
   isSelected = computed(() => this._taskService.selectedTaskId() === this.task().id);
+  readonly isMultiSelected = computed(() =>
+    this.taskSelectionService.selectedIds().has(this.task().id),
+  );
   isShowCloseButton = computed(() => {
     // Only show close button when task is selected AND not on mobile (bottom panel)
     return this.isSelected() && !this.layoutService.isXs();
@@ -287,6 +291,72 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
   hasDeadline = computed(() => {
     const t = this.task();
     return !!(t.deadlineDay || t.deadlineWithTime);
+  });
+
+  // ---------------------------------------------------------------------------
+  // TaskRow columns. Fixed order: status · ref · title · subtasks · tag · due ·
+  // time · play. Absent fields collapse; only `time` always holds its column.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * The three-state status glyph. This is the only place status colour appears
+   * in the product, and the only coloured icon on the row.
+   */
+  readonly statusIcon = computed<'check_circle' | 'timelapse' | 'radio_button_unchecked'>(
+    () => {
+      if (this.task().isDone) {
+        return 'check_circle';
+      }
+      return this.isCurrent() ? 'timelapse' : 'radio_button_unchecked';
+    },
+  );
+
+  /** `2/3` over a `checklist` glyph. Subtasks live in the detail panel now. */
+  readonly subTaskProgress = computed<string | null>(() => {
+    const subTasks = this.task().subTasks;
+    if (!subTasks?.length) {
+      return null;
+    }
+    return `${subTasks.filter((st) => st.isDone).length}/${subTasks.length}`;
+  });
+
+  /**
+   * Tracked over estimate in human form — `47m / 1h 30m`, or just the estimate
+   * when nothing has been tracked yet. Never decimal hours, never a clock.
+   * A task with subtasks reports their sum rather than its own timer.
+   */
+  readonly timeLabel = computed<string>(() => {
+    const t = this.task();
+    const subTasks = t.subTasks;
+    const spent = subTasks?.length
+      ? subTasks.reduce((acc, st) => acc + (st.timeSpent || 0), 0)
+      : t.timeSpent;
+    const estimate = msToString(t.timeEstimate, false, true);
+    if (!spent) {
+      return estimate;
+    }
+    const spentStr = msToString(spent, false, true);
+    return estimate ? `${spentStr} / ${estimate}` : spentStr;
+  });
+
+  /**
+   * The play button only makes sense when time tracking is on, the task is not
+   * already done, and it has no subtasks doing the tracking for it — the same
+   * three conditions the old hover cluster used.
+   */
+  readonly isShowPlayBtn = computed<boolean>(() => {
+    const t = this.task();
+    return (
+      !!this._configService.appFeatures()?.isTimeTrackingEnabled &&
+      !t.isDone &&
+      !t.subTasks?.length
+    );
+  });
+
+  /** True once tracked time passes the estimate — a soft flag, not an error. */
+  readonly isOverEstimate = computed<boolean>(() => {
+    const t = this.task();
+    return !!t.timeEstimate && t.timeSpent > t.timeEstimate;
   });
 
   T: typeof T = T;
@@ -961,6 +1031,96 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
         id: this.task().id,
       }),
     );
+  }
+
+  /**
+   * Clicking anywhere on the row opens the detail panel — the row itself is
+   * the affordance, not a particular button on it.
+   *
+   * The controls that live in the row (status, play, due, deadline, subtask
+   * count, time, and the hover cluster) each do their own thing, so a click
+   * that started on one of them is left alone. Everything else selects.
+   *
+   * Selecting is deliberately not a toggle: clicking a row always shows that
+   * task. The panel closes from its own close button or Esc, so a stray click
+   * on the list can never dismiss it.
+   */
+  rowClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (
+      target?.closest(
+        '.task-select, .task-status, .task-play, .task-due, .task-deadline, .task-subs, .task-time, .task-controls, tag-list',
+      )
+    ) {
+      return;
+    }
+
+    const id = this.task().id;
+
+    // Cmd/Ctrl-click adds or removes one row; shift-click takes the range from
+    // the last one touched. Both are accelerators — the checkbox that appears
+    // on hover does the same thing with the mouse alone.
+    if (event.metaKey || event.ctrlKey) {
+      event.preventDefault();
+      this.taskSelectionService.toggle(id);
+      return;
+    }
+    if (event.shiftKey) {
+      event.preventDefault();
+      window.getSelection()?.removeAllRanges();
+      this.taskSelectionService.selectRange(id, this._siblingTaskIds());
+      return;
+    }
+
+    // A plain click is the ordinary case: drop any multi-selection and show
+    // this one task.
+    //
+    // `setSelectedId` toggles, and the row's own `focusin` handler has already
+    // claimed the selection by the time this runs — selecting again would
+    // invert the toggle and close the panel instead of switching to this task.
+    // That is the same trap as #7694, which the focus handler guards against
+    // for the old detail-panel button. Selecting is not a toggle here:
+    // clicking a row always shows that task, and the panel closes from its own
+    // close button or Esc.
+    this.taskSelectionService.clear();
+    if (this._taskService.selectedTaskId() !== id) {
+      this._taskService.setSelectedId(id);
+    }
+
+    // A clicked row is the one the keyboard is aimed at, so the task shortcuts
+    // have a target. Only claim focus when nothing inside the row already has
+    // it: clicking an editable subtask title focuses its textarea, and pulling
+    // focus back to the host would drop the caret the user just placed.
+    const el = this._elementRef.nativeElement as HTMLElement;
+    if (!el.contains(document.activeElement)) {
+      this.focusSelf();
+    }
+  }
+
+  /** Toggles this row in the multi-selection from the hover checkbox. */
+  toggleMultiSelect(event: MouseEvent): void {
+    event.stopPropagation();
+    const id = this.task().id;
+    if (event.shiftKey) {
+      this.taskSelectionService.selectRange(id, this._siblingTaskIds());
+      return;
+    }
+    this.taskSelectionService.toggle(id);
+  }
+
+  /**
+   * The ids of every task rendered in this row's list, in visual order. A
+   * shift-click range has to follow what the user can actually see, so it is
+   * read off the DOM rather than any underlying ordering.
+   */
+  private _siblingTaskIds(): string[] {
+    const list = (this._elementRef.nativeElement as HTMLElement).closest('task-list');
+    if (!list) {
+      return [this.task().id];
+    }
+    return Array.from(list.querySelectorAll('task[data-task-id]'))
+      .map((el) => el.getAttribute('data-task-id'))
+      .filter((v): v is string => !!v);
   }
 
   titleBarClick(event: MouseEvent): void {

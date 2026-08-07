@@ -237,6 +237,13 @@ export class ScheduleEventComponent implements AfterViewInit, OnDestroy {
       addClass += ' is-beyond-budget';
     }
 
+    // Drives the block's `--live` provenance border. This is the only way a
+    // schedule block turns pink, and it means one thing: tracking right now.
+    const taskId = this.task()?.id;
+    if (taskId && this._taskService.currentTaskId() === taskId) {
+      addClass += ' isCurrent';
+    }
+
     return evt.type + '  ' + addClass;
   });
 

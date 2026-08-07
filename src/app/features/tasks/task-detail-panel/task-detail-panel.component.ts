@@ -60,6 +60,7 @@ import { Store } from '@ngrx/store';
 import { selectIssueProviderById } from '../../issue/store/issue-provider.selectors';
 import { IssueLog } from '../../../core/log';
 import { TaskTitleComponent } from '../../../ui/task-title/task-title.component';
+import { TaskContextMenuComponent } from '../task-context-menu/task-context-menu.component';
 import { MatIcon } from '@angular/material/icon';
 import { TaskListComponent } from '../task-list/task-list.component';
 import { MatButton } from '@angular/material/button';
@@ -73,7 +74,7 @@ import { TagEditComponent } from '../../tag/tag-edit/tag-edit.component';
 import { DialogSelectDateTimeComponent } from '../dialog-select-date-time/dialog-select-date-time.component';
 import { LocaleDatePipe } from 'src/app/ui/pipes/locale-date.pipe';
 import { LocalDateStrPipe } from 'src/app/ui/pipes/local-date-str.pipe';
-import { MsToStringPipe } from '../../../ui/duration/ms-to-string.pipe';
+import { MsToStringPipe, msToString } from '../../../ui/duration/ms-to-string.pipe';
 import { IssueIconPipe } from '../../issue/issue-icon/issue-icon.pipe';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { getDbDateStr, isDBDateStr } from '../../../util/get-db-date-str';
@@ -83,6 +84,9 @@ import { Log } from '../../../core/log';
 import { isInputElement } from '../../../util/dom-element';
 import { checkKeyCombo } from '../../../util/check-key-combo';
 
+/** Which dialog a MetaRow opens, or null when the row is read-only. */
+type MetaRowEdit = 'estimate' | 'due' | 'repeat' | null;
+
 @Component({
   selector: 'task-detail-panel',
   templateUrl: './task-detail-panel.component.html',
@@ -91,6 +95,7 @@ import { checkKeyCombo } from '../../../util/check-key-combo';
   animations: [expandAnimation, expandFadeInOnlyAnimation, fadeAnimation, swirlAnimation],
   imports: [
     TaskTitleComponent,
+    TaskContextMenuComponent,
     TaskDetailItemComponent,
     MatIcon,
     MatIconButton,
@@ -349,6 +354,129 @@ export class TaskDetailPanelComponent implements OnInit, AfterViewInit, OnDestro
       ? this.T.F.TASK.ADDITIONAL_INFO.DUE
       : this.T.F.TASK.ADDITIONAL_INFO.SCHEDULE_TASK;
   });
+
+  // ---------------------------------------------------------------------------
+  // Detail panel head — ref bar, title, the two actions, and the MetaRows.
+  //
+  // Unset values are written as words, never an em dash and never a blank:
+  // "Not scheduled", "Never", "No notes yet."
+  // ---------------------------------------------------------------------------
+
+  readonly isCurrent = computed(
+    () => this.taskService.currentTaskId() === this.task().id,
+  );
+
+  readonly notesOrPlaceholder = computed(
+    () => this.task().notes?.trim() || 'No notes yet.',
+  );
+
+  readonly hasNotes = computed(() => !!this.task().notes?.trim());
+
+  /**
+   * The label/value lines. A fixed 96px label column is what makes the values
+   * align; the rows are rendered from this list so the column can never drift
+   * between them.
+   *
+   * Tags are deliberately absent: the tag row further down the panel is the
+   * editable one, and a read-only copy here would just say the same thing
+   * twice.
+   */
+  readonly metaRows = computed<
+    ReadonlyArray<{
+      icon: string;
+      label: string;
+      value: string;
+      isQuiet: boolean;
+      edit: MetaRowEdit;
+    }>
+  >(() => {
+    const t = this.task();
+    const project = this.parentTaskData()?.title;
+    const estimate = msToString(t.timeEstimate, false, true);
+    const tracked = msToString(t.timeSpent, false, true);
+    const due = t.dueWithTime
+      ? new Date(t.dueWithTime).toLocaleString(undefined, {
+          day: 'numeric',
+          month: 'short',
+          hour: 'numeric',
+          minute: '2-digit',
+        })
+      : t.dueDay
+        ? new Date(t.dueDay).toLocaleDateString(undefined, {
+            day: 'numeric',
+            month: 'short',
+          })
+        : '';
+    const repeat = this.repeatCfgLabel() || '';
+
+    return [
+      {
+        icon: 'radio_button_checked',
+        label: 'Project',
+        value: project || 'None',
+        edit: null,
+      },
+      {
+        icon: 'hourglass_empty',
+        label: 'Estimate',
+        value: estimate || 'No estimate',
+        edit: 'estimate' as const,
+      },
+      {
+        icon: 'timelapse',
+        label: 'Tracked',
+        value: tracked || 'Nothing yet',
+        edit: null,
+      },
+      {
+        icon: 'event',
+        label: 'Due',
+        value: due || 'Not scheduled',
+        edit: 'due' as const,
+      },
+      {
+        icon: 'repeat',
+        label: 'Repeat',
+        value: repeat || 'Never',
+        edit: 'repeat' as const,
+      },
+    ].map((row) => ({
+      ...row,
+      // An unset value stays quiet so the set ones read first.
+      isQuiet: ['None', 'No estimate', 'Nothing yet', 'Not scheduled', 'Never'].includes(
+        row.value,
+      ),
+    }));
+  });
+
+  /** Opens whichever dialog sits behind a MetaRow. Rows without one are inert. */
+  runMetaRowEdit(edit: MetaRowEdit): void {
+    switch (edit) {
+      case 'estimate':
+        this.estimateTime();
+        break;
+      case 'due':
+        this.scheduleTask();
+        break;
+      case 'repeat':
+        this.editTaskRepeatCfg();
+        break;
+    }
+  }
+
+  toggleTracking(): void {
+    const t = this.task();
+    this.taskService.setCurrentId(this.isCurrent() ? null : t.id);
+  }
+
+  toggleDone(): void {
+    const t = this.task();
+    if (t.isDone) {
+      this.taskService.setUnDone(t.id);
+    } else {
+      this.taskService.setDone(t.id);
+    }
+  }
 
   isDeadlineOverdue = computed(() => isDeadlineOverdueFn(this.task(), getDbDateStr()));
 

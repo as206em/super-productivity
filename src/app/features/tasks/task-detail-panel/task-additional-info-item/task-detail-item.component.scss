@@ -42,57 +42,78 @@
 }
 
 // SHARED
+//
+// These sections continue the MetaRow list above them, so they are rows on a
+// hairline — not cards. They previously carried a shadow, an 8px radius, a
+// lifted background and an 8px margin, which read as a second design sitting
+// underneath the first.
 .input-item,
 .mat-expansion-panel,
 :host::ng-deep .mat-expansion-panel:not([class*='mat-elevation-z']) {
-  box-shadow: var(--task-detail-shadow);
-
-  @include mq(xs, max) {
-    box-shadow: none;
-    border: 1px solid var(--extra-border-color) !important;
-  }
+  box-shadow: none;
 }
 
 .input-item,
 .mat-expansion-panel {
-  border: 1px solid transparent;
-  margin: var(--s);
-  border-radius: var(--card-border-radius);
-  background: var(--task-detail-bg);
-  font-size: 14px;
-
-  :host-context(.isNoTouchOnly):focus & {
-    border-color: var(--palette-primary-400) !important;
-  }
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--line-row);
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--text-sm);
 }
 
+// The header is the row. 30px, the same height as a MetaRow, with the icon
+// and label at the same weight so the eye reads one continuous list.
 .mat-expansion-panel::ng-deep .mat-expansion-panel-header {
-  font-size: 14px;
+  height: var(--h-nav);
+  min-height: var(--h-nav);
+  padding: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  color: var(--text-body);
+  border-radius: 0;
 
-  &-title mat-icon:first-of-type {
-    margin-right: var(--s);
+  &.mat-expanded {
+    height: var(--h-nav);
+    min-height: var(--h-nav);
+  }
+
+  .mat-expansion-panel-header-title {
+    color: inherit;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  mat-icon:first-of-type {
+    margin-right: 0;
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    line-height: 1;
+    color: var(--icon-meta);
+  }
+
+  .mat-expansion-indicator svg {
+    fill: var(--text-quiet);
   }
 }
 
-// Consolidate hover states
-:host-context(.isNoTouchOnly.isLightTheme) {
+// Hover is a wash, the same one the MetaRows and menu rows use. Nothing lifts.
+:host-context(.isNoTouchOnly) {
   mat-expansion-panel::ng-deep .mat-expansion-panel-header:not(.mat-expanded),
   .input-item.standard-size {
     &:hover,
     &:focus {
-      background: var(--task-detail-bg-hover);
+      background: var(--wash-4);
     }
   }
 }
 
-:host-context(.isNoTouchOnly.isDarkTheme) {
-  mat-expansion-panel::ng-deep .mat-expansion-panel-header:not(.mat-expanded),
-  .input-item.standard-size {
-    &:hover,
-    &:focus {
-      background: var(--task-detail-bg-hover);
-    }
-  }
+// Keyboard focus is the app's focus ring, not a brand-coloured card border.
+:host:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: -2px;
 }
 
 // PANEL
@@ -137,13 +158,13 @@
 
   .markdown-wrapper {
     min-height: 60px;
-    border-radius: var(--card-border-radius);
+    border-radius: var(--radius-md);
     overflow: visible !important;
     transition: var(--transition-standard);
   }
 
   &.isFocused .markdown-wrapper {
-    box-shadow: var(--whiteframe-shadow-3dp) !important;
+    box-shadow: var(--shadow-card-hover) !important;
   }
 
   .markdown-unparsed,
@@ -169,18 +190,20 @@
   inset: 0;
 }
 
-// Input-Item
+// Input-Item — a label/value row, the same shape as the MetaRows above.
 .input-item {
   position: relative;
   display: flex;
   align-items: center;
-  height: 48px;
+  gap: var(--space-8);
+  height: var(--h-nav);
+  min-height: var(--h-nav);
   cursor: pointer;
-  color: var(--text-color);
+  color: var(--text-body);
 
   &.full-size {
     height: auto;
-    min-height: 48px;
+    min-height: var(--h-nav);
     align-items: flex-start;
     cursor: default;
   }
@@ -199,29 +222,38 @@
 .input-item__title {
   display: flex;
   align-items: center;
-  margin: 0 var(--s3);
+  gap: var(--space-4);
+  margin: 0;
   @include truncateText();
-  min-width: 90px;
-  flex: 1;
+  // The same fixed label column the MetaRows use — it is what makes the
+  // values line up down the whole panel.
+  flex: 0 0 96px;
+  font-size: var(--text-xs-plus);
+  color: var(--text-meta);
 
   ::ng-deep mat-icon:first-of-type {
-    margin-right: var(--s);
+    margin-right: 0;
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    line-height: 1;
   }
 
   .full-size & {
-    min-width: 40px;
-    min-height: 48px;
+    min-height: var(--h-nav);
     flex-grow: 0;
-    margin-right: 0;
   }
 }
 
 .input-item__value {
-  text-align: right;
+  text-align: left;
   display: flex;
   align-items: center;
-  margin-right: var(--s3);
-  color: var(--task-detail-value-color);
+  margin-right: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm);
+  color: var(--text-body);
 
   &,
   ::ng-deep span {
@@ -230,16 +262,15 @@
 
   > * {
     flex: 1;
-    margin-left: auto;
-    text-align: right;
+    text-align: left;
     display: inline-block;
   }
 
   .full-size & {
     min-width: 40px;
     flex: 1;
-    padding: var(--s-half) 0;
-    min-height: 48px;
+    padding: var(--space-2) 0;
+    min-height: var(--h-nav);
 
     > * {
       display: block;

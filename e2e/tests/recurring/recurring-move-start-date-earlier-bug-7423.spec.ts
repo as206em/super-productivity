@@ -25,7 +25,7 @@ const FIXED_TODAY = new Date('2026-05-01T10:00:00');
 
 const openRecurDialog = async (page: Page): Promise<Locator> => {
   const recurItem = page
-    .locator('task-detail-item')
+    .locator('.meta-row')
     .filter({ has: page.locator('mat-icon', { hasText: /^repeat$/ }) });
   await expect(recurItem).toBeVisible({ timeout: 5000 });
   await recurItem.click();
@@ -112,16 +112,12 @@ test.describe('Recurring Task - Move Start Date Earlier (#7423)', () => {
     // The LIVE task instance lives in <planner-task>; subsequent days render
     // the same recurring task as <planner-repeat-projection> (faded preview).
     // The bug puts the live task on May 5; the fix puts it on May 2.
-    const dayMay2 = page
-      .locator('planner-day')
-      .filter({ has: page.locator('.date', { hasText: /^2\/5$/ }) });
+    const dayMay2 = page.locator('planner-day[data-day="2026-05-02"]');
     await expect(
       dayMay2.locator('planner-task').filter({ hasText: taskTitle }),
     ).toHaveCount(1, { timeout: 15000 });
 
-    const dayMay5 = page
-      .locator('planner-day')
-      .filter({ has: page.locator('.date', { hasText: /^5\/5$/ }) });
+    const dayMay5 = page.locator('planner-day[data-day="2026-05-05"]');
     await expect(
       dayMay5.locator('planner-task').filter({ hasText: taskTitle }),
     ).toHaveCount(0);

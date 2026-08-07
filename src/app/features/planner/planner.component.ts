@@ -5,6 +5,7 @@ import { PlannerActions } from './store/planner.actions';
 import { selectTaskFeatureState } from '../tasks/store/task.selectors';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { T } from '../../t.const';
+import { msToString } from '../../ui/duration/ms-to-string.pipe';
 import { CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { PlannerPlanViewComponent } from './planner-plan-view/planner-plan-view.component';
 import { CdkScrollable } from '@angular/cdk/scrolling';
@@ -33,6 +34,39 @@ export class PlannerComponent {
   readonly T = T;
 
   private _days = toSignal(this._plannerService.days$, { initialValue: [] });
+
+  /**
+   * The planner's headline and meta line, matching the sticky toolbar every
+   * list view carries. Built here rather than in the template so the empty
+   * parts drop out instead of printing zeros.
+   */
+  readonly rangeLabel = computed<string>(() => {
+    const days = this._days();
+    if (!days.length) {
+      return 'This week';
+    }
+    const fmt = (d: string): string =>
+      new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    return `${fmt(days[0].dayDate)} – ${fmt(days[days.length - 1].dayDate)}`;
+  });
+
+  readonly rangeMeta = computed<string>(() => {
+    const days = this._days();
+    const parts: string[] = [];
+    const planned = days.reduce((acc, d) => acc + d.tasks.length, 0);
+    if (planned) {
+      parts.push(`${planned} ${planned === 1 ? 'task' : 'tasks'} planned`);
+    }
+    const estimate = days.reduce((acc, d) => acc + (d.timeEstimate || 0), 0);
+    if (estimate) {
+      parts.push(`${msToString(estimate, false, true)} estimated`);
+    }
+    const freeDays = days.filter((d) => !d.itemsTotal).length;
+    if (freeDays) {
+      parts.push(`${freeDays} free`);
+    }
+    return parts.join(' · ');
+  });
   private _prevDaysWithTasksKey = '';
   private _prevDaysWithTasks: ReadonlySet<string> = new Set();
   daysWithTasks = computed<ReadonlySet<string>>(() => {

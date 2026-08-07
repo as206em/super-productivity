@@ -42,7 +42,9 @@ import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-shee
 import { PanelContentService } from '../panels/panel-content.service';
 // Right panel resize constants
 const RIGHT_PANEL_CONFIG = {
-  DEFAULT_WIDTH: 320,
+  // 316px is the design system's fixed detail-panel column. The panel stays
+  // user-resizable — this is the width it opens at.
+  DEFAULT_WIDTH: 316,
   MIN_WIDTH: 250,
   MAX_WIDTH: '50%',
   RESIZABLE: true,

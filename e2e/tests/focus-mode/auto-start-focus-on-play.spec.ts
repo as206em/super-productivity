@@ -71,7 +71,7 @@ test.describe('autoStartFocusOnPlay', () => {
 
     // Step 3: start tracking via the task's play button.
     await firstTask.hover();
-    const trackingPlayBtn = firstTask.locator('.start-task-btn').first();
+    const trackingPlayBtn = firstTask.locator('.task-play').first();
     await trackingPlayBtn.waitFor({ state: 'visible' });
     await trackingPlayBtn.click();
 
@@ -99,7 +99,7 @@ test.describe('autoStartFocusOnPlay', () => {
     await expect(firstTask).toBeVisible();
 
     await firstTask.hover();
-    const trackingPlayBtn = firstTask.locator('.start-task-btn').first();
+    const trackingPlayBtn = firstTask.locator('.task-play').first();
     await trackingPlayBtn.waitFor({ state: 'visible' });
     await trackingPlayBtn.click();
     await expect(firstTask).toHaveClass(/isCurrent/, { timeout: 5000 });

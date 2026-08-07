@@ -1,146 +1,135 @@
 @use '../../../../styles/_globals.scss' as *;
-@use '../../tasks/task/task.component.mixins' as *;
 
+// A planner day is a column: a bordered well with a small head and a stack of
+// cards. Before this it was floating text with no boundary, a 22px day title
+// and three separate "nothing here" messages — the chrome outweighed the work.
 :host {
   display: flex;
   flex-direction: column;
-  min-width: 260px;
-  width: 260px;
+  min-width: var(--planner-col-min);
   overflow: hidden;
-  // there needs to be enough space for the fab buttons
-
-  padding-bottom: 96px;
-  margin-bottom: var(--s4);
+  border: 1px solid var(--line-card);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-sunken);
+  min-height: 320px;
 
   @include mq(xs, max) {
     width: 100%;
     max-width: 100%;
     min-width: 100%;
-    padding: 0;
-    margin-bottom: var(--s2);
   }
+}
+
+// Today is the one column on the page surface — it reads as the live one
+// without needing an accent bar under it.
+:host(.is-today) {
+  background: var(--surface-page);
 }
 
 :host header {
-  margin-top: var(--s2);
-  margin-right: -4px;
-  margin-left: -4px;
-  border-radius: 8px;
-  //position: sticky;
-  //top: -2px;
-  //&.is-stuck {
-  //  background: white;
-  //  box-shadow: var(--whiteframe-shadow-2dp);
-  //  z-index: 10;
-  //}
+  padding: var(--space-5) var(--space-7) var(--space-4);
+  border-bottom: 1px solid var(--line-row);
+  white-space: nowrap;
 }
 
-.day-title {
-  font-size: 22px;
-  text-align: center;
-  font-weight: bold;
-  vertical-align: middle;
-  padding-top: var(--s);
-
-  .date {
-    font-size: 12px;
-  }
-}
-
-.day-counts {
+.day-head {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: var(--s) 0;
-  border-radius: var(--card-border-radius);
-  font-size: 18px;
-
-  mat-icon:last-of-type {
-    margin-left: var(--s);
-    font-size: 16px;
-  }
-
-  .available-hours {
-    margin-left: var(--s-half);
-    font-size: 14px;
-    opacity: 0.7;
-  }
+  align-items: baseline;
+  gap: var(--space-3);
 }
 
-.progress-container {
-  margin: 0 auto;
-  width: 95%;
-  height: 4px;
-  position: relative;
-  margin-bottom: var(--s);
+// The only uppercase here, and the only place the weekday is shouted.
+.day-dow {
+  font-size: var(--text-xs);
+  color: var(--text-meta);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
 }
 
-.day-estimate {
-  margin-top: var(--s);
-  font-size: 16px;
-  text-align: center;
+.day-num {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-title);
 }
 
+:host(.is-today) .day-num {
+  color: var(--brand);
+}
+
+.day-today {
+  font-size: var(--text-xs);
+  color: var(--brand);
+}
+
+// One quiet line for the whole day's load. `free` when there is nothing —
+// a fact, not a failure, and never a zero.
+.day-load {
+  margin-top: 1px;
+  font-size: var(--text-xs);
+  color: var(--text-quiet);
+}
+
+.day-capacity {
+  color: var(--text-quiet);
+}
+
+.day-free {
+  color: var(--text-quiet);
+}
+
+// Section eyebrows only appear when the section has something in it.
 .section-title {
-  display: flex;
-  justify-content: center;
-  margin: 12px 0 var(--s);
+  padding: var(--space-6) var(--space-5) var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-quiet);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
 }
 
 .normal-tasks,
 .scheduled,
 .deadlines {
-  margin-top: var(--s-half);
   display: flex;
   flex-direction: column;
+  padding: 0 var(--space-5);
 }
 
-.scheduled,
-.deadlines {
-  flex-grow: 1;
-  margin-top: var(--s2);
+.normal-tasks {
+  padding-top: var(--space-5);
+  flex: 1;
+}
 
-  @include mq(xs, max) {
-    &.no-items {
-      display: none;
-    }
-  }
+.deadlines {
+  padding-bottom: var(--space-5);
 }
 
 .normal-tasks-items,
-.deadline-items {
-  min-height: var(--planner-item-height);
-  flex-grow: 1;
-}
-
+.deadline-items,
 .scheduled-items {
-  min-height: calc(var(--planner-item-height) * 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   flex-grow: 1;
-}
-
-.normal-tasks-items > *,
-.deadline-items > * {
-  margin-bottom: var(--s);
 }
 
 .scheduled-item {
   display: flex;
   align-items: center;
-  margin-bottom: var(--s);
 
   &.Task .time {
     cursor: pointer;
-    border-radius: 50%;
-    background: var(--task-c-bg);
+    border-radius: var(--radius-sm);
+    background: var(--wash-4);
   }
 
   .time {
     text-align: center;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    margin-right: var(--s-half);
+    border-radius: var(--radius-sm);
+    width: 34px;
+    height: 26px;
+    min-width: 34px;
+    margin-right: var(--space-3);
     flex-grow: 0;
     display: flex;
     justify-content: center;
@@ -187,10 +176,8 @@
 }
 
 .empty {
-  text-align: center;
-  font-style: italic;
-  line-height: var(--planner-item-height);
-  height: 0;
+  font-size: var(--text-xs);
+  color: var(--text-quiet);
 }
 
 .all-day-event {

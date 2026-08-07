@@ -731,3 +731,415 @@ body.isDarkTheme {
   //--md-sys-level4:   0 12px 24px rgba(0,0,0,0.16), 0 16px 8px rgba(0,0,0,0.12);
   //--md-sys-level5:   0 20px 40px rgba(0,0,0,0.18), 0 28px 12px rgba(0,0,0,0.14);
 }
+
+// =============================================================================
+// DESIGN SYSTEM TOKENS (redesign)
+//
+// Ported from the design system's `tokens/` layer. This block is the CONTRACT:
+// when a value appears here it is verbatim from the spec and must not be
+// rounded (5px stays 5px, 11.5px stays 11.5px).
+//
+// Layout mirrors the layering above:
+//   A. `:root`   — mode-independent scales (type, spacing, heights, structure,
+//                  radii, elevation, motion, accents, status colours).
+//   B. `body` / `body.isDarkTheme` — per-mode PRIMITIVES (neutral ramp,
+//                  surfaces, the ink channel every hairline/wash derives from).
+//   C. `:where(body, body.isDarkTheme)` — semantic aliases + derived hairlines
+//                  and washes. Zero specificity so theme files always win.
+//   D. Legacy bridge — pre-existing variable names repointed at the new tokens
+//                  so no consumer breaks while templates are migrated.
+//
+// Rules that are easy to violate and are enforced here:
+//   * `--live` (pink) means a timer is running. Nothing else.
+//   * Structure is an alpha of ink, never a grey hex.
+//   * Four shadow steps exist. That is all.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// A. Mode-independent scales
+// -----------------------------------------------------------------------------
+/* stylelint-disable-next-line no-duplicate-selectors -- layered token file: design-system scales follow the primitive scales above */
+:root {
+  // ---- Typography -----------------------------------------------------------
+  // The OS UI stack, as the app already ships it (see styles/_fonts.scss).
+  --font-ui: var(--font-primary-stack);
+  --font-icon: 'Material Symbols Outlined';
+
+  // Scale: 11.5px → 16px in half-pixel steps, plus two display sizes used once
+  // each (the summary stat and the focus clock).
+  //
+  // The whole ramp carries a uniform +1px over the original draft, which read
+  // too small at normal viewing distance. Shifting every step by the same
+  // amount keeps the relationships between them exactly as they were, so the
+  // hierarchy is unchanged and only the floor moved. The two display sizes are
+  // deliberately left alone: they are already display-scale, and lifting them
+  // in step would have exaggerated a gap that is wide enough.
+  --text-2xs: 11.5px; // planner card meta
+  --text-xs: 12px; // metadata, counts, keycaps, eyebrows
+  --text-xs-plus: 12.5px; // settings hint, detail meta labels
+  --text-sm: 13px; // dense row title, notes, chrome buttons
+  --text-sm-plus: 13.5px; // page buttons, board cards
+  --text-base: 14px; // body default
+  --text-base-plus: 14.5px; // command-palette input
+  --text-md: 15.5px; // detail panel title
+  --text-lg: 16px; // largest in-app heading
+  --text-stat: 22px; // summary metric (once)
+  --text-clock: 92px; // focus clock (once)
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --leading-tight: 1.35;
+  --leading-body: 1.45;
+  --leading-prose: 1.55;
+
+  --tracking-body: -0.006em;
+  --tracking-title: -0.012em;
+  --tracking-heading: -0.015em;
+  --tracking-stat: -0.02em;
+  --tracking-clock: -0.05em;
+  --tracking-eyebrow: 0.03em; // the only positive tracking — uppercase only
+
+  // ---- Spacing (1px resolution — 5, 7 and 9px are deliberate, do not round) --
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 5px;
+  --space-4: 6px;
+  --space-5: 7px;
+  --space-6: 8px;
+  --space-7: 9px;
+  --space-8: 10px;
+  --space-9: 12px;
+  --space-10: 14px;
+  --space-11: 16px;
+  --space-12: 18px;
+  --space-13: 20px;
+  --space-14: 22px;
+
+  // ---- Control & row heights (every interactive element is one of these) -----
+  --h-pill: 19px; // inline tag inside a row
+  --h-chip: 22px; // segmented-control segment
+  --h-control: 26px; // header buttons, timer pill, toolbar button
+  --h-row-compact: 28px; // compact task row, settings nav item, subtask
+  --h-nav: 30px; // rail item, palette command row, detail button
+  --h-group: 32px; // group header, summary row, page button
+  --h-row: 34px; // the default task row
+  --h-panel-bar: 38px; // detail panel title bar
+  --h-header: 44px; // app header
+  --h-rail: 52px; // collapsed rail width and its logo block height
+
+  // ---- Structure ------------------------------------------------------------
+  --rail-collapsed: 52px;
+  --rail-expanded: 232px;
+  --detail-panel: 316px;
+  --palette-width: 560px;
+  --board-col-min: 232px;
+  --planner-col-min: 164px;
+  --gutter: 16px; // the single horizontal page inset
+
+  // ---- Radii — grows with footprint -----------------------------------------
+  // NOTE: this REPLACES the previous --radius-* ladder (4/6/8/12/16). The names
+  // are the same so every existing consumer moves onto the new scale at once.
+  --radius-xs: 4px; // keycap
+  --radius-sm: 5px; // icon-button, tag pill, timeline block
+  --radius-md: 6px; // nav item, row button, planner card
+  --radius-lg: 7px; // board card, detail button, segmented track
+  --radius-xl: 8px; // task card, logo tile, focus button
+  --radius-2xl: 9px; // panel, board column, planner column
+  --radius-3xl: 11px; // command palette
+  --radius-pill: 9999px;
+  --radius-dot: 2px; // the 6px tag square — squared, not circular
+
+  // ---- Motion ---------------------------------------------------------------
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 120ms; // toggle knob, hover fills
+  --duration-reveal: 130ms; // rail expand
+  --duration-pulse: 1.8s; // the live dot — the only loop in the product
+
+  // ---- Project & tag accents ------------------------------------------------
+  // These appear ONLY as 6px squares. Never as text colour, never as a fill.
+  --project-purple: #8b4a9d;
+  --project-teal: #00796b;
+  --project-blue: #1976d2;
+  --tag-deep: #8b4a9d;
+  --tag-errands: #f0a92b;
+  --tag-admin: #5c8fd6;
+  --tag-bug: #d94b3d;
+  --tag-calendar: #5c8fd6;
+}
+
+// -----------------------------------------------------------------------------
+// B. Per-mode primitives
+// -----------------------------------------------------------------------------
+/* stylelint-disable-next-line no-duplicate-selectors -- layered token file: design-system primitives follow the legacy Cat B block */
+body {
+  // Cool-neutral ramp, ink → faintest separator.
+  --neutral-1000: #17171a; // ink — titles, primary buttons, active nav
+  --neutral-800: #3d3d45; // body — secondary button labels, detail values
+  --neutral-700: #5c5c66; // muted — inactive nav labels, notes, chips
+  --neutral-500: #8f8f99; // meta — metadata, breadcrumb tail, icons
+  --neutral-400: #a5a5ad; // quiet — counts, keycaps, group totals
+  --neutral-300: #b8b8c0; // idle icons — unchecked status circles, idle play
+  --neutral-200: #c8c8cf; // divider glyphs (the breadcrumb slash)
+  --neutral-100: #dcdce0; // faintest separator
+
+  // Five warm-white surfaces — never a cool grey background.
+  --surface-page: #ffffff; // page, cards, panels
+  --surface-sunken: #fbfbfa; // group headers, gutters, focus mode
+  --surface-rail: #f7f7f6; // side rail, task-row hover
+  --surface-hover: #f4f4f3; // palette row hover
+  --surface-track: #f2f2f1; // segmented-control track
+
+  // Every hairline and wash is an alpha of THIS channel, so structure sits
+  // correctly on any surface. Never introduce a grey hex for structure.
+  --ink-channel: 23, 23, 26;
+
+  // Ink-on-dark (primary button labels, avatar).
+  --text-on-dark: #ffffff;
+  // Ink surface for dark-ink buttons and its hover step.
+  --ink-fill: #17171a;
+  --ink-fill-hover: #2c2c33;
+
+  --live-ink: #b81552; // live text on a live wash — passes contrast
+}
+
+/* stylelint-disable-next-line no-duplicate-selectors -- layered token file: design-system primitives follow the legacy Cat B block */
+body.isDarkTheme {
+  // Dark variant overrides the neutral ramp and the surfaces only. Brand, live,
+  // done, warn and over are NOT inverted (see section A / the light block) —
+  // only their contrast-critical companions move.
+  --neutral-1000: #f4f4f6;
+  --neutral-800: #cacad2;
+  --neutral-700: #a4a4ae;
+  --neutral-500: #8a8a94;
+  --neutral-400: #767680;
+  --neutral-300: #62626c;
+  --neutral-200: #4d4d56;
+  --neutral-100: #3b3b42;
+
+  --surface-page: #1a1a1c;
+  --surface-sunken: #151517;
+  --surface-rail: #202023;
+  --surface-hover: #26262a;
+  --surface-track: #232326;
+
+  --ink-channel: 255, 255, 255;
+
+  --text-on-dark: #17171a;
+  --ink-fill: #f4f4f6;
+  --ink-fill-hover: #ffffff;
+
+  --live-ink: #ff7aa6;
+}
+
+// -----------------------------------------------------------------------------
+// C. Semantic aliases + derived structure (zero specificity — themes win)
+// -----------------------------------------------------------------------------
+/* stylelint-disable-next-line no-duplicate-selectors -- layered token file: design-system aliases follow the legacy alias block */
+:where(body, body.isDarkTheme) {
+  // ---- Hairlines & washes — all alphas of ink -------------------------------
+  --line-hair: rgba(var(--ink-channel), 0.07); // rail edge, header, sticky bar
+  --line-row: rgba(var(--ink-channel), 0.05); // between list rows
+  --line-card: rgba(var(--ink-channel), 0.08); // card + panel borders
+  --line-chip: rgba(var(--ink-channel), 0.1); // chips, tag pills
+  --line-strong: rgba(var(--ink-channel), 0.12); // secondary buttons, keycaps
+
+  --wash-4: rgba(var(--ink-channel), 0.04); // hover on light
+  --wash-5: rgba(var(--ink-channel), 0.05); // hover on chrome
+  --wash-7: rgba(var(--ink-channel), 0.07); // active nav fill, icon-btn hover
+  --wash-16: rgba(var(--ink-channel), 0.16); // off toggle track, scrollbar thumb
+
+  // ---- Status ---------------------------------------------------------------
+  // `--brand` stays theme-driven (see Layer 1 above) so user themes keep
+  // working; the default palette's primary IS the spec's #8b4a9d.
+  --brand-wash: color-mix(in srgb, var(--brand) 8%, transparent);
+
+  // Pink means a timer is running. Never a hover, error, highlight or accent.
+  --live: #d81b60;
+  --live-wash: rgba(216, 27, 96, 0.06); // timer pill fill
+  --live-wash-strong: rgba(216, 27, 96, 0.11); // timer pill hover
+  --live-line: rgba(216, 27, 96, 0.28); // timer pill border
+  --live-row: rgba(216, 27, 96, 0.045); // running task-row tint
+
+  --done: #4fa758; // completed status
+  --warn: #e08a1e; // over estimate, soft flags
+  --over: #d94b3d; // overdue, bug tag
+
+  // ---- Text & icon aliases (prefer these in component code) -----------------
+  --text-title: var(--neutral-1000);
+  --text-body: var(--neutral-800);
+  --text-secondary: var(--neutral-700);
+  --text-meta: var(--neutral-500);
+  --text-quiet: var(--neutral-400);
+
+  --icon-idle: var(--neutral-300);
+  --icon-meta: var(--neutral-500);
+
+  --overlay-scrim: rgba(23, 23, 26, 0.28);
+
+  // Text and glyphs sitting ON a saturated accent (a project swatch, a
+  // selected colour chip). Accents stay saturated in both modes, so unlike
+  // `--text-on-dark` this does not flip with the theme.
+  --text-on-accent: #ffffff;
+
+  // ---- Elevation — four steps, and that is all ------------------------------
+  // Shadows carry elevation; borders carry structure. Never both on one edge.
+  --shadow-card: 0 1px 2px rgba(23, 23, 26, 0.04);
+  --shadow-card-hover: 0 2px 6px rgba(23, 23, 26, 0.07);
+  --shadow-rail: 0 8px 24px rgba(23, 23, 26, 0.12);
+  --shadow-overlay:
+    0 20px 48px rgba(23, 23, 26, 0.18), 0 32px 64px -10px rgba(23, 23, 26, 0.14);
+  --shadow-knob: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+  --blur-sticky: blur(6px);
+  --blur-scrim: blur(2px);
+
+  // Sticky list toolbar — one of exactly two transparency uses in the system.
+  --sticky-toolbar-bg: rgba(255, 255, 255, 0.92);
+}
+
+/* stylelint-disable-next-line no-duplicate-selectors -- dark needs an opaque-side sticky fill and a stronger running tint */
+body.isDarkTheme {
+  --sticky-toolbar-bg: rgba(26, 26, 28, 0.92);
+  --live-row: rgba(216, 27, 96, 0.1);
+  --overlay-scrim: rgba(0, 0, 0, 0.45);
+}
+
+// -----------------------------------------------------------------------------
+// D. Legacy bridge — existing names repointed at the new tokens.
+//
+// Nothing is deleted. Every variable the app already consumes keeps its name
+// and now resolves through the design system, so templates can be migrated one
+// at a time without a flag day.
+// -----------------------------------------------------------------------------
+/* stylelint-disable-next-line no-duplicate-selectors -- legacy bridge intentionally re-declares on the alias layer */
+:where(body, body.isDarkTheme) {
+  // Type scale → the new 10.5–15px ladder.
+  --font-size-xs: var(--text-xs); // 11px (unchanged)
+  --font-size-sm: var(--text-sm); // 12px (unchanged)
+  --font-size-md: var(--text-base); // 14px → 13px body default
+  --font-size-lg: var(--text-md); // 16px → 14.5px
+  --font-size-xl: var(--text-lg); // 18px → 15px, the largest in-app heading
+  --font-size-2xl: var(--text-stat); // 22px (unchanged)
+  --font-size-3xl: var(--text-stat); // 28px → 22px; nothing exceeds the stat
+
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-semibold); // 600 is the top of the scale
+
+  --line-height-tight: var(--leading-tight);
+  --line-height-snug: var(--leading-tight);
+  --line-height-normal: var(--leading-body);
+
+  --letter-spacing-tighter: var(--tracking-stat);
+  --letter-spacing-tight: var(--tracking-title);
+  --letter-spacing-normal: var(--tracking-body);
+  --letter-spacing-wide: var(--tracking-eyebrow);
+
+  // Structure → alphas of ink.
+  --separator-color: var(--line-hair);
+  --divider-color: var(--line-row);
+  --extra-border-color: var(--line-card);
+  --options-border-color: var(--line-chip);
+  --chip-outline-color: var(--line-chip);
+  --grid-color: var(--line-row);
+
+  // Interaction states → the wash ladder.
+  --state-hover: var(--wash-5);
+  --state-focus: var(--wash-7);
+  --state-pressed: var(--wash-7);
+  --state-selected: var(--wash-7);
+  --select-hover-bg: var(--wash-5);
+  --sidenav-item-active-bg: var(--wash-7);
+  --sidenav-hover-bg: var(--wash-5);
+
+  // Text.
+  --text-color: var(--text-body);
+  --text-color-muted: var(--text-meta);
+  --text-color-most-intense: var(--text-title);
+  --text-color-less-intense: var(--text-secondary);
+  --text-color-more-intense: var(--text-title);
+
+  // Surfaces.
+  --card-bg: var(--surface-page);
+  --bg-darker: var(--surface-track);
+  --bg-lighter: var(--surface-page);
+  --bg-lightest: var(--surface-page);
+  --bg-slightly-lighter: var(--surface-rail);
+  --task-c-bg: var(--surface-page);
+  --task-c-bg-done: var(--surface-page);
+  --sub-task-c-bg: var(--surface-page);
+  --task-detail-bg: var(--surface-page);
+  --task-detail-bg-hover: var(--surface-hover);
+  --selected-task-bg-color: var(--surface-page);
+  --task-c-selected-bg: var(--surface-rail);
+  --schedule-event-bg: var(--surface-page);
+
+  // Scrollbar — the wash ladder again (see the design system's scrollbar rule).
+  --scrollbar-thumb: var(--wash-16);
+  --scrollbar-thumb-hover: rgba(var(--ink-channel), 0.28);
+  --scrollbar-track: transparent;
+
+  // Elevation. The app's four whiteframe steps map onto the four design steps.
+  --card-shadow: var(--shadow-card);
+  --task-shadow: var(--shadow-card);
+  --task-current-shadow: var(--shadow-card-hover);
+  --task-selected-shadow: var(--shadow-card-hover);
+  --task-detail-shadow: var(--shadow-card);
+  --whiteframe-shadow-1dp: var(--shadow-card);
+  --whiteframe-shadow-2dp: var(--shadow-card);
+  --whiteframe-shadow-3dp: var(--shadow-card-hover);
+  --whiteframe-shadow-4dp: var(--shadow-card-hover);
+  --whiteframe-shadow-6dp: var(--shadow-rail);
+  --whiteframe-shadow-8dp: var(--shadow-rail);
+  --whiteframe-shadow-12dp: var(--shadow-overlay);
+  --whiteframe-shadow-24dp: var(--shadow-overlay);
+  --banner-shadow: var(--shadow-card-hover);
+  --bottom-nav-shadow: var(--shadow-card);
+
+  // Motion — one easing curve, two durations.
+  --ani-standard-timing: var(--ease-standard);
+  --ani-enter-timing: var(--ease-standard);
+  --ani-leave-timing: var(--ease-standard);
+  --ani-sharp-timing: var(--ease-standard);
+  --transition-duration-xs: var(--duration-fast);
+  --transition-duration-s: var(--duration-fast);
+  --transition-duration-m: var(--duration-reveal);
+  --transition-duration-l: var(--duration-reveal);
+  --transition-duration-enter: var(--duration-reveal);
+  --transition-duration-leave: var(--duration-fast);
+  --page-transition-duration: var(--duration-reveal);
+
+  // Scrim / overlays.
+  --c-backdrop: var(--overlay-scrim);
+  --scrim: var(--overlay-scrim);
+
+  // Layout.
+  --bar-height: var(--h-header);
+  --bar-height-small: var(--h-header);
+  --bottom-nav-height: var(--h-header);
+  --side-nav-width: var(--rail-expanded);
+  --card-border-radius: var(--radius-2xl);
+  --task-border-radius: var(--radius-md);
+
+  // Status.
+  --color-success: var(--done);
+  --color-warning: var(--warn);
+  --color-danger: var(--over);
+  --success-green: var(--done);
+
+  // ONE accent for identity, one for "a timer is running", and nothing else
+  // competes. `--c-accent` resolved to the Material library's default accent —
+  // a magenta that read as a second brand AND collided with the meaning of
+  // `--live`. Both legacy accent names now point at the brand.
+  --c-accent: var(--brand);
+  --c-primary: var(--brand);
+
+  // The planner card is the smallest card in the system — it has to survive a
+  // 164px day column, so it runs a step below everything else.
+  --planner-font-size: var(--text-xs-plus);
+  --planner-font-size-mobile: var(--text-xs-plus);
+  --planner-font-size-smaller: var(--text-2xs);
+  --planner-font-size-smaller-mobile: var(--text-2xs);
+}

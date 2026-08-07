@@ -1,10 +1,37 @@
+import { Page } from 'playwright/test';
+import { waitForUISettle } from '../../utils/waits';
 import { test, expect } from '../../fixtures/test.fixture';
 
 const TASK = 'task';
 const TASK_TITLE = 'task task-title';
 const FIRST_TASK = 'task:first-child';
 const SECOND_TASK = 'task:nth-child(2)';
-const TASK_DONE_BTN = 'done-toggle';
+const TASK_DONE_BTN = '.task-status';
+
+// Row titles are read-only in the redesigned list: clicking a row opens the
+// detail panel, and the title is edited there.
+const openDetailPanel = async (page: Page, taskSel: string): Promise<void> => {
+  await page.click(`${taskSel} task-title`);
+  await page.locator('task-detail-panel .detail-title').waitFor({ state: 'visible' });
+  // The panel slides in; let it settle before clicking into it.
+  await waitForUISettle(page);
+};
+
+// Renames through the already-open panel. Re-clicking the row between renames
+// tears the panel down and rebuilds it, which detaches the element mid-click.
+const renameInDetailPanel = async (page: Page, newTitle: string): Promise<void> => {
+  const panelTitle = page.locator('task-detail-panel .detail-title');
+  await panelTitle.click();
+  const textarea = page.locator('task-detail-panel .detail-title textarea');
+  await textarea.waitFor({ state: 'visible' });
+  await textarea.fill(newTitle);
+  await page.keyboard.press('Tab'); // Blur to save
+};
+
+const renameViaDetailPanel = async (page: Page, newTitle: string): Promise<void> => {
+  await openDetailPanel(page, FIRST_TASK);
+  await renameInDetailPanel(page, newTitle);
+};
 
 test.describe('Task CRUD Operations', () => {
   test('should create, edit and delete tasks', async ({ page, workViewPage }) => {
@@ -21,11 +48,9 @@ test.describe('Task CRUD Operations', () => {
     await expect(page.locator(`${FIRST_TASK} task-title`)).toContainText(/Second task/);
     await expect(page.locator(`${SECOND_TASK} task-title`)).toContainText(/First task/);
 
-    // Edit first task (newest)
-    await page.click(`${FIRST_TASK} task-title`);
-    await page.waitForSelector(`${FIRST_TASK} textarea`, { state: 'visible' });
-    await page.fill(`${FIRST_TASK} textarea`, 'Edited second task');
-    await page.keyboard.press('Tab'); // Blur to save
+    // Edit first task (newest). A row title is read-only now — clicking a row
+    // opens the detail panel, and the title is edited there.
+    await renameViaDetailPanel(page, 'Edited second task');
     await expect(page.locator(`${FIRST_TASK} task-title`)).toContainText(
       /Edited second task/,
     );
@@ -51,20 +76,16 @@ test.describe('Task CRUD Operations', () => {
     await workViewPage.addTask('Original title');
     await page.waitForSelector(TASK, { state: 'visible' });
 
-    // Update the task title multiple times
-    await page.click(`${FIRST_TASK} task-title`);
-    await page.waitForSelector(`${FIRST_TASK} textarea`, { state: 'visible' });
-    await page.fill(`${FIRST_TASK} textarea`, 'Updated title 1');
-    await page.keyboard.press('Tab');
+    // Update the task title multiple times, through one open panel.
+    await openDetailPanel(page, FIRST_TASK);
+
+    await renameInDetailPanel(page, 'Updated title 1');
     await expect(page.locator(`${FIRST_TASK} task-title`)).toContainText(
       /Updated title 1/,
     );
 
     // Update again
-    await page.click(`${FIRST_TASK} task-title`);
-    await page.waitForSelector(`${FIRST_TASK} textarea`, { state: 'visible' });
-    await page.fill(`${FIRST_TASK} textarea`, 'Final title');
-    await page.keyboard.press('Tab');
+    await renameInDetailPanel(page, 'Final title');
     await expect(page.locator(`${FIRST_TASK} task-title`)).toContainText(/Final title/);
   });
 

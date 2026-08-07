@@ -72,6 +72,11 @@ export class PlannerDayComponent {
   //  and migrating would break narrowing currently.
   @Input() day!: PlannerDay;
 
+  /** Today is the one column that sits on the page surface. */
+  @HostBinding('class.is-today') get isTodayClass(): boolean {
+    return !!this.day?.isToday;
+  }
+
   @HostBinding('attr.data-day') get dataDayAttr(): string | undefined {
     return this.day?.dayDate;
   }

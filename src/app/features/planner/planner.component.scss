@@ -8,3 +8,32 @@
     min-height: 0;
   }
 }
+
+// Matches the work view's sticky list toolbar so the two screens read as the
+// same product.
+.planner-toolbar {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-6);
+  flex: 0 0 auto;
+  padding: var(--space-8) var(--gutter);
+  border-bottom: 1px solid var(--line-hair);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.planner-toolbar__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-heading);
+  color: var(--text-title);
+  flex: 0 0 auto;
+}
+
+.planner-toolbar__meta {
+  font-size: var(--text-sm);
+  color: var(--text-meta);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

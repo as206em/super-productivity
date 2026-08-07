@@ -24,13 +24,11 @@ import { SnackService } from '../../core/snack/snack.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { GlobalConfigService } from '../../features/config/global-config.service';
 import { KeyboardConfig } from 'src/app/features/config/keyboard-config.model';
-import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleCounterButtonComponent } from '../../features/simple-counter/simple-counter-button/simple-counter-button.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { LongPressDirective } from '../../ui/longpress/longpress.directive';
 import { isOnline$ } from '../../util/is-online';
 import { Store } from '@ngrx/store';
 import { DataInitStateService } from '../../core/data-init/data-init-state.service';
@@ -40,15 +38,24 @@ import { PluginHeaderBtnsComponent } from '../../plugins/ui/plugin-header-btns.c
 import { PluginWorkContextHeaderBtnsComponent } from '../../plugins/ui/plugin-work-context-header-btns.component';
 import { PluginSidePanelBtnsComponent } from '../../plugins/ui/plugin-side-panel-btns.component';
 import { PageTitleComponent } from './page-title/page-title.component';
-import { PlayButtonComponent } from './play-button/play-button.component';
 import { DesktopPanelButtonsComponent } from './desktop-panel-buttons/desktop-panel-buttons.component';
+import { FocusButtonComponent } from './focus-button/focus-button.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MetricService } from '../../features/metric/metric.service';
 import { DateService } from '../../core/date/date.service';
 import { UserProfileButtonComponent } from '../../features/user-profile/user-profile-button/user-profile-button.component';
-import { FocusButtonComponent } from './focus-button/focus-button.component';
 import { UserProfileService } from '../../features/user-profile/user-profile.service';
 import { FocusModeService } from '../../features/focus-mode/focus-mode.service';
+import {
+  MatMenu,
+  MatMenuContent,
+  MatMenuItem,
+  MatMenuTrigger,
+} from '@angular/material/menu';
+import { MsToStringPipe } from '../../ui/duration/ms-to-string.pipe';
+import { TaskViewCustomizerService } from '../../features/task-view-customizer/task-view-customizer.service';
+import { TaskViewCustomizerPanelComponent } from '../../features/task-view-customizer/task-view-customizer-panel/task-view-customizer-panel.component';
+import { isTaskViewCustomizerRoute } from '../../features/task-view-customizer/is-task-view-customizer-route.util';
 
 @Component({
   selector: 'main-header',
@@ -57,20 +64,23 @@ import { FocusModeService } from '../../features/focus-mode/focus-mode.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [fadeAnimation, expandFadeHorizontalAnimation],
   imports: [
-    MatIconButton,
     MatIcon,
     MatTooltip,
     TranslatePipe,
     SimpleCounterButtonComponent,
-    LongPressDirective,
     PluginHeaderBtnsComponent,
     PluginWorkContextHeaderBtnsComponent,
     PluginSidePanelBtnsComponent,
     PageTitleComponent,
-    PlayButtonComponent,
     DesktopPanelButtonsComponent,
-    UserProfileButtonComponent,
     FocusButtonComponent,
+    UserProfileButtonComponent,
+    MatMenu,
+    MatMenuContent,
+    MatMenuItem,
+    MatMenuTrigger,
+    MsToStringPipe,
+    TaskViewCustomizerPanelComponent,
   ],
 })
 export class MainHeaderComponent implements OnDestroy {
@@ -187,6 +197,18 @@ export class MainHeaderComponent implements OnDestroy {
   readonly isSyncIconEnabled = computed(() => {
     return this.globalConfigService.appFeatures().isSyncIconEnabled;
   });
+
+  readonly taskViewCustomizerService = inject(TaskViewCustomizerService);
+  private readonly _url = toSignal(
+    this._router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects.split(/[?#]/, 1)[0]),
+    ),
+    { initialValue: this._router.url.split(/[?#]/, 1)[0] },
+  );
+  readonly isTaskViewCustomizerPage = computed(() =>
+    isTaskViewCustomizerRoute(this._url()),
+  );
 
   // Check if there are any undone tasks that can be tracked
   private readonly _hasTrackableTasks$ = this.workContextService.undoneTasks$.pipe(
@@ -321,6 +343,25 @@ export class MainHeaderComponent implements OnDestroy {
   enableFocusMode(): void {
     this._store.dispatch(showFocusOverlay());
   }
+
+  /** Clearing the current task is what "stop tracking" means to the store. */
+  stopTracking(): void {
+    this.taskService.setCurrentId(null);
+  }
+
+  /**
+   * Which sync glyph the Display menu shows. Collapsed from the six-branch
+   * template the header used to carry, because a menu row has one icon slot.
+   */
+  readonly syncGlyph = computed(() => {
+    if (!this.syncIsEnabledAndReady()) {
+      return 'sync_disabled';
+    }
+    if (!this.isOnline()) {
+      return 'wifi_off';
+    }
+    return this.syncState() === 'ERROR' ? 'sync_problem' : 'sync';
+  });
 
   get kb(): KeyboardConfig {
     return (this._configService.cfg()?.keyboard as KeyboardConfig) || {};

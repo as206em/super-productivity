@@ -17,14 +17,17 @@
 .days {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  // Day columns hit their 164px minimum and the week scrolls sideways rather
+  // than squeezing. `1fr` alone let seven days compress past readable on a
+  // narrow window.
+  grid-auto-columns: minmax(var(--planner-col-min), 1fr);
   box-sizing: border-box;
-  padding: var(--s3);
+  padding: var(--space-10) var(--gutter);
   padding-top: 0;
-  gap: var(--s2);
+  gap: var(--space-6);
 
   @include mq(xs) {
-    gap: var(--s3);
+    gap: var(--space-6);
   }
 
   @include mq(xs, max) {

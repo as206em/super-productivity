@@ -2,13 +2,66 @@
 @use '../task-context-menu-touch-fix.scss';
 @use '../../shared-tag-project-styles';
 
+// Invisible stub that catches the menu's initial focus. It carries
+// `mat-menu-item`, so the global menu-item `min-height` would otherwise give
+// every menu a blank 30px row at the top.
+.menu-focus-stub {
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  overflow: hidden;
+}
+
+.menu-selection-count {
+  padding: var(--space-4) var(--space-9) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-meta);
+}
+
+// Keycaps right-align into one column.
+//
+// Three things were pulling them out of line: the text span shrink-wrapped
+// instead of filling the row, an inherited `auto` right margin left a
+// different remainder on every row, and the submenu arrow sat in the flow so
+// rows carrying one ended 24px short. Fix all three and every hint lands on
+// the same right edge.
+::ng-deep .mat-mdc-menu-item .mat-mdc-menu-item-text {
+  width: 100%;
+
+  .key-i {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+}
+
+button.mat-mdc-menu-item {
+  padding-right: 26px !important;
+}
+
+::ng-deep .mat-mdc-menu-item-submenu-trigger > .mat-mdc-menu-submenu-icon {
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+}
+
+// Keycap. A hint, never a requirement.
 .key-i {
-  opacity: 0.4;
-  font-size: 11px;
+  opacity: 1;
+  color: var(--text-quiet);
+  font-size: var(--text-xs);
   text-align: center;
-  border-radius: 20px;
-  max-width: 66px;
-  letter-spacing: -1px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  padding: 1px var(--space-3);
+  // Wide enough for the longest key name we show ("Backspace") so the hint
+  // never truncates into nonsense.
+  max-width: 84px;
+  letter-spacing: 0;
   @include truncateText();
   display: none;
 
@@ -31,45 +84,70 @@
   text-overflow: ellipsis;
 }
 
+// A row of quick actions. Buttons sit on the same wash-on-hover as every
+// other menu row rather than reading as a separate toolbar. No dividers
+// between them: the buttons are rounded, so a full-height hairline collided
+// with the corners and read as a stray curve.
 .quick-access {
   display: flex;
   justify-content: space-evenly;
-  @include extraBorder('-bottom');
-  height: 48px;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  height: auto;
 
   > button {
-    height: 48px;
-    min-width: 40px;
+    height: var(--h-group);
+    min-width: 34px;
     flex-grow: 1;
-    border-radius: var(--card-border-radius) !important;
+    color: var(--text-body);
+    border-radius: var(--radius-md) !important;
 
     ::ng-deep .mat-mdc-button-persistent-ripple {
-      border-radius: var(--card-border-radius) !important;
+      border-radius: var(--radius-md) !important;
     }
   }
-
-  button + button {
-    border-left: 1px solid var(--extra-border-color) !important;
-  }
 }
 
-.quick-access-label {
+// A labelled set: the icon says which axis, the chips are the values, all on
+// one row. The axis name lives in the icon's tooltip rather than an eyebrow
+// above — the row is short enough that a heading was more furniture than help.
+.quick-set {
   display: flex;
   align-items: center;
-  gap: var(--s);
-  padding: var(--s-half) var(--s2) 0;
-  color: var(--text-color-muted);
-  font-size: 12px;
+  gap: var(--space-2);
+  padding-left: var(--space-6);
 
-  mat-icon {
-    width: 16px;
-    height: 16px;
-    font-size: 16px;
+  .quick-access {
+    flex: 1;
+    min-width: 0;
+    padding-left: 0;
   }
 }
 
+.quick-set-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--icon-meta);
+  cursor: default;
+}
+
+// One hairline under the whole quick-action block, rather than one under
+// every row — borders carry structure, and the structure here is "actions
+// above, menu items below". Scoped to the set itself: matching the nested
+// `.quick-access` too would draw a stray line under every axis row.
+.quick-set:last-of-type {
+  border-bottom: 1px solid var(--line-row);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+// Chip rows (30m / 1h / 2h / 4h, xhigh / high / mid / low) read as one
+// segmented set rather than four loose buttons.
 .quick-access-text {
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1;
 }
 

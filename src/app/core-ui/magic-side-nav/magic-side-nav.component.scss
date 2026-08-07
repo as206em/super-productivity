@@ -12,10 +12,10 @@
 :host {
   --sidenav-width-expanded: var(--side-nav-width, 260px);
   --mobile-breakpoint: 768px;
-  --sidenav-transition-duration: var(--transition-duration-m, 0.3s);
-  --sidenav-transition-timing: var(--ani-standard-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  --sidenav-transition-duration: var(--duration-reveal);
+  --sidenav-transition-timing: var(--ease-standard);
   --mat-menu-item-spacing: 4px;
-  --sidenav-border-color: var(--separator-color);
+  --sidenav-border-color: var(--line-hair);
 
   // Ensure the component itself participates in layout and animates width
   display: block;
@@ -112,17 +112,23 @@
 
 // Main sidenav
 .nav-sidenav {
+  // Rail rows are 30px. The shared multi-button wrapper enforces its height
+  // with `!important`, so this token is the only way in.
+  --multi-btn-height: var(--h-nav);
+
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   width: var(--sidenav-width-expanded);
-  background: var(--sidenav-bg);
+  background: var(--surface-rail);
   border-right: 1px solid var(--sidenav-border-color);
   // Default: don't animate width
   transition: none;
   z-index: 1002;
   overflow-y: auto;
+  // Load-bearing: the reveal works by clipping labels as the rail widens.
+  // Never fade them — a label either fits or it is cut off.
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   -webkit-app-region: no-drag;
@@ -131,6 +137,18 @@
 
   &.animate {
     transition: width var(--sidenav-transition-duration) var(--sidenav-transition-timing);
+  }
+
+  // Hover reveal: the collapsed rail widens over the content. Width and the
+  // lifting shadow are the only things that move.
+  &.compactMode {
+    transition:
+      width var(--duration-reveal) var(--ease-standard),
+      box-shadow var(--duration-reveal) var(--ease-standard);
+  }
+
+  :host(.railRevealed) &.compactMode {
+    box-shadow: var(--shadow-rail);
   }
 
   &.resizing {
@@ -155,16 +173,16 @@
     backdrop-filter: blur(20px) saturate(180%);
   }
 
-  // CompactMode state (desktop)
+  // CompactMode state (desktop) — the collapsed rail.
   &.compactMode {
     scrollbar-width: none;
-    scrollbar-gutter: stable both-edges;
+    display: flex;
+    flex-direction: column;
+  }
 
-    .mode-toggle {
-      right: auto;
-      left: 50%;
-      transform: translateX(-50%);
-    }
+  &.fullMode {
+    display: flex;
+    flex-direction: column;
   }
 
   // Mobile specific
@@ -204,20 +222,24 @@
   // Note: Theme colors are handled by CSS variables above
 }
 
-// Sidebar toggle button (desktop)
+// Pin/unpin the rail open. Sits at the trailing edge of the rail head and is
+// only reachable once the rail is wide enough to show it — in the collapsed
+// 52px state it would sit on top of the mark.
 .mode-toggle {
-  --top: 8px;
+  --top: 10px;
   display: none;
   position: absolute;
   top: var(--top);
-  right: 8px;
+  right: var(--space-6);
+  width: var(--h-chip);
+  height: var(--h-chip);
   background: transparent;
-  border: 1px solid var(--sidenav-border-color);
-  border-radius: 6px;
-  padding: 6px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0;
   cursor: pointer;
-  transition: var(--transition-standard);
-  color: var(--sidenav-text-secondary);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+  color: var(--icon-meta);
   -webkit-app-region: no-drag;
 
   :host-context(.isMac.isElectron) & {
@@ -225,57 +247,90 @@
   }
 
   &.visible {
-    display: flex;
     align-items: center;
     justify-content: center;
   }
 
+  :host(.railRevealed) &.visible,
+  .nav-sidenav.fullMode &.visible {
+    display: flex;
+  }
+
   &:focus,
   &:hover {
-    background: var(--sidenav-hover-bg);
-    color: var(--sidenav-text);
+    background: var(--wash-7);
+    color: var(--text-title);
   }
+}
+
+// Rail head — squares off the 52px collapsed rail. The mark is a neutral tile
+// standing in for a logo the repo does not ship; it is not the brand.
+.rail-head {
+  display: flex;
+  align-items: center;
+  height: var(--h-rail);
+  flex: 0 0 var(--h-rail);
+  padding-left: var(--space-8);
+  gap: var(--space-8);
+  white-space: nowrap;
+  -webkit-app-region: no-drag;
+
+  :host-context(.isMac.isElectron) & {
+    margin-top: var(--mac-title-bar-padding, 0);
+  }
+}
+
+.rail-mark {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: var(--radius-xl);
+  background: var(--ink-fill);
+  color: var(--text-on-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-base);
+  letter-spacing: 0;
+}
+
+.rail-product {
+  min-width: 0;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-base);
+  color: var(--text-title);
 }
 
 // Navigation list
 .nav-list {
-  --pt: 48px;
   list-style: none;
-  //padding: 60px var(--s) var(--s2);
-  padding: 0;
-  padding-top: var(--pt);
+  padding: 0 var(--space-6) var(--space-6);
   margin: 0;
-  min-height: 100%;
   display: flex;
   flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
   justify-content: flex-start;
 
   @include mq(xs, max) {
-    padding-top: var(--safe-area-top);
     padding-bottom: calc(var(--safe-area-bottom) + var(--bottom-nav-height));
-  }
-
-  :host-context(.isMac.isElectron) & {
-    padding-top: calc(var(--pt) + var(--mac-title-bar-padding, 0px));
   }
 }
 
 .nav-item {
-  margin-bottom: var(--s-quarter);
   -webkit-app-region: no-drag;
-
-  &.has-children {
-    margin-bottom: var(--s-half);
-  }
 }
 
-// Separator styling
+// The rail carries no rules between groups — the uppercase eyebrow and the
+// pinned bottom group already say where one group ends. A separator that only
+// exists to push the bottom group down keeps its `margin-top: auto` and
+// nothing else.
 .nav-separator {
-  height: 1px;
-  background: var(--sidenav-border-color);
-  margin: var(--s2) var(--s2);
+  height: 0;
+  background: none;
   border: none;
-  opacity: 1;
+  margin: var(--space-6) 0 0;
   flex-shrink: 0;
   -webkit-app-region: no-drag;
 }
@@ -288,7 +343,7 @@
   width: 4px;
   cursor: col-resize;
   z-index: 1003; // Above the nav-sidenav
-  transition: background-color 0.2s ease;
+  transition: background-color var(--duration-reveal) var(--ease-standard);
 
   &.position-left {
     right: -2px;

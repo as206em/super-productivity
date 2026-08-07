@@ -155,7 +155,7 @@ test.describe('@webdav WebDAV Sync Expansion', () => {
 
     // --- Test 1: Mark done on B, verify on A ---
     await taskB.hover();
-    const doneBtnB = taskB.locator('done-toggle');
+    const doneBtnB = taskB.locator('.task-status');
     await doneBtnB.click({ force: true });
     await expect(taskB).toHaveClass(/isDone/);
 
